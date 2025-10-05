@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="bottom_nav_icon_size">24dp</dimen>
+    <dimen name="bottom_nav_height">72dp</dimen>
+    <dimen name="bottom_nav_vertical_padding">8dp</dimen>
+    <!-- Search destination component dimensions -->
+    <dimen name="search_container_height">56dp</dimen>
+    <dimen name="search_container_radius">16dp</dimen>
+    <dimen name="search_container_horizontal_padding">16dp</dimen>
+    <dimen name="search_container_icon_size">20dp</dimen>
+    <dimen name="search_container_spacing">12dp</dimen>
+    <dimen name="search_filter_button_size">44dp</dimen>
+    <dimen name="search_filter_button_radius">14dp</dimen>
+    <dimen name="search_component_margin_horizontal">20dp</dimen>
+    <dimen name="search_component_margin_top">16dp</dimen>
+    <!-- Profile screen dimensions -->
+    <dimen name="profile_header_height">200dp</dimen>
+    <dimen name="profile_avatar_size">100dp</dimen>
+    <dimen name="profile_avatar_margin_top">40dp</dimen>
+    <dimen name="profile_menu_item_height">64dp</dimen>
+    <dimen name="profile_menu_item_padding">16dp</dimen>
+    <dimen name="profile_menu_item_margin">12dp</dimen>
+    <dimen name="profile_section_margin_top">24dp</dimen>
+</resources>

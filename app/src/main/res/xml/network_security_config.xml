@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cho phép cleartext traffic (HTTP) cho domain backend hiện tại -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">parkmate-alb-942390189.ap-southeast-1.elb.amazonaws.com</domain>
+    </domain-config>
+</network-security-config>
+
