@@ -34,7 +34,7 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/back"
             android:src="@drawable/ic_arrow_back_24"
-            android:tint="@color/colorPrimary"
+            app:tint="@color/colorPrimary"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -50,7 +50,7 @@
             android:padding="8dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_person_24"
-            android:tint="@color/colorPrimary"
+            app:tint="@color/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -64,7 +64,7 @@
             android:contentDescription="@string/profile_edit"
             android:padding="8dp"
             android:src="@drawable/ic_edit_24"
-            android:tint="@color/colorPrimary"
+            app:tint="@color/colorPrimary"
             app:layout_constraintBottom_toBottomOf="@id/profileAvatar"
             app:layout_constraintEnd_toEndOf="@id/profileAvatar"
             app:layout_constraintStart_toEndOf="@id/profileAvatar" />
@@ -128,7 +128,7 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/profile_menu_my_bookings"
                     android:src="@drawable/ic_local_parking_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -152,7 +152,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@string/profile_menu_my_bookings"
                     android:src="@drawable/ic_chevron_right_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -175,7 +175,7 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/profile_menu_my_vehicles"
                     android:src="@drawable/ic_car_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -199,7 +199,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@string/profile_menu_my_vehicles"
                     android:src="@drawable/ic_chevron_right_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -222,7 +222,7 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/profile_menu_payment_methods"
                     android:src="@drawable/ic_payment_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -246,7 +246,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@string/profile_menu_payment_methods"
                     android:src="@drawable/ic_chevron_right_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -269,7 +269,7 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/profile_menu_parking_history"
                     android:src="@drawable/ic_history_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -293,7 +293,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@string/profile_menu_parking_history"
                     android:src="@drawable/ic_chevron_right_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -316,7 +316,7 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/profile_menu_settings"
                     android:src="@drawable/ic_settings_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -340,7 +340,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@string/profile_menu_settings"
                     android:src="@drawable/ic_chevron_right_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -363,7 +363,7 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/profile_menu_help_support"
                     android:src="@drawable/ic_help_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -387,7 +387,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@string/profile_menu_help_support"
                     android:src="@drawable/ic_chevron_right_24"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -409,7 +409,7 @@
                     android:layout_height="24dp"
                     android:contentDescription="@string/profile_menu_logout"
                     android:src="@drawable/ic_logout_24"
-                    android:tint="#DC2626"
+                    app:tint="#DC2626"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
