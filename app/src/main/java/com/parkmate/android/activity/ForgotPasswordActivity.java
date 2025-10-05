@@ -248,6 +248,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         handleBackPress();
     }
 }
