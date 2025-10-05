@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- Nền trắng cho bottom navigation, có bo góc phía trên -->
+    <solid android:color="@android:color/white" />
+    <corners android:topLeftRadius="16dp" android:topRightRadius="16dp" />
+    <!-- Thêm một chút padding để bóng đổ (nếu cần có thể bọc trong CardView thay vì shape) -->
+    <padding android:left="0dp" android:top="0dp" android:right="0dp" android:bottom="0dp" />
+</shape>
+

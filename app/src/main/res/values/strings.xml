@@ -1,3 +1,69 @@
 <resources>
     <string name="app_name">CapstoneProject_ParkMate</string>
+
+    <!-- Toolbar Strings -->
+    <string name="navigation_button">Nút điều hướng</string>
+
+    <!-- Forgot Password Strings -->
+    <string name="back">Quay lại</string>
+    <string name="forgot_password">Quên mật khẩu</string>
+    <string name="forgot_password_description">Nhập địa chỉ email của bạn để nhận liên kết đặt lại mật khẩu.</string>
+    <string name="email">Email</string>
+    <string name="email_hint">Nhập email của bạn</string>
+    <string name="send">Gửi</string>
+    <string name="check_email">Kiểm tra email của bạn</string>
+    <string name="check_email_description">Chúng tôi đã gửi mã OTP khôi phục mật khẩu đến email của bạn.</string>
+    <string name="enter_otp">Nhập mã OTP</string>
+    <string name="otp_description">Nhập mã 6 chữ số được gửi đến địa chỉ email của bạn.</string>
+    <string name="otp_hint">Nhập mã 6 chữ số</string>
+    <string name="verify">Xác nhận</string>
+    <string name="resend_code">Gửi lại mã</string>
+    <string name="new_password">Tạo mật khẩu mới</string>
+    <string name="new_password_description">Mật khẩu mới của bạn phải khác với mật khẩu đã sử dụng trước đó.</string>
+    <string name="password">Mật khẩu</string>
+    <string name="password_hint">Nhập mật khẩu của bạn</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="confirm_password_hint">Xác nhận mật khẩu của bạn</string>
+    <string name="reset_password">Đặt lại mật khẩu</string>
+    <string name="success">Đặt lại mật khẩu thành công!</string>
+    <string name="success_description">Mật khẩu của bạn đã được đặt lại thành công.</string>
+    <string name="login">Đăng nhập</string>
+
+    <!-- Registration Success Strings -->
+    <string name="registration_success">Đăng ký thành công!</string>
+    <string name="registration_success_description">Tài khoản của bạn đã được tạo thành công.</string>
+
+    <!-- Registration OTP verification Strings -->
+    <string name="register_check_email">Kiểm tra email của bạn</string>
+    <string name="register_check_email_description">Đã tạo tài khoản thành công vui lòng xác nhận để OTP được gửi đến email của bạn.</string>
+    <string name="register_enter_otp">Nhập mã OTP xác thực</string>
+    <string name="register_otp_description">Nhập mã 6 chữ số được gửi đến email để hoàn tất đăng ký tài khoản.</string>
+    <string name="register_button_verify">Xác nhận</string>
+    <string name="register_button_continue">Tiếp tục</string>
+
+    <!-- Email Exists Strings -->
+    <string name="error_email_exists">Email này đã được đăng ký.</string>
+    <string name="error_email_exists_detail">Email %1$s đã tồn tại. Bạn có muốn đăng nhập hoặc đặt lại mật khẩu?</string>
+    <string name="action_login_now">Đăng nhập</string>
+    <string name="action_use_other_email">Dùng email khác</string>
+    <string name="action_forgot_password">Quên mật khẩu</string>
+
+    <!-- Search Destination Strings -->
+    <string name="search_placeholder">Tìm bãi đỗ, địa điểm...</string>
+    <string name="search_filter_content_desc">Bộ lọc tìm kiếm</string>
+    <string name="search_container_content_desc">Ô tìm kiếm bãi đỗ và địa điểm</string>
+
+    <!-- Profile Screen Strings -->
+    <string name="profile_title">Hồ sơ</string>
+    <string name="profile_edit">Chỉnh sửa</string>
+    <string name="profile_user_name">Người dùng ParkMate</string>
+    <string name="profile_user_email">user@parkmate.com</string>
+    <string name="profile_menu_my_bookings">Đặt chỗ của tôi</string>
+    <string name="profile_menu_my_vehicles">Quản lý xe của tôi</string>
+    <string name="profile_menu_payment_methods">Phương thức thanh toán</string>
+    <string name="profile_menu_parking_history">Lịch sử đỗ xe</string>
+    <string name="profile_menu_settings">Cài đặt</string>
+    <string name="profile_menu_help_support">Trợ giúp &amp; Hỗ trợ</string>
+    <string name="profile_menu_logout">Đăng xuất</string>
+    <string name="profile_avatar_desc">Ảnh đại diện</string>
 </resources>

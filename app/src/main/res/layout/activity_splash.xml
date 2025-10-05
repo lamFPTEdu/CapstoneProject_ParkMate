@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splashscreen Group layer from Zeplin design -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F8FA"
+    tools:context=".activity.SplashActivity"
+    android:id="@+id/main"
+    >
+
+
+
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="286dp"
+        android:layout_height="231dp"
+        android:layout_marginBottom="56dp"
+        android:src="@drawable/ic_startsc"
+        app:layout_constraintBottom_toTopOf="@+id/splashText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <!-- Welcome text -->
+    <TextView
+        android:id="@+id/splashText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="Chào mừng bạn đến với ParkMate!"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.569" />
+
+    <!-- Description text -->
+    <TextView
+        android:id="@+id/parkingDescriptionText"
+        android:layout_width="369dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="36dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="Tìm chỗ đậu xe tốt nhất có thể gần điểm đến mong muốn của bạn"
+        android:textColor="#8F9BB3"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/splashText" />
+
+
+    <!-- Button layer from Zeplin design -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/splashButton"
+        android:layout_width="330dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#1947ff"
+        android:text="Bắt đầu"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:cornerRadius="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/parkingDescriptionText" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

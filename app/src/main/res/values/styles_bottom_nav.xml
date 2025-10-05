@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shape for active indicator -->
+    <style name="ShapeAppearance.ParkMate.NavigationBar.ActiveIndicator" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <!-- Active indicator style -->
+    <style name="Widget.ParkMate.NavigationBar.ActiveIndicator" parent="">
+        <item name="android:insetLeft">8dp</item>
+        <item name="android:insetRight">8dp</item>
+        <item name="android:insetTop">4dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.ParkMate.NavigationBar.ActiveIndicator</item>
+        <item name="backgroundColor">@color/bottom_nav_active_indicator</item>
+    </style>
+
+    <!-- Bottom Navigation View custom style -->
+    <style name="Widget.ParkMate.NavigationBar" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/bottom_nav_icon_color</item>
+        <item name="itemTextColor">@color/bottom_nav_text_color</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.ParkMate.NavigationBar.ActiveIndicator</item>
+        <item name="itemRippleColor">@color/bottom_nav_ripple_color</item>
+        <item name="itemIconSize">@dimen/bottom_nav_icon_size</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="android:background">@drawable/bottom_nav_background</item>
+        <item name="android:elevation">8dp</item>
+    </style>
+</resources>

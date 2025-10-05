@@ -2,4 +2,19 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#1947ff</color>
+    <!-- Thêm màu cho bottom navigation item được chọn -->
+    <color name="teal_200">#03DAC5</color>
+    <!-- Bottom Nav custom colors -->
+    <color name="bottom_nav_container_bg">#FFFFFFFF</color>
+    <color name="bottom_nav_divider">#14000000</color>
+    <color name="bottom_nav_active_indicator">#1A1947FF</color>
+    <color name="bottom_nav_active_icon">#1947FF</color>
+    <color name="bottom_nav_inactive_icon">#8891A6</color>
+    <color name="bottom_nav_text_active">#0F1A2E</color>
+    <color name="bottom_nav_text_inactive">#667085</color>
+    <!-- Colors for search destination component -->
+    <color name="search_placeholder_text">#98A2B3</color>
+    <color name="search_container_stroke">#E4E7EC</color>
+    <color name="search_filter_icon_tint">#FFFFFF</color>
 </resources>

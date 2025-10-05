@@ -1,13 +1,10 @@
-<<<<<<< HEAD
-# CapstoneProject_ParkMate
-=======
 # ParkMate Android App
 
 ## Giới thiệu
 ParkMate là ứng dụng Android Java giao tiếp với backend qua API, không sử dụng database cục bộ, ViewModel hay App.java.
 
 ## Cấu trúc thư mục
-```
+```text
 app/src/main/java/com/parkmate/android/
 ├── activity/      # Màn hình chính (MainActivity...)
 ├── fragment/      # Màn hình phụ (SampleFragment...)
@@ -16,6 +13,7 @@ app/src/main/java/com/parkmate/android/
 ├── network/       # Giao tiếp API (ApiService...)
 ├── utils/         # Tiện ích chung (Utils...)
 ```
+```text
 app/src/main/res/layout/
 ├── activity_main.xml
 ├── fragment_sample.xml
@@ -33,5 +31,3 @@ app/src/main/res/layout/
 - Không sử dụng ViewModel, App.java, hoặc database cục bộ.
 - Giao tiếp backend qua API (Retrofit, OkHttp...)
 - Có thể mở rộng thêm các package nếu cần.
-
->>>>>>> 5dbf83b (Initial commit)

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    tools:context=".activity.RegisterActivity"
+    android:layout_height="match_parent"
+    android:background="@color/white">  <!-- added background -->>
+
+    <!-- Back Button -->
+    <ImageView
+        android:id="@+id/ivBack"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_arrow_back_24"
+        android:contentDescription="Back"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"/>
+
+    <ViewFlipper
+        android:id="@+id/viewFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivBack">
+
+        <!-- First page: Basic registration form -->
+        <include
+            android:id="@+id/registerBasicInfo"
+            layout="@layout/layout_register_basic_info" />
+
+        <!-- Second page: CCCD information -->
+        <include
+            android:id="@+id/registerCccdInfo"
+            layout="@layout/layout_cccd_info" />
+
+        <!-- Third page: Check Email for OTP -->
+        <include
+            android:id="@+id/registerCheckEmail"
+            layout="@layout/layout_forgot_password_check_email" />
+
+        <!-- Fourth page: Enter OTP -->
+        <include
+            android:id="@+id/registerOtpInput"
+            layout="@layout/layout_forgot_password_otp" />
+
+        <!-- Fifth page: Registration Success -->
+        <include
+            android:id="@+id/registerSuccess"
+            layout="@layout/layout_forgot_password_success" />
+
+    </ViewFlipper>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
