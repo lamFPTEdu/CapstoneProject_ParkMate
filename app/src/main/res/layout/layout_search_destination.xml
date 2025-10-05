@@ -60,7 +60,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center"
-            android:tint="@color/search_filter_icon_tint"
+            app:tint="@color/search_filter_icon_tint"
             android:src="@drawable/ic_filter_list_24"
             android:contentDescription="@string/search_filter_content_desc" />
     </FrameLayout>
