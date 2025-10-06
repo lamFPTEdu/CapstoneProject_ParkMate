@@ -90,7 +90,7 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:src="@drawable/ic_camera"
-                    android:tint="#8F9BB3"
+                    app:tint="#8F9BB3"
                     android:contentDescription="Camera icon" />
 
                 <TextView
@@ -117,7 +117,7 @@
                 android:layout_gravity="end|top"
                 android:layout_margin="8dp"
                 android:src="@drawable/ic_check_circle"
-                android:tint="#00E096"
+                app:tint="#00E096"
                 android:visibility="gone"
                 android:contentDescription="Upload success" />
         </FrameLayout>
@@ -171,7 +171,7 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:src="@drawable/ic_camera"
-                    android:tint="#8F9BB3"
+                    app:tint="#8F9BB3"
                     android:contentDescription="Camera icon" />
 
                 <TextView
@@ -198,7 +198,7 @@
                 android:layout_gravity="end|top"
                 android:layout_margin="8dp"
                 android:src="@drawable/ic_check_circle"
-                android:tint="#00E096"
+                app:tint="#00E096"
                 android:visibility="gone"
                 android:contentDescription="Upload success" />
         </FrameLayout>
