@@ -39,17 +39,22 @@
             android:id="@+id/registerCccdInfo"
             layout="@layout/layout_cccd_info" />
 
-        <!-- Third page: Check Email for OTP -->
+        <!-- Third page: Upload ID Images - NEW -->
+        <include
+            android:id="@+id/registerUploadImages"
+            layout="@layout/layout_upload_id_images" />
+
+        <!-- Fourth page: Check Email for OTP -->
         <include
             android:id="@+id/registerCheckEmail"
             layout="@layout/layout_forgot_password_check_email" />
 
-        <!-- Fourth page: Enter OTP -->
+        <!-- Fifth page: Enter OTP -->
         <include
             android:id="@+id/registerOtpInput"
             layout="@layout/layout_forgot_password_otp" />
 
-        <!-- Fifth page: Registration Success -->
+        <!-- Sixth page: Registration Success -->
         <include
             android:id="@+id/registerSuccess"
             layout="@layout/layout_forgot_password_success" />

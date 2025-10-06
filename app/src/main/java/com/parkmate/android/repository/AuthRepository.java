@@ -6,12 +6,18 @@ import com.parkmate.android.model.request.RegisterRequest;
 import com.parkmate.android.model.request.EmptyJsonBody;
 import com.parkmate.android.model.response.OtpVerifyResponse;
 import com.parkmate.android.model.response.RegisterResponse;
+import com.parkmate.android.model.response.UploadImageResponse;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
 import com.parkmate.android.model.request.LoginRequest;
 import com.parkmate.android.model.response.LoginResponse;
 
+import java.io.File;
+
 import io.reactivex.rxjava3.core.Single;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.HttpException;
 
 public class AuthRepository {
@@ -41,5 +47,49 @@ public class AuthRepository {
     // Login
     public Single<LoginResponse> login(LoginRequest request) {
         return apiService.login(request);
+    }
+
+    /**
+     * Upload ảnh CCCD (mặt trước hoặc mặt sau)
+     * @param entityId ID của entity (user)
+     * @param imageType Loại ảnh (FRONT_ID_CARD hoặc BACK_ID_CARD)
+     * @param imageFile File ảnh cần upload
+     */
+    public Single<UploadImageResponse> uploadIdImage(Long entityId, String imageType, File imageFile) {
+        // Detect MIME type từ file extension
+        String mimeType = "image/jpeg"; // Default
+        String fileName = imageFile.getName().toLowerCase();
+        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+            mimeType = "image/jpeg";
+        } else if (fileName.endsWith(".png")) {
+            mimeType = "image/png";
+        } else if (fileName.endsWith(".webp")) {
+            mimeType = "image/webp";
+        }
+
+        Log.d(TAG, "Uploading image: entityId=" + entityId + ", type=" + imageType);
+        Log.d(TAG, "File: " + imageFile.getName() + ", size=" + imageFile.length() + " bytes");
+        Log.d(TAG, "MIME type: " + mimeType);
+
+        RequestBody requestFile = RequestBody.create(MediaType.parse(mimeType), imageFile);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
+
+        return apiService.uploadIdImage(entityId, imageType, body)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Upload image HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Upload error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Upload image error: " + err.getMessage(), err);
+                    }
+                });
     }
 }

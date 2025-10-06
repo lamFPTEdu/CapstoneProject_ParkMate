@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -31,6 +32,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -47,62 +49,74 @@ import com.parkmate.android.repository.AuthRepository;
 import com.google.gson.Gson;
 import retrofit2.HttpException;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import android.os.CountDownTimer;
 import com.parkmate.android.utils.LoadingButton;
-import com.parkmate.android.utils.validation.RegisterValidator;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
-    // Added screen index constants to avoid magic numbers
     private static final int SCREEN_BASIC_INFO = 0;
     private static final int SCREEN_CCCD_INFO = 1;
-    private static final int SCREEN_CHECK_EMAIL = 2;
-    private static final int SCREEN_OTP = 3;
-    private static final int SCREEN_SUCCESS = 4;
+    private static final int SCREEN_UPLOAD_IMAGES = 2;
+    private static final int SCREEN_CHECK_EMAIL = 3;
+    private static final int SCREEN_OTP = 4;
+    private static final int SCREEN_SUCCESS = 5;
 
     private ViewFlipper viewFlipper;
-    private TextInputEditText etUsername, etEmail, etPassword, etConfirmPassword, etPhoneNumber;
-    private TextInputEditText etCccdNumber, etFirstName, etLastName, etDateOfBirth, etIssueDate, etIssuePlace;
+    private TextInputEditText etEmail, etPassword, etConfirmPassword, etPhoneNumber;
+    private TextInputEditText etFirstName, etLastName;
+    private TextInputEditText etCccdNumber, etFullName, etDateOfBirth, etIssueDate, etIssuePlace, etExpiryDate;
     private TextInputEditText etNationality, etPermanentAddress;
     private AutoCompleteTextView actvGender;
-    private TextInputLayout tilDateOfBirth, tilIssueDate, tilGender;
+    private TextInputLayout tilDateOfBirth, tilIssueDate, tilExpiryDate, tilGender;
     private MaterialButton btnNext;
     private Button btnContinue, btnVerify, btnLogin;
     private ImageView ivBack, ivGoogleSignUp, ivFacebookSignUp;
     private TextView tvLoginLink, tvUserEmail, tvResendCode;
+
     private FrameLayout flFrontImage, flBackImage;
     private ImageView ivFrontImage, ivBackImage;
     private LinearLayout llFrontImagePlaceholder, llBackImagePlaceholder;
+    private ProgressBar pbFrontUpload, pbBackUpload;
+    private ImageView ivFrontUploadSuccess, ivBackUploadSuccess;
+    private Button btnContinueUpload, btnSkipUpload;
+
     private CheckBox cbCommitment;
 
-    // OTP fields
     private EditText etOtp1, etOtp2, etOtp3, etOtp4, etOtp5, etOtp6;
 
     private Calendar calendar;
     private SimpleDateFormat dateFormatter;
     private Uri frontImageUri, backImageUri;
-    private String userEmail; // Store user email for OTP verification
+    private String userEmail;
+    private Long entityId;
+    private boolean frontImageUploaded = false;
+    private boolean backImageUploaded = false;
 
-    // Activity result launchers for camera and gallery
+    private Uri tempCameraImageUri;
+
     private ActivityResultLauncher<Intent> frontCameraLauncher;
     private ActivityResultLauncher<Intent> backCameraLauncher;
+    private ActivityResultLauncher<Intent> frontGalleryLauncher;
+    private ActivityResultLauncher<Intent> backGalleryLauncher;
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
+    private boolean pendingFrontCamera = false;
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private static final Pattern USERNAME_ALLOWED = Pattern.compile("^[A-Za-z0-9_-]+$");
     private AuthRepository authRepository;
     private CountDownTimer resendTimer;
     private static final long RESEND_OTP_INTERVAL_MS = 60000L;
     private LoadingButton loadingButtonContinue;
     private LoadingButton loadingButtonVerify;
+    private LoadingButton loadingButtonUpload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,12 +129,11 @@ public class RegisterActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Khởi tạo Calendar và định dạng ngày tháng
         calendar = Calendar.getInstance();
         dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-        // Khởi tạo ActivityResultLauncher cho chụp ảnh
         setupImageCaptureLaunchers();
+        setupPermissionLauncher();
 
         authRepository = new AuthRepository();
         initViews();
@@ -131,42 +144,78 @@ public class RegisterActivity extends AppCompatActivity {
         setupImageCapture();
     }
 
+    private void setupPermissionLauncher() {
+        cameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        if (pendingFrontCamera) {
+                            openCamera(true);
+                        } else {
+                            openCamera(false);
+                        }
+                        pendingFrontCamera = false;
+                    } else {
+                        Toast.makeText(this, "Cần cấp quyền camera để chụp ảnh", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
     private void setupImageCaptureLaunchers() {
-        // Launcher cho hình ảnh mặt trước CCCD
         frontCameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        // Xử lý hình ảnh được chụp
-                        Bundle extras = result.getData().getExtras();
-                        if (extras != null) {
-                            Uri imageUri = (Uri) extras.get("data");
-                            if (imageUri != null) {
-                                frontImageUri = imageUri;
-                                ivFrontImage.setImageURI(frontImageUri);
-                                ivFrontImage.setVisibility(View.VISIBLE);
-                                llFrontImagePlaceholder.setVisibility(View.GONE);
-                            }
+                    if (result.getResultCode() == RESULT_OK) {
+                        if (tempCameraImageUri != null) {
+                            frontImageUri = tempCameraImageUri;
+                            ivFrontImage.setImageURI(frontImageUri);
+                            ivFrontImage.setVisibility(View.VISIBLE);
+                            llFrontImagePlaceholder.setVisibility(View.GONE);
                         }
                     }
                 }
         );
 
-        // Launcher cho hình ảnh mặt sau CCCD
         backCameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        if (tempCameraImageUri != null) {
+                            backImageUri = tempCameraImageUri;
+                            ivBackImage.setImageURI(backImageUri);
+                            ivBackImage.setVisibility(View.VISIBLE);
+                            llBackImagePlaceholder.setVisibility(View.GONE);
+                        }
+                    }
+                }
+        );
+
+        frontGalleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        // Xử lý hình ảnh được chụp
-                        Bundle extras = result.getData().getExtras();
-                        if (extras != null) {
-                            Uri imageUri = (Uri) extras.get("data");
-                            if (imageUri != null) {
-                                backImageUri = imageUri;
-                                ivBackImage.setImageURI(backImageUri);
-                                ivBackImage.setVisibility(View.VISIBLE);
-                                llBackImagePlaceholder.setVisibility(View.GONE);
-                            }
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            frontImageUri = imageUri;
+                            ivFrontImage.setImageURI(frontImageUri);
+                            ivFrontImage.setVisibility(View.VISIBLE);
+                            llFrontImagePlaceholder.setVisibility(View.GONE);
+                        }
+                    }
+                }
+        );
+
+        backGalleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            backImageUri = imageUri;
+                            ivBackImage.setImageURI(backImageUri);
+                            ivBackImage.setVisibility(View.VISIBLE);
+                            llBackImagePlaceholder.setVisibility(View.GONE);
                         }
                     }
                 }
@@ -176,40 +225,36 @@ public class RegisterActivity extends AppCompatActivity {
     private void initViews() {
         viewFlipper = findViewById(R.id.viewFlipper);
 
-        // Ánh xạ các view từ layout đầu tiên (Thông tin cơ bản)
-        etUsername = findViewById(R.id.etUsername);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         etPhoneNumber = findViewById(R.id.etPhoneNumber);
+        etFirstName = findViewById(R.id.etFirstName);
+        etLastName = findViewById(R.id.etLastName);
         btnNext = findViewById(R.id.btnNext);
         ivGoogleSignUp = findViewById(R.id.ivGoogleSignUp);
         ivFacebookSignUp = findViewById(R.id.ivFacebookSignUp);
         tvLoginLink = findViewById(R.id.tvLoginLink);
 
-        // Ánh xạ các view từ layout thứ hai (Thông tin CCCD)
         etCccdNumber = findViewById(R.id.etCccdNumber);
-        etFirstName = findViewById(R.id.etFirstName);
-        etLastName = findViewById(R.id.etLastName);
+        etFullName = findViewById(R.id.etFullName);
         etDateOfBirth = findViewById(R.id.etDateOfBirth);
         etIssueDate = findViewById(R.id.etIssueDate);
         etIssuePlace = findViewById(R.id.etIssuePlace);
+        etExpiryDate = findViewById(R.id.etExpiryDate);
         tilDateOfBirth = findViewById(R.id.tilDateOfBirth);
         tilIssueDate = findViewById(R.id.tilIssueDate);
+        tilExpiryDate = findViewById(R.id.tilExpiryDate);
 
-        // Ánh xạ các trường mới được thêm vào
         actvGender = findViewById(R.id.actvGender);
         tilGender = findViewById(R.id.tilGender);
         etNationality = findViewById(R.id.etNationality);
         etPermanentAddress = findViewById(R.id.etPermanentAddress);
 
-        // Ánh xạ nút "Tiếp tục" trong layout CCCD info
         btnContinue = findViewById(R.id.btnContinue);
 
-        // Ánh xạ nút quay lại dưới dạng mũi tên
         ivBack = findViewById(R.id.ivBack);
 
-        // Ánh xạ các view cho hình ảnh
         flFrontImage = findViewById(R.id.flFrontImage);
         flBackImage = findViewById(R.id.flBackImage);
         ivFrontImage = findViewById(R.id.ivFrontImage);
@@ -217,12 +262,10 @@ public class RegisterActivity extends AppCompatActivity {
         llFrontImagePlaceholder = findViewById(R.id.llFrontImagePlaceholder);
         llBackImagePlaceholder = findViewById(R.id.llBackImagePlaceholder);
 
-        // Ánh xạ checkbox cam kết
         cbCommitment = findViewById(R.id.cbCommitment);
     }
 
     private void setupGenderDropdown() {
-        // Thiết lập dropdown cho lựa chọn giới tính
         String[] genderOptions = {"Nam", "Nữ", "Khác"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
@@ -235,31 +278,82 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void setupImageCapture() {
-        // Thiết lập sự kiện khi nhấn vào khung chụp ảnh
         if (flFrontImage != null) {
-            flFrontImage.setOnClickListener(v -> {
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    frontCameraLauncher.launch(takePictureIntent);
-                } else {
-                    Toast.makeText(RegisterActivity.this,
-                            "Không tìm thấy ứng dụng máy ảnh",
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
+            flFrontImage.setOnClickListener(v -> showImageSourceDialog(true));
         }
 
         if (flBackImage != null) {
-            flBackImage.setOnClickListener(v -> {
+            flBackImage.setOnClickListener(v -> showImageSourceDialog(false));
+        }
+    }
+
+    private void showImageSourceDialog(boolean isFront) {
+        String title = isFront ? "Chọn nguồn hình ảnh cho mặt trước CCCD" : "Chọn nguồn hình ảnh cho mặt sau CCCD";
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setItems(new CharSequence[]{"Chụp ảnh từ camera", "Chọn từ thư viện"}, (dialog, which) -> {
+                    if (which == 0) {
+                        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
+                                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            pendingFrontCamera = isFront;
+                            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA);
+                        } else {
+                            openCamera(isFront);
+                        }
+                    } else if (which == 1) {
+                        Intent pickPhotoIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        if (isFront) {
+                            frontGalleryLauncher.launch(pickPhotoIntent);
+                        } else {
+                            backGalleryLauncher.launch(pickPhotoIntent);
+                        }
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void openCamera(boolean isFront) {
+        try {
+            File photoFile = createImageFile();
+            if (photoFile != null) {
+                tempCameraImageUri = androidx.core.content.FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".fileprovider",
+                        photoFile
+                );
+
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    backCameraLauncher.launch(takePictureIntent);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempCameraImageUri);
+                takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                if (isFront) {
+                    frontCameraLauncher.launch(takePictureIntent);
                 } else {
-                    Toast.makeText(RegisterActivity.this,
-                            "Không tìm thấy ứng dụng máy ảnh",
-                            Toast.LENGTH_SHORT).show();
+                    backCameraLauncher.launch(takePictureIntent);
                 }
-            });
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi khi mở camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private File createImageFile() {
+        try {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new java.util.Date());
+            String imageFileName = "CCCD_" + timeStamp + "_";
+
+            File storageDir = getCacheDir();
+            File imageFile = File.createTempFile(
+                    imageFileName,
+                    ".jpg",
+                    storageDir
+            );
+
+            return imageFile;
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -279,45 +373,18 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
         if (btnContinue != null) {
+            loadingButtonContinue = new LoadingButton(btnContinue);
+
             btnContinue.setOnClickListener(v -> {
                 if (validateCccdInfo()) {
-                    userEmail = etEmail.getText().toString().trim();
-                    // CHỈ chuyển sang màn Check Email, CHƯA gửi OTP ở bước này
-                    viewFlipper.setDisplayedChild(SCREEN_CHECK_EMAIL);
-                    setupCheckEmailScreen();
+                    userEmail = safeText(etEmail);
+                    loadingButtonContinue.showLoading("Đang đăng ký...");
+                    performRegisterForOtp();
                 }
             });
         }
     }
 
-    private void setupCheckEmailScreen() {
-        View checkEmailView = viewFlipper.getChildAt(SCREEN_CHECK_EMAIL);
-        if (checkEmailView == null) {
-            Log.e(TAG, "Check Email view is null at index " + SCREEN_CHECK_EMAIL);
-            return;
-        }
-        TextView tvTitle = checkEmailView.findViewById(R.id.tvTitle);
-        TextView tvDescription = checkEmailView.findViewById(R.id.tvDescription);
-        tvUserEmail = checkEmailView.findViewById(R.id.tvUserEmail);
-        Button btnEmailContinue = checkEmailView.findViewById(R.id.btnContinue);
-
-        if (tvTitle != null) tvTitle.setText(R.string.register_check_email);
-        if (tvDescription != null) tvDescription.setText(R.string.register_check_email_description);
-        if (tvUserEmail != null) tvUserEmail.setText(userEmail);
-
-        if (btnEmailContinue != null) {
-            // Khởi tạo LoadingButton cho nút Continue
-            loadingButtonContinue = new LoadingButton(btnEmailContinue);
-
-            btnEmailContinue.setOnClickListener(v -> {
-                // Gọi register tại đây để BE gửi OTP (không tự gửi OTP thủ công nữa)
-                loadingButtonContinue.showLoading("Đang đăng ký...");
-                performRegisterForOtp();
-            });
-        }
-    }
-
-    // Đăng ký để backend gửi OTP – sau thành công chuyển sang màn hình OTP
     private void performRegisterForOtp() {
         RegisterRequest request = buildRegisterRequest();
         compositeDisposable.add(
@@ -327,15 +394,16 @@ public class RegisterActivity extends AppCompatActivity {
                         .subscribe(
                                 resp -> {
                                     if (loadingButtonContinue != null) loadingButtonContinue.hideLoading();
-                                    // Lưu token (nếu có) trước khi chuyển sang OTP
+
+                                    storeEntityId(resp);
                                     storeRegisterToken(resp);
-                                    Toast.makeText(this, "OTP đã được gửi tới email", Toast.LENGTH_SHORT).show();
-                                    viewFlipper.setDisplayedChild(SCREEN_OTP);
-                                    setupOtpScreen();
+                                    Toast.makeText(this, "Đăng ký thành công! OTP đã được gửi đến email của bạn.", Toast.LENGTH_SHORT).show();
+                                    viewFlipper.setDisplayedChild(SCREEN_UPLOAD_IMAGES);
+                                    setupImageUploadScreen();
                                 },
                                 err -> {
                                     if (loadingButtonContinue != null) loadingButtonContinue.hideLoading();
-                                    if (tryHandleAccountExists(err)) return; // nếu đã xử lý dialog thì dừng
+                                    if (tryHandleAccountExists(err)) return;
                                     boolean handled = parseAndApplyBackendErrors(err);
                                     if (!handled) {
                                         String msg = err.getMessage();
@@ -347,23 +415,45 @@ public class RegisterActivity extends AppCompatActivity {
         );
     }
 
+    private void storeEntityId(RegisterResponse resp) {
+        if (resp == null) {
+            return;
+        }
+
+        if (resp.getData() != null && resp.getData().getUserResponse() != null && resp.getData().getUserResponse().getId() != null) {
+            entityId = resp.getData().getUserResponse().getId();
+            return;
+        }
+
+        if (resp.getUserResponse() != null && resp.getUserResponse().getId() != null) {
+            entityId = resp.getUserResponse().getId();
+            return;
+        }
+
+        if (resp.getEntityId() != null) {
+            entityId = resp.getEntityId();
+            return;
+        }
+
+        if (resp.getData() != null && resp.getData().getEntityId() != null) {
+            entityId = resp.getData().getEntityId();
+        }
+    }
+
     private void storeRegisterToken(RegisterResponse resp) {
         if (resp == null) return;
         String rawToken = resp.getAnyToken();
         if (rawToken == null || rawToken.isEmpty()) {
-            Log.w(TAG, "Register response không có token để lưu (có thể backend không yêu cầu Authorization cho verify hoặc đang thiếu spec)");
             return;
         }
         String cleaned = rawToken.startsWith("Bearer ") ? rawToken.substring(7) : rawToken;
         try {
             com.parkmate.android.utils.TokenManager.getInstance().saveToken(cleaned);
-            Log.d(TAG, "Đã lưu token đăng ký (length=" + cleaned.length() + ")");
         } catch (IllegalStateException e) {
-            Log.e(TAG, "TokenManager chưa init. Cần gọi TokenManager.init(context) trong Application hoặc SplashActivity trước.", e);
+            Log.e(TAG, "TokenManager chưa init.", e);
         }
     }
 
-    // Thử parse lỗi account exists
     private boolean tryHandleAccountExists(Throwable t) {
         if (!(t instanceof HttpException)) return false;
         try {
@@ -409,10 +499,166 @@ public class RegisterActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void setupImageUploadScreen() {
+        View uploadView = viewFlipper.getChildAt(SCREEN_UPLOAD_IMAGES);
+        if (uploadView == null) {
+            return;
+        }
+
+        flFrontImage = uploadView.findViewById(R.id.flFrontImage);
+        flBackImage = uploadView.findViewById(R.id.flBackImage);
+        ivFrontImage = uploadView.findViewById(R.id.ivFrontImage);
+        ivBackImage = uploadView.findViewById(R.id.ivBackImage);
+        llFrontImagePlaceholder = uploadView.findViewById(R.id.llFrontImagePlaceholder);
+        llBackImagePlaceholder = uploadView.findViewById(R.id.llBackImagePlaceholder);
+        pbFrontUpload = uploadView.findViewById(R.id.pbFrontUpload);
+        pbBackUpload = uploadView.findViewById(R.id.pbBackUpload);
+        ivFrontUploadSuccess = uploadView.findViewById(R.id.ivFrontUploadSuccess);
+        ivBackUploadSuccess = uploadView.findViewById(R.id.ivBackUploadSuccess);
+        btnContinueUpload = uploadView.findViewById(R.id.btnContinue);
+        btnSkipUpload = uploadView.findViewById(R.id.btnSkip);
+
+        frontImageUploaded = false;
+        backImageUploaded = false;
+
+        if (flFrontImage != null) {
+            flFrontImage.setOnClickListener(v -> showImageSourceDialog(true));
+        }
+
+        if (flBackImage != null) {
+            flBackImage.setOnClickListener(v -> showImageSourceDialog(false));
+        }
+
+        if (btnContinueUpload != null) {
+            btnContinueUpload.setOnClickListener(v -> {
+                if (frontImageUri != null || backImageUri != null) {
+                    uploadImagesAndProceed();
+                } else {
+                    viewFlipper.setDisplayedChild(SCREEN_CHECK_EMAIL);
+                    setupCheckEmailScreen();
+                }
+            });
+        }
+
+        if (btnSkipUpload != null) {
+            btnSkipUpload.setOnClickListener(v -> {
+                viewFlipper.setDisplayedChild(SCREEN_CHECK_EMAIL);
+                setupCheckEmailScreen();
+            });
+        }
+    }
+
+    private void uploadImagesAndProceed() {
+        if (entityId == null) {
+            Toast.makeText(this, "Lỗi: Không có entityId để upload ảnh", Toast.LENGTH_SHORT).show();
+            viewFlipper.setDisplayedChild(SCREEN_CHECK_EMAIL);
+            setupCheckEmailScreen();
+            return;
+        }
+
+        if (pbFrontUpload != null && frontImageUri != null) pbFrontUpload.setVisibility(View.VISIBLE);
+        if (pbBackUpload != null && backImageUri != null) pbBackUpload.setVisibility(View.VISIBLE);
+
+        if (frontImageUri != null) {
+            uploadImageWithProgress(frontImageUri, "FRONT_ID_CARD", true, () -> {
+                if (backImageUri != null) {
+                    uploadImageWithProgress(backImageUri, "BACK_ID_CARD", false, this::navigateToCheckEmail);
+                } else {
+                    navigateToCheckEmail();
+                }
+            });
+        } else if (backImageUri != null) {
+            uploadImageWithProgress(backImageUri, "BACK_ID_CARD", false, this::navigateToCheckEmail);
+        } else {
+            navigateToCheckEmail();
+        }
+    }
+
+    private void uploadImageWithProgress(Uri imageUri, String imageType, boolean isFront, Runnable onComplete) {
+        try {
+            File imageFile = getFileFromUri(imageUri);
+            if (imageFile == null || !imageFile.exists()) {
+                hideProgressBar(isFront);
+                onComplete.run();
+                return;
+            }
+
+            compositeDisposable.add(
+                    authRepository.uploadIdImage(entityId, imageType, imageFile)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    uploadResp -> {
+                                        hideProgressBar(isFront);
+                                        showSuccessIcon(isFront);
+                                        if (isFront) {
+                                            frontImageUploaded = true;
+                                        } else {
+                                            backImageUploaded = true;
+                                        }
+                                        Toast.makeText(this, "Upload ảnh " + (isFront ? "mặt trước" : "mặt sau") + " thành công", Toast.LENGTH_SHORT).show();
+                                        onComplete.run();
+                                    },
+                                    error -> {
+                                        hideProgressBar(isFront);
+                                        Toast.makeText(this, "Không thể tải lên ảnh " + (isFront ? "mặt trước" : "mặt sau"), Toast.LENGTH_SHORT).show();
+                                        onComplete.run();
+                                    }
+                            )
+            );
+        } catch (Exception e) {
+            hideProgressBar(isFront);
+            onComplete.run();
+        }
+    }
+
+    private void hideProgressBar(boolean isFront) {
+        if (isFront && pbFrontUpload != null) {
+            pbFrontUpload.setVisibility(View.GONE);
+        } else if (!isFront && pbBackUpload != null) {
+            pbBackUpload.setVisibility(View.GONE);
+        }
+    }
+
+    private void showSuccessIcon(boolean isFront) {
+        if (isFront && ivFrontUploadSuccess != null) {
+            ivFrontUploadSuccess.setVisibility(View.VISIBLE);
+        } else if (!isFront && ivBackUploadSuccess != null) {
+            ivBackUploadSuccess.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void navigateToCheckEmail() {
+        viewFlipper.setDisplayedChild(SCREEN_CHECK_EMAIL);
+        setupCheckEmailScreen();
+    }
+
+    private void setupCheckEmailScreen() {
+        View checkEmailView = viewFlipper.getChildAt(SCREEN_CHECK_EMAIL);
+        if (checkEmailView == null) {
+            return;
+        }
+        TextView tvTitle = checkEmailView.findViewById(R.id.tvTitle);
+        TextView tvDescription = checkEmailView.findViewById(R.id.tvDescription);
+        tvUserEmail = checkEmailView.findViewById(R.id.tvUserEmail);
+        Button btnEmailContinue = checkEmailView.findViewById(R.id.btnContinue);
+
+        if (tvTitle != null) tvTitle.setText("Kiểm tra Email");
+        if (tvDescription != null) tvDescription.setText("Chúng tôi đã gửi mã OTP đến email của bạn. Vui lòng kiểm tra hộp thư.");
+        if (tvUserEmail != null) tvUserEmail.setText(userEmail);
+
+        if (btnEmailContinue != null) {
+            btnEmailContinue.setText("Tiếp tục");
+            btnEmailContinue.setOnClickListener(v -> {
+                viewFlipper.setDisplayedChild(SCREEN_OTP);
+                setupOtpScreen();
+            });
+        }
+    }
+
     private void setupOtpScreen() {
         View otpView = viewFlipper.getChildAt(SCREEN_OTP);
         if (otpView == null) {
-            Log.e(TAG, "OTP view is null at index " + SCREEN_OTP);
             return;
         }
         TextView tvTitle = otpView.findViewById(R.id.tvTitle);
@@ -426,14 +672,13 @@ public class RegisterActivity extends AppCompatActivity {
         tvResendCode = otpView.findViewById(R.id.tvResendCode);
         btnVerify = otpView.findViewById(R.id.btnVerify);
 
-        if (tvTitle != null) tvTitle.setText(R.string.register_enter_otp);
-        if (tvDescription != null) tvDescription.setText(R.string.register_otp_description);
+        if (tvTitle != null) tvTitle.setText("Nhập mã OTP");
+        if (tvDescription != null) tvDescription.setText("Vui lòng nhập mã OTP đã được gửi đến email của bạn");
 
         setupOtpTextWatchers();
         startResendCountdown();
 
         if (btnVerify != null) {
-            // Khởi tạo LoadingButton cho nút Verify
             loadingButtonVerify = new LoadingButton(btnVerify);
 
             btnVerify.setOnClickListener(v -> {
@@ -443,10 +688,10 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             });
         }
+
         if (tvResendCode != null) {
             tvResendCode.setOnClickListener(v -> {
                 if (tvResendCode.isEnabled()) {
-                    // Trường hợp BE có endpoint resend OTP riêng -> TODO sau
                     Toast.makeText(this, "Yêu cầu gửi lại OTP (cần implement API)", Toast.LENGTH_SHORT).show();
                     startResendCountdown();
                 }
@@ -454,7 +699,6 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    // Chỉ verify OTP (không gọi register nữa)
     private void verifyOtpOnly(String otp) {
         loadingButtonVerify.showLoading("Đang xác thực...");
         compositeDisposable.add(
@@ -463,7 +707,7 @@ public class RegisterActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 this::onOtpVerifiedSuccess,
-                                this::onOtpVerifyFailedFinal
+                                this::onOtpVerifyFailed
                         )
         );
     }
@@ -471,75 +715,54 @@ public class RegisterActivity extends AppCompatActivity {
     private void onOtpVerifiedSuccess(OtpVerifyResponse resp) {
         if (loadingButtonVerify != null) loadingButtonVerify.hideLoading();
         boolean ok = resp != null && Boolean.TRUE.equals(resp.getSuccess());
-        Log.d(TAG, "OTP verify response successFlag=" + ok + ", message=" + (resp == null ? "null" : resp.getMessage()));
         if (!ok) {
             String msg = resp != null && resp.getMessage() != null ? resp.getMessage() : "Xác thực OTP không thành công";
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-            // Highlight first OTP box as error hint
             if (etOtp1 != null) etOtp1.setError(msg);
             return;
         }
-        // OTP ok -> sang success
-        viewFlipper.setDisplayedChild(SCREEN_SUCCESS);
-        setupSuccessScreen();
-        Toast.makeText(this, resp.getMessage() != null ? resp.getMessage() : "Xác thực thành công", Toast.LENGTH_SHORT).show();
+        proceedToSuccess();
     }
 
-    private void onOtpVerifyFailedFinal(Throwable throwable) {
+    private void onOtpVerifyFailed(Throwable t) {
         if (loadingButtonVerify != null) loadingButtonVerify.hideLoading();
-        Log.e(TAG, "OTP verify failed raw: " + throwable.getMessage(), throwable);
-        boolean handled = parseAndApplyBackendErrors(throwable);
+        boolean handled = parseAndApplyBackendErrors(t);
         if (!handled) {
-            Toast.makeText(this, "Xác thực OTP thất bại", Toast.LENGTH_SHORT).show();
+            String msg = t.getMessage();
+            if (msg == null) msg = "Xác thực OTP thất bại";
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void proceedToSuccess() {
+        viewFlipper.setDisplayedChild(SCREEN_SUCCESS);
+        setupSuccessScreen();
+        Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
     }
 
     private void setupSuccessScreen() {
         View successView = viewFlipper.getChildAt(SCREEN_SUCCESS);
         if (successView == null) {
-            Log.e(TAG, "Success view is null at index " + SCREEN_SUCCESS);
             return;
         }
-        TextView tvSuccessTitle = successView.findViewById(R.id.tvTitle);
-        TextView tvSuccessDescription = successView.findViewById(R.id.tvDescription);
-        btnLogin = successView.findViewById(R.id.btnLogin);
-
-        if (tvSuccessTitle != null) tvSuccessTitle.setText(R.string.registration_success);
-        if (tvSuccessDescription != null) tvSuccessDescription.setText(R.string.registration_success_description);
-
-        if (btnLogin != null) {
-            btnLogin.setOnClickListener(v -> {
-                startActivity(new Intent(this, LoginActivity.class));
+        Button btnGoToLogin = successView.findViewById(R.id.btnLogin);
+        if (btnGoToLogin != null) {
+            btnGoToLogin.setOnClickListener(v -> {
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(intent);
                 finish();
             });
         }
     }
 
-    // ==== Refactor validateBasicInfo dùng RegisterValidator ====
     private boolean validateBasicInfo() {
-        String username = safeText(etUsername);
         String email = safeText(etEmail);
         String password = safeText(etPassword);
         String confirmPassword = safeText(etConfirmPassword);
         String phone = safeText(etPhoneNumber);
 
-        // Validate username
         clearBasicErrors();
 
-        if (username.isEmpty()) {
-            etUsername.setError("Username không được để trống");
-            return false;
-        }
-        if (username.length() < 3) {
-            etUsername.setError("Username phải có ít nhất 3 ký tự");
-            return false;
-        }
-        if (!USERNAME_ALLOWED.matcher(username).matches()) {
-            etUsername.setError("Username chỉ được chứa chữ cái, số, dấu gạch dưới và gạch ngang");
-            return false;
-        }
-
-        // Validate email
         if (email.isEmpty()) {
             etEmail.setError("Email không được để trống");
             return false;
@@ -549,7 +772,6 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        // Validate phone
         if (phone.isEmpty()) {
             etPhoneNumber.setError("Số điện thoại không được để trống");
             return false;
@@ -559,7 +781,6 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        // Validate password
         if (password.isEmpty()) {
             etPassword.setError("Mật khẩu không được để trống");
             return false;
@@ -569,7 +790,6 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        // Validate confirm password
         if (!password.equals(confirmPassword)) {
             etConfirmPassword.setError("Mật khẩu xác nhận không khớp");
             return false;
@@ -579,7 +799,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void clearBasicErrors() {
-        if (etUsername != null) etUsername.setError(null);
         if (etEmail != null) etEmail.setError(null);
         if (etPassword != null) etPassword.setError(null);
         if (etConfirmPassword != null) etConfirmPassword.setError(null);
@@ -588,11 +807,11 @@ public class RegisterActivity extends AppCompatActivity {
 
     private boolean validateCccdInfo() {
         String cccdNumber = safeText(etCccdNumber);
-        String firstName = safeText(etFirstName);
-        String lastName = safeText(etLastName);
+        String fullName = safeText(etFullName);
         String dateOfBirth = safeText(etDateOfBirth);
         String issueDate = safeText(etIssueDate);
         String issuePlace = safeText(etIssuePlace);
+        String expiryDate = safeText(etExpiryDate);
         String gender = actvGender != null ? actvGender.getText().toString().trim() : "";
         String nationality = safeText(etNationality);
         String permanentAddress = safeText(etPermanentAddress);
@@ -609,13 +828,8 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        if (firstName.isEmpty()) {
-            etFirstName.setError("Họ và tên đệm không được để trống");
-            return false;
-        }
-
-        if (lastName.isEmpty()) {
-            etLastName.setError("Tên không được để trống");
+        if (fullName.isEmpty()) {
+            etFullName.setError("Họ và tên (trên CCCD) không được để trống");
             return false;
         }
 
@@ -649,6 +863,11 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
+        if (expiryDate.isEmpty()) {
+            etExpiryDate.setError("Ngày hết hạn không được để trống");
+            return false;
+        }
+
         if (!commitment) {
             Toast.makeText(this, "Bạn cần cam kết thông tin là chính xác", Toast.LENGTH_SHORT).show();
             return false;
@@ -659,20 +878,14 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void clearCccdErrors() {
         if (etCccdNumber != null) etCccdNumber.setError(null);
-        if (etFirstName != null) etFirstName.setError(null);
-        if (etLastName != null) etLastName.setError(null);
+        if (etFullName != null) etFullName.setError(null);
         if (etDateOfBirth != null) etDateOfBirth.setError(null);
         if (etIssueDate != null) etIssueDate.setError(null);
         if (etIssuePlace != null) etIssuePlace.setError(null);
+        if (etExpiryDate != null) etExpiryDate.setError(null);
         if (actvGender != null) actvGender.setError(null);
         if (etNationality != null) etNationality.setError(null);
         if (etPermanentAddress != null) etPermanentAddress.setError(null);
-    }
-
-    // =================== HELPER METHODS KHÔI PHỤC (BỊ THIẾU) ===================
-    private void sendOTPToEmail(String email) {
-        // TODO: Gọi API gửi OTP thực tế – hiện chỉ hiển thị thông báo
-        Toast.makeText(this, "Đã gửi mã OTP đến: " + email, Toast.LENGTH_SHORT).show();
     }
 
     private void setupOtpTextWatchers() {
@@ -717,38 +930,46 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private RegisterRequest buildRegisterRequest() {
-        // Lấy username trực tiếp từ form Basic Info (không auto-generate nữa)
-        String username = safeText(etUsername);
         String email = safeText(etEmail);
         String password = safeText(etPassword);
         String phone = safeText(etPhoneNumber);
 
-        // Lấy firstName và lastName từ form CCCD
         String firstName = safeText(etFirstName);
         String lastName = safeText(etLastName);
 
-        // Các thông tin CCCD khác
+        String fullName = safeText(etFullName);
+
         String cccdNumber = safeText(etCccdNumber);
         String permanentAddress = safeText(etPermanentAddress);
-        String dateOfBirthUi = safeText(etDateOfBirth); // dd/MM/yyyy
-        String dateOfBirthIso = formatDobToIso(dateOfBirthUi);
+        String issuePlace = safeText(etIssuePlace);
 
-        // Phần chụp ảnh tạm thời null (đã bị ẩn)
-        String frontPhotoPath = null;
-        String backPhotoPath = null;
+        String dateOfBirthUi = safeText(etDateOfBirth);
+        String dateOfBirthIso = formatDateToIso(dateOfBirthUi);
+
+        String issueDateUi = safeText(etIssueDate);
+        String issueDateIso = formatDateToIso(issueDateUi);
+
+        String expiryDateUi = safeText(etExpiryDate);
+        String expiryDateIso = formatDateToIso(expiryDateUi);
+
+        String frontIdPath = null;
+        String backIdImgPath = null;
 
         return new RegisterRequest(
                 email,
-                username,
                 password,
                 phone,
                 firstName,
                 lastName,
+                fullName,
                 cccdNumber,
                 dateOfBirthIso,
+                issuePlace,
+                issueDateIso,
+                expiryDateIso,
                 permanentAddress,
-                frontPhotoPath,
-                backPhotoPath
+                frontIdPath,
+                backIdImgPath
         );
     }
 
@@ -756,44 +977,17 @@ public class RegisterActivity extends AppCompatActivity {
         return et == null || et.getText() == null ? "" : et.getText().toString().trim();
     }
 
-    private String[] splitName(String fullName) {
-        if (fullName == null || fullName.isEmpty()) return new String[]{"", ""};
-        String[] parts = fullName.trim().split("\\s+");
-        if (parts.length == 1) return new String[]{parts[0], parts[0]};
-        StringBuilder first = new StringBuilder();
-        for (int i = 0; i < parts.length - 1; i++) {
-            if (i > 0) first.append(" ");
-            first.append(parts[i]);
-        }
-        String last = parts[parts.length - 1];
-        return new String[]{first.toString(), last};
-    }
-
-    private String formatDobToIso(String dobUi) {
-        if (dobUi == null || dobUi.isEmpty()) return "1990-01-01T00:00:00"; // fallback
+    private String formatDateToIso(String dateUi) {
+        if (dateUi == null || dateUi.isEmpty()) return "1990-01-01T00:00:00";
         try {
             SimpleDateFormat uiFmt = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             SimpleDateFormat isoFmt = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00", Locale.getDefault());
-            return isoFmt.format(uiFmt.parse(dobUi));
+            return isoFmt.format(uiFmt.parse(dateUi));
         } catch (Exception e) {
             return "1990-01-01T00:00:00";
         }
     }
 
-    private String generateUsername(String email, String fullName) {
-        String base = null;
-        if (email != null && email.contains("@")) base = email.substring(0, email.indexOf('@'));
-        if (base == null || base.isEmpty()) {
-            base = fullName == null ? "" : fullName.trim().replaceAll("\\s+", "-").toLowerCase(Locale.getDefault());
-        }
-        base = base.replaceAll("[^A-Za-z0-9_-]", "_")
-                   .replaceAll("_+", "_");
-        if (base.isEmpty()) base = "user" + System.currentTimeMillis();
-        if (base.length() > 30) base = base.substring(0, 30);
-        return base;
-    }
-
-    // Map field error from backend to the appropriate UI element
     private void applyFieldError(ErrorResponse.FieldError fe) {
         if (fe == null) return;
         String field = fe.getField();
@@ -806,23 +1000,24 @@ public class RegisterActivity extends AppCompatActivity {
             case "email":
                 if (etEmail != null) etEmail.setError(msg);
                 break;
-            case "username":
-                // Hiện chưa có ô riêng username -> reuse email cho cảnh báo
-                if (etEmail != null) etEmail.setError(msg);
-                break;
             case "password":
                 if (etPassword != null) etPassword.setError(msg);
                 break;
             case "confirmPassword":
                 if (etConfirmPassword != null) etConfirmPassword.setError(msg);
                 break;
+            case "phone":
+                if (etPhoneNumber != null) etPhoneNumber.setError(msg);
+                break;
             case "idNumber":
             case "cccdNumber":
                 if (etCccdNumber != null) etCccdNumber.setError(msg);
                 break;
             case "firstName":
-            case "lastName":
                 if (etFirstName != null) etFirstName.setError(msg);
+                break;
+            case "lastName":
+                if (etLastName != null) etLastName.setError(msg);
                 break;
             case "dateOfBirth":
                 if (etDateOfBirth != null) etDateOfBirth.setError(msg);
@@ -832,6 +1027,9 @@ public class RegisterActivity extends AppCompatActivity {
                 break;
             case "issuePlace":
                 if (etIssuePlace != null) etIssuePlace.setError(msg);
+                break;
+            case "expiryDate":
+                if (etExpiryDate != null) etExpiryDate.setError(msg);
                 break;
             case "gender":
                 if (actvGender != null) actvGender.setError(msg);
@@ -856,13 +1054,11 @@ public class RegisterActivity extends AppCompatActivity {
         try {
             String body = httpEx.response() != null && httpEx.response().errorBody() != null
                     ? httpEx.response().errorBody().string() : null;
-            Log.e(TAG, "HTTP " + httpEx.code() + " OTP error body: " + body);
             if (body == null || body.isEmpty()) return false;
             Gson gson = new Gson();
             ErrorResponse er = gson.fromJson(body, ErrorResponse.class);
             if (er == null || er.getError() == null) return false;
 
-            // Field errors first
             if (er.getError().getFieldErrors() != null && !er.getError().getFieldErrors().isEmpty()) {
                 for (ErrorResponse.FieldError fe : er.getError().getFieldErrors()) {
                     applyFieldError(fe);
@@ -878,7 +1074,6 @@ public class RegisterActivity extends AppCompatActivity {
                 switch (code) {
                     case "UNCATEGORIZED_EXCEPTION":
                         Toast.makeText(this, "Hệ thống đang bận hoặc gặp sự cố. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
-                        Log.e(TAG, "Server uncategorized exception: " + er.getMessage());
                         return true;
                     case "ACCOUNT_ALREADY_EXISTS":
                         showEmailExistsDialog(userEmail, er);
@@ -908,7 +1103,6 @@ public class RegisterActivity extends AppCompatActivity {
         if (etOtp1 != null) etOtp1.setError(msg);
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
-    // ================= END HELPER METHODS ======================
 
     @Override
     protected void onDestroy() {
@@ -917,7 +1111,6 @@ public class RegisterActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    // Inner class for OTP text change handling
     private class OTPTextWatcher implements TextWatcher {
         private EditText currentEditText;
         private EditText nextEditText;
@@ -943,7 +1136,6 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    // === Khôi phục hàm setupLoginLink & setupDatePickers (bị thiếu) ===
     private void setupLoginLink() {
         if (tvLoginLink == null) return;
         String text = "Đã có tài khoản? Đăng nhập";
@@ -975,6 +1167,12 @@ public class RegisterActivity extends AppCompatActivity {
                 tilIssueDate.setEndIconOnClickListener(v -> showDatePickerDialog(etIssueDate));
             }
         }
+        if (etExpiryDate != null) {
+            etExpiryDate.setOnClickListener(v -> showDatePickerDialog(etExpiryDate));
+            if (tilExpiryDate != null) {
+                tilExpiryDate.setEndIconOnClickListener(v -> showDatePickerDialog(etExpiryDate));
+            }
+        }
     }
 
     private void showDatePickerDialog(final TextInputEditText editText) {
@@ -992,7 +1190,7 @@ public class RegisterActivity extends AppCompatActivity {
                 currentCalendar.get(Calendar.DAY_OF_MONTH)
         );
 
-        if (editText == etDateOfBirth) { // giới hạn tuổi 18 - 100
+        if (editText == etDateOfBirth) {
             Calendar minAge = Calendar.getInstance();
             Calendar maxAge = Calendar.getInstance();
             minAge.add(Calendar.YEAR, -100);
@@ -1000,9 +1198,71 @@ public class RegisterActivity extends AppCompatActivity {
             datePickerDialog.getDatePicker().setMaxDate(maxAge.getTimeInMillis());
             datePickerDialog.getDatePicker().setMinDate(minAge.getTimeInMillis());
         }
-        if (editText == etIssueDate) { // không cho chọn quá ngày hiện tại
+        if (editText == etIssueDate) {
             datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
         }
+        if (editText == etExpiryDate) {
+            datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+        }
         datePickerDialog.show();
+    }
+
+    private File getFileFromUri(Uri uri) {
+        if (uri == null) {
+            return null;
+        }
+
+        try {
+            return copyUriToCache(uri);
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting file from URI: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private File copyUriToCache(Uri uri) {
+        try {
+            String fileName = "cccd_upload_" + System.currentTimeMillis() + ".jpg";
+            File cacheFile = new File(getCacheDir(), fileName);
+
+            java.io.InputStream inputStream = getContentResolver().openInputStream(uri);
+            if (inputStream == null) {
+                return null;
+            }
+
+            android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(inputStream);
+            inputStream.close();
+
+            if (bitmap == null) {
+                return null;
+            }
+
+            int maxSize = 1920;
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+
+            if (width > maxSize || height > maxSize) {
+                float scale = Math.min((float) maxSize / width, (float) maxSize / height);
+                int newWidth = Math.round(width * scale);
+                int newHeight = Math.round(height * scale);
+                bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+            }
+
+            java.io.FileOutputStream outputStream = new java.io.FileOutputStream(cacheFile);
+            boolean compressed = bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, outputStream);
+
+            outputStream.flush();
+            outputStream.close();
+            bitmap.recycle();
+
+            if (!compressed) {
+                return null;
+            }
+
+            return cacheFile;
+        } catch (Exception e) {
+            Log.e(TAG, "Error copying URI to cache: " + e.getMessage());
+            return null;
+        }
     }
 }
