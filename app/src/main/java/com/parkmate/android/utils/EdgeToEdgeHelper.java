@@ -7,6 +7,7 @@ import android.view.Window;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 /**
@@ -26,7 +27,7 @@ public class EdgeToEdgeHelper {
         if (window == null) return;
 
         // Enable edge-to-edge display
-        window.setDecorFitsSystemWindows(false);
+        WindowCompat.setDecorFitsSystemWindows(window, false);
 
         // Apply window insets to root view
         View rootView = window.getDecorView().findViewById(android.R.id.content);
@@ -55,7 +56,7 @@ public class EdgeToEdgeHelper {
         if (window == null) return;
 
         // Enable edge-to-edge display
-        window.setDecorFitsSystemWindows(false);
+        WindowCompat.setDecorFitsSystemWindows(window, false);
 
         // Apply window insets to root view
         View rootView = window.getDecorView().findViewById(android.R.id.content);
@@ -129,4 +130,3 @@ public class EdgeToEdgeHelper {
         });
     }
 }
-
