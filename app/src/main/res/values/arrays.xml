@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Gender Options -->
+    <string-array name="gender_options">
+        <item>Nam</item>
+        <item>Nữ</item>
+        <item>Khác</item>
+    </string-array>
+
+    <!-- Nationality Options (Common Countries) -->
+    <string-array name="nationality_options">
+        <item>Việt Nam</item>
+        <item>Trung Quốc</item>
+        <item>Nhật Bản</item>
+        <item>Hàn Quốc</item>
+        <item>Thái Lan</item>
+        <item>Singapore</item>
+        <item>Malaysia</item>
+        <item>Indonesia</item>
+        <item>Philippines</item>
+        <item>Ấn Độ</item>
+        <item>Hoa Kỳ</item>
+        <item>Vương quốc Anh</item>
+        <item>Pháp</item>
+        <item>Đức</item>
+        <item>Úc</item>
+        <item>Canada</item>
+        <item>Nga</item>
+        <item>Brazil</item>
+        <item>Mexico</item>
+        <item>Argentina</item>
+        <item>Ý</item>
+        <item>Tây Ban Nha</item>
+        <item>Hà Lan</item>
+        <item>Thụy Sĩ</item>
+        <item>Thụy Điển</item>
+        <item>Na Uy</item>
+        <item>Đan Mạch</item>
+        <item>Phần Lan</item>
+        <item>Ba Lan</item>
+        <item>Bỉ</item>
+        <item>Áo</item>
+        <item>Hy Lạp</item>
+        <item>Bồ Đào Nha</item>
+        <item>Ireland</item>
+        <item>New Zealand</item>
+        <item>Nam Phi</item>
+        <item>Ai Cập</item>
+        <item>Nigeria</item>
+        <item>Kenya</item>
+        <item>Morocco</item>
+        <item>Israel</item>
+        <item>UAE</item>
+        <item>Saudi Arabia</item>
+        <item>Qatar</item>
+        <item>Kuwait</item>
+        <item>Thổ Nhĩ Kỳ</item>
+        <item>Iran</item>
+        <item>Pakistan</item>
+        <item>Bangladesh</item>
+        <item>Sri Lanka</item>
+        <item>Myanmar</item>
+        <item>Campuchia</item>
+        <item>Lào</item>
+        <item>Brunei</item>
+        <item>Đài Loan</item>
+        <item>Hồng Kông</item>
+        <item>Macao</item>
+    </string-array>
+</resources>
+

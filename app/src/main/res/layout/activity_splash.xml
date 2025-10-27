@@ -7,10 +7,7 @@
     android:layout_height="match_parent"
     android:background="#F7F8FA"
     tools:context=".activity.SplashActivity"
-    android:id="@+id/main"
-    >
-
-
+    android:id="@+id/main">
 
     <ImageView
         android:id="@+id/logoImageView"
@@ -21,7 +18,6 @@
         app:layout_constraintBottom_toTopOf="@+id/splashText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
 
     <!-- Welcome text -->
     <TextView

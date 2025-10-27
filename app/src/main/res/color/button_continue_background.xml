@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Khi nút được enabled (có xe được chọn) - màu xanh primary -->
+    <item android:color="@color/primary" android:state_enabled="true"/>
+
+    <!-- Khi nút bị disabled (chưa chọn xe) - màu xám -->
+    <item android:color="@android:color/darker_gray" android:state_enabled="false"/>
+</selector>
+

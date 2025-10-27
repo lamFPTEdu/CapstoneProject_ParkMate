@@ -252,6 +252,53 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <!-- Verify CCCD - NEW -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/menuVerifyCccd"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/profile_menu_item_height"
+                android:layout_marginBottom="@dimen/profile_menu_item_margin"
+                android:background="@drawable/bg_profile_menu_item"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/profile_menu_item_padding">
+
+                <ImageView
+                    android:id="@+id/iconVerifyCccd"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Xác thực CCCD"
+                    android:src="@drawable/ic_card_24"
+                    app:tint="@color/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvVerifyCccd"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Xác thực CCCD"
+                    android:textColor="@color/bottom_nav_text_active"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/iconVerifyCccdChevron"
+                    app:layout_constraintStart_toEndOf="@id/iconVerifyCccd"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/iconVerifyCccdChevron"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Xác thực CCCD"
+                    android:src="@drawable/ic_chevron_right_24"
+                    app:tint="@color/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <!-- Parking History -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/menuParkingHistory"

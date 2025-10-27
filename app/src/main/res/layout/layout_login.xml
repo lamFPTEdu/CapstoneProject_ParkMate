@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">  <!-- added background -->
+    android:background="@color/white">
 
     <!-- Login Title -->
     <TextView
@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
-        android:text="Đăng Nhập"
+        android:text="Đăng nhập"
         android:textColor="#222B45"
         android:textSize="28sp"
         android:textStyle="bold"
@@ -55,7 +55,7 @@
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Mật Khẩu"
+            android:hint="Mật khẩu"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -97,7 +97,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
         android:backgroundTint="#1947ff"
-        android:text="Đăng Nhập"
+        android:text="Đăng nhập"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:cornerRadius="24dp"
@@ -110,7 +110,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="hoặc Đăng nhập với"
+        android:text="Hoặc đăng nhập với"
         android:textColor="#8F9BB3"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"

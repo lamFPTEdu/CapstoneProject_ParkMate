@@ -34,15 +34,6 @@
             android:id="@+id/registerBasicInfo"
             layout="@layout/layout_register_basic_info" />
 
-        <!-- Second page: CCCD information -->
-        <include
-            android:id="@+id/registerCccdInfo"
-            layout="@layout/layout_cccd_info" />
-
-        <!-- Third page: Upload ID Images - NEW -->
-        <include
-            android:id="@+id/registerUploadImages"
-            layout="@layout/layout_upload_id_images" />
 
         <!-- Fourth page: Check Email for OTP -->
         <include

@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -58,9 +57,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         contentFrame = findViewById(R.id.content_frame);
 
-        // Khởi tạo search components
-        searchContainer = findViewById(R.id.searchContainer);
-        ivSearchIcon = findViewById(R.id.ivSearchIcon);
+        // Khởi tạo search components từ layout_search_destination
+        // Root của search destination component
+        searchContainer = findViewById(R.id.searchDestinationRoot);
         tvSearchPlaceholder = findViewById(R.id.tvSearchPlaceholder);
         btnFilter = findViewById(R.id.btnFilter);
 
@@ -84,15 +83,23 @@ public abstract class BaseActivity extends AppCompatActivity {
     private void applySystemBarInsets() {
         if (bottomNavigationView != null) {
             ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView, (v, insets) -> {
-                Insets sys = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                // Chỉ áp dụng padding trái/phải, không cộng thêm padding dưới để thanh dính sát cạnh dưới
-                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), 0);
-                return insets;
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+                // Sử dụng margin bottom thay vì padding để tránh đẩy nội dung (icon + text) lên
+                // Margin sẽ đẩy toàn bộ Bottom Nav lên, giữ nguyên layout bên trong
+                if (v.getLayoutParams() instanceof android.view.ViewGroup.MarginLayoutParams) {
+                    android.view.ViewGroup.MarginLayoutParams params =
+                        (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                    params.bottomMargin = systemBars.bottom;
+                    v.setLayoutParams(params);
+                }
+
+                return WindowInsetsCompat.CONSUMED;
             });
         }
         if (contentFrame != null) {
             ViewCompat.setOnApplyWindowInsetsListener(contentFrame, (v, insets) -> {
-                // Giữ nguyên padding mặc định, nội dung có thể kéo dài đến phía trên bottom nav
+                // Content frame không cần xử lý insets vì bottom nav đã xử lý
                 return insets;
             });
         }
@@ -133,6 +140,22 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void setupToolbarWithSearch(boolean isMainScreen, String searchPlaceholder,
                                          View.OnClickListener onSearchClick,
                                          View.OnClickListener onFilterClick) {
+        setupToolbarWithSearch(isMainScreen, searchPlaceholder, onSearchClick, onFilterClick, true);
+    }
+
+    /**
+     * Thiết lập toolbar với chế độ search (có tùy chọn ẩn navigation icon)
+     *
+     * @param isMainScreen true nếu đây là màn hình chính (hiển thị icon menu), false nếu là màn hình con (hiển thị nút back)
+     * @param searchPlaceholder Text placeholder cho ô search
+     * @param onSearchClick Callback khi click vào search bar
+     * @param onFilterClick Callback khi click vào nút filter (có thể null nếu không dùng)
+     * @param showNavigationIcon true để hiển thị icon navigation, false để ẩn hoàn toàn
+     */
+    protected void setupToolbarWithSearch(boolean isMainScreen, String searchPlaceholder,
+                                         View.OnClickListener onSearchClick,
+                                         View.OnClickListener onFilterClick,
+                                         boolean showNavigationIcon) {
         // Hiển thị search container
         if (searchContainer != null) {
             searchContainer.setVisibility(View.VISIBLE);
@@ -153,12 +176,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
 
         if (ivNavigation != null) {
-            if (isMainScreen) {
-                ivNavigation.setImageResource(R.drawable.ic_menu_24);
-                ivNavigation.setOnClickListener(v -> openMenu());
+            if (!showNavigationIcon) {
+                // Ẩn icon navigation hoàn toàn
+                ivNavigation.setVisibility(View.GONE);
             } else {
-                ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                ivNavigation.setOnClickListener(v -> onBackPressed());
+                ivNavigation.setVisibility(View.VISIBLE);
+                if (isMainScreen) {
+                    ivNavigation.setImageResource(R.drawable.ic_menu_24);
+                    ivNavigation.setOnClickListener(v -> openMenu());
+                } else {
+                    ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
+                    ivNavigation.setOnClickListener(v -> onBackPressed());
+                }
             }
         }
     }
@@ -202,24 +231,36 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private void handleBottomNavSelection(MenuItem item) {
         int id = item.getItemId();
+        String currentClassName = this.getClass().getSimpleName();
+
         if (id == R.id.nav_home) {
-            if (!(this instanceof HomeActivity)) {
+            if (!currentClassName.equals("HomeActivity")) {
                 Intent intent = new Intent(this, HomeActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
+        } else if (id == R.id.nav_parking) {
+            if (!currentClassName.equals("ParkingLotsActivity")) {
+                Intent intent = new Intent(this, ParkingLotsActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+            }
+        } else if (id == R.id.nav_wallet) {
+            if (!currentClassName.equals("WalletActivity")) {
+                Intent intent = new Intent(this, WalletActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+            }
         } else if (id == R.id.nav_account) {
-            if (!(this instanceof ProfileActivity)) {
+            if (!currentClassName.equals("ProfileActivity")) {
                 Intent intent = new Intent(this, ProfileActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
-        } else {
-            // Placeholder for future screens (Parking, Wallet)
-            Toast.makeText(this, "Tính năng sẽ sớm ra mắt", Toast.LENGTH_SHORT).show();
-            // TODO: When activities are created, start them here similar to HomeActivity
         }
     }
 

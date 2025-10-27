@@ -63,7 +63,9 @@ public final class ApiClient {
                     }
                 })
                 // Thêm interceptor gắn Authorization Bearer nếu có token
-                .addInterceptor(new AuthInterceptor());
+                .addInterceptor(new AuthInterceptor())
+                // Thêm Authenticator xử lý khi token hết hạn (401)
+                .authenticator(new TokenAuthenticator());
 
         // Logging (có thể cân nhắc chỉ bật ở debug bằng BuildConfig.DEBUG)
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();

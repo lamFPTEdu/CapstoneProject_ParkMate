@@ -2,7 +2,15 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray">#E4E7EC</color>
     <color name="colorPrimary">#1947ff</color>
+    <color name="primary">#1947FF</color>
+    <color name="primary_light">#E8EEFF</color>
+    <color name="background">#F9FAFB</color>
+    <color name="border_color">#E4E7EC</color>
+    <color name="text_primary">#0F1A2E</color>
+    <color name="text_secondary">#667085</color>
+    <color name="text_tertiary">#98A2B3</color>
     <!-- Thêm màu cho bottom navigation item được chọn -->
     <color name="teal_200">#03DAC5</color>
     <!-- Bottom Nav custom colors -->
@@ -11,10 +19,20 @@
     <color name="bottom_nav_active_indicator">#1A1947FF</color>
     <color name="bottom_nav_active_icon">#1947FF</color>
     <color name="bottom_nav_inactive_icon">#8891A6</color>
+
+    <!-- Transaction status colors -->
+    <color name="success_green">#16A34A</color>
+    <color name="error_red">#DC2626</color>
+    <color name="warning_yellow">#D97706</color>
     <color name="bottom_nav_text_active">#0F1A2E</color>
     <color name="bottom_nav_text_inactive">#667085</color>
     <!-- Colors for search destination component -->
+    <color name="search_icon_tint">#667085</color>
     <color name="search_placeholder_text">#98A2B3</color>
     <color name="search_container_stroke">#E4E7EC</color>
     <color name="search_filter_icon_tint">#FFFFFF</color>
+    <!-- Colors for parking lots -->
+    <color name="chip_background_unselected">@color/white</color>
+    <!-- Divider color -->
+    <color name="divider">#E4E7EC</color>
 </resources>

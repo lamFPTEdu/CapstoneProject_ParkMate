@@ -1,7 +1,7 @@
 # ParkMate Android App
 
 ## Giới thiệu
-ParkMate là ứng dụng Android Java giao tiếp với backend qua API, không sử dụng database cục bộ, ViewModel hay App.java.
+ParkMate là ứng dụng Android Java giao tiếp với backend qua API.
 
 ## Cấu trúc thư mục
 ```text

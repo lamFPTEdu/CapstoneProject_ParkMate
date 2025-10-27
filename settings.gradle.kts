@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "CapstoneProject_ParkMate"
 include(":app")
- 

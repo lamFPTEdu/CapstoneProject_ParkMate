@@ -22,8 +22,21 @@
         <item name="itemActiveIndicatorStyle">@style/Widget.ParkMate.NavigationBar.ActiveIndicator</item>
         <item name="itemRippleColor">@color/bottom_nav_ripple_color</item>
         <item name="itemIconSize">@dimen/bottom_nav_icon_size</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.ParkMate.BottomNavigation.Active</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.ParkMate.BottomNavigation.Inactive</item>
         <item name="labelVisibilityMode">labeled</item>
         <item name="android:background">@drawable/bottom_nav_background</item>
         <item name="android:elevation">8dp</item>
+    </style>
+
+    <!-- Text appearance for bottom navigation -->
+    <style name="TextAppearance.ParkMate.BottomNavigation.Active" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.ParkMate.BottomNavigation.Inactive" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="fontFamily">sans-serif</item>
     </style>
 </resources>

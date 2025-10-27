@@ -11,6 +11,9 @@ import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
 import com.parkmate.android.model.request.LoginRequest;
 import com.parkmate.android.model.response.LoginResponse;
+import com.parkmate.android.model.request.UpdateUserRequest;
+import com.parkmate.android.model.response.UpdateUserResponse;
+import com.parkmate.android.model.response.UserInfoResponse;
 
 import java.io.File;
 
@@ -89,6 +92,54 @@ public class AuthRepository {
                         }
                     } else {
                         Log.e(TAG, "Upload image error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
+    /**
+     * Cập nhật thông tin user (xác thực CCCD)
+     */
+    public Single<UpdateUserResponse> updateUser(UpdateUserRequest request) {
+        Log.d(TAG, "Updating user info with CCCD data");
+        return apiService.updateUser(request)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Update user HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Update error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Update user error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
+    /**
+     * Lấy thông tin user theo ID
+     */
+    public Single<UserInfoResponse> getUserInfo(String userId) {
+        Log.d(TAG, "Getting user info for userId: " + userId);
+        return apiService.getUserInfo(userId)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Get user info HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Get user info error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Get user info error: " + err.getMessage(), err);
                     }
                 });
     }

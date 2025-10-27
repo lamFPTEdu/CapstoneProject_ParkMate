@@ -1,6 +1,7 @@
 package com.parkmate.android.activity;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ public class ProfileActivity extends BaseActivity {
     private ConstraintLayout menuMyBookings;
     private ConstraintLayout menuMyVehicles;
     private ConstraintLayout menuPaymentMethods;
+    private ConstraintLayout menuVerifyCccd; // NEW
     private ConstraintLayout menuParkingHistory;
     private ConstraintLayout menuSettings;
     private ConstraintLayout menuHelpSupport;
@@ -54,6 +56,7 @@ public class ProfileActivity extends BaseActivity {
         menuMyBookings = findViewById(R.id.menuMyBookings);
         menuMyVehicles = findViewById(R.id.menuMyVehicles);
         menuPaymentMethods = findViewById(R.id.menuPaymentMethods);
+        menuVerifyCccd = findViewById(R.id.menuVerifyCccd); // NEW
         menuParkingHistory = findViewById(R.id.menuParkingHistory);
         menuSettings = findViewById(R.id.menuSettings);
         menuHelpSupport = findViewById(R.id.menuHelpSupport);
@@ -115,15 +118,17 @@ public class ProfileActivity extends BaseActivity {
 
         if (menuMyBookings != null) {
             menuMyBookings.setOnClickListener(v -> {
-                // TODO: Navigate to my bookings screen
-                Toast.makeText(this, "Đặt chỗ của tôi", Toast.LENGTH_SHORT).show();
+                // Navigate to reservation list screen
+                android.content.Intent intent = new android.content.Intent(this, ReservationListActivity.class);
+                startActivity(intent);
             });
         }
 
         if (menuMyVehicles != null) {
             menuMyVehicles.setOnClickListener(v -> {
-                // TODO: Navigate to my vehicles screen
-                Toast.makeText(this, "Quản lý xe của tôi", Toast.LENGTH_SHORT).show();
+                // Navigate to my vehicles screen
+                android.content.Intent intent = new android.content.Intent(this, VehicleActivity.class);
+                startActivity(intent);
             });
         }
 
@@ -131,6 +136,14 @@ public class ProfileActivity extends BaseActivity {
             menuPaymentMethods.setOnClickListener(v -> {
                 // TODO: Navigate to payment methods screen
                 Toast.makeText(this, "Phương thức thanh toán", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (menuVerifyCccd != null) {
+            menuVerifyCccd.setOnClickListener(v -> {
+                // Navigate to verify CCCD screen
+                android.content.Intent intent = new android.content.Intent(this, VerifyCccdActivity.class);
+                startActivity(intent);
             });
         }
 
@@ -151,7 +164,7 @@ public class ProfileActivity extends BaseActivity {
         if (menuHelpSupport != null) {
             menuHelpSupport.setOnClickListener(v -> {
                 // TODO: Navigate to help & support screen
-                Toast.makeText(this, "Trợ giúp & Hỗ trợ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Trợ giúp & hỗ trợ", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -181,5 +194,13 @@ public class ProfileActivity extends BaseActivity {
                        android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void customizeToolbar() {
+        // Hide navigation button for main screen
+        if (ivNavigation != null) {
+            ivNavigation.setVisibility(View.GONE);
+        }
     }
 }

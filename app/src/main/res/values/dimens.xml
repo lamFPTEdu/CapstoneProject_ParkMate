@@ -12,7 +12,7 @@
     <dimen name="search_filter_button_size">44dp</dimen>
     <dimen name="search_filter_button_radius">14dp</dimen>
     <dimen name="search_component_margin_horizontal">20dp</dimen>
-    <dimen name="search_component_margin_top">16dp</dimen>
+    <dimen name="search_component_margin_top">32dp</dimen>
     <!-- Profile screen dimensions -->
     <dimen name="profile_header_height">200dp</dimen>
     <dimen name="profile_avatar_size">100dp</dimen>
