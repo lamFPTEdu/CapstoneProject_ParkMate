@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginTop="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeColor="@color/colorPrimary"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Area Icon -->
+        <ImageView
+            android:id="@+id/ivAreaIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_local_parking_24"
+            app:tint="@color/colorPrimary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Area Name -->
+        <TextView
+            android:id="@+id/tvAreaName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="#101828"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/tvAvailableSpots"
+            app:layout_constraintStart_toEndOf="@+id/ivAreaIcon"
+            app:layout_constraintTop_toTopOf="@+id/ivAreaIcon"
+            tools:text="A1 - Car Area" />
+
+        <!-- Available Spots -->
+        <TextView
+            android:id="@+id/tvAvailableSpots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvAreaName"
+            tools:text="8/10" />
+
+        <!-- Vehicle Type -->
+        <TextView
+            android:id="@+id/tvVehicleType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#667085"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tvAreaName"
+            app:layout_constraintTop_toBottomOf="@+id/tvAreaName"
+            tools:text="🚗 Car (up to 9 seats)" />
+
+        <!-- Electric Vehicle Support -->
+        <TextView
+            android:id="@+id/tvElectricSupport"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#10B981"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tvAreaName"
+            app:layout_constraintTop_toBottomOf="@+id/tvVehicleType"
+            tools:text="⚡ Electric vehicle supported" />
+
+        <!-- Pricing Information -->
+        <TextView
+            android:id="@+id/tvPricing"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#F59E0B"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tvAreaName"
+            app:layout_constraintTop_toBottomOf="@+id/tvElectricSupport"
+            tools:text="💰 15,000₫/hour"
+            tools:visibility="visible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

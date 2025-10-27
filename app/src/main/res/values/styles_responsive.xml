@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Styles for different screen densities -->
+    <style name="AppTheme.Responsive" parent="Theme.CapstoneProject_ParkMate">
+        <!-- Tự động điều chỉnh kích thước text cho các thiết bị khác nhau -->
+        <item name="android:textAppearanceSmall">@android:style/TextAppearance.Material.Small</item>
+        <item name="android:textAppearanceMedium">@android:style/TextAppearance.Material.Medium</item>
+        <item name="android:textAppearanceLarge">@android:style/TextAppearance.Material.Large</item>
+    </style>
+
+    <!-- Tối ưu hóa cho thiết bị có hiệu suất thấp -->
+    <style name="AppTheme.NoAnimation" parent="Theme.CapstoneProject_ParkMate">
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowContentTransitions">false</item>
+    </style>
+</resources>
+

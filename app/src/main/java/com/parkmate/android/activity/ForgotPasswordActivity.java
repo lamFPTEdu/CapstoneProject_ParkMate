@@ -52,13 +52,10 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_forgot_password);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        // Setup edge-to-edge display
+        com.parkmate.android.utils.EdgeToEdgeHelper.setupEdgeToEdge(this);
 
         initViews();
         setupListeners();
@@ -105,7 +102,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         // Initialize Success Screen Views
         View successView = viewFlipper.getChildAt(4);
+        TextView tvTitle = successView.findViewById(R.id.tvTitle);
+        TextView tvDescription = successView.findViewById(R.id.tvDescription);
         btnLogin = successView.findViewById(R.id.btnLogin);
+
+        // SET TEXT CHO CHỨC NĂNG ĐẶT LẠI MẬT KHẨU
+        if (tvTitle != null) {
+            tvTitle.setText(R.string.success);  // "Đặt lại mật khẩu thành công!"
+        }
+        if (tvDescription != null) {
+            tvDescription.setText(R.string.success_description);  // "Mật khẩu của bạn đã được đặt lại thành công."
+        }
+        if (btnLogin != null) {
+            btnLogin.setText(R.string.login);  // "Đăng nhập"
+        }
     }
 
     private void setupListeners() {
@@ -130,7 +140,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         setupOtpInputs();
         tvResendCode.setOnClickListener(v -> {
             // Here would be API call to resend OTP
-            Toast.makeText(this, "OTP resent to your email", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Otp resent to your email", Toast.LENGTH_SHORT).show();
         });
         btnVerify.setOnClickListener(v -> {
             if (validateOtp()) {
@@ -206,7 +216,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 etOtp6.getText().toString();
 
         if (otp.length() != 6) {
-            Toast.makeText(this, "Please enter a valid 6-digit OTP", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please enter a valid 6-digit otp", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
@@ -255,3 +265,4 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         }
     }
 }
+

@@ -4,24 +4,30 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <!-- Permissions for Camera and Storage -->
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- Queries for Camera Intent - Required for Android 11+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- Queries for Camera Intent - Required for Android 11+ -->
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
         <intent>
             <action android:name="android.intent.action.PICK" />
+
             <data android:mimeType="image/*" />
         </intent>
     </queries>
@@ -37,9 +43,33 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CapstoneProject_ParkMate"
-        android:usesCleartextTraffic="true">
-
-        <!-- FileProvider for Camera -->
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true">
+        <activity
+            android:name=".activity.WalletActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.TopUpActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.TransactionHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.VehicleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ViewVehicleDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.EditVehicleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.AddVehicleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.VerifyCccdActivity"
+            android:exported="false" /> <!-- FileProvider for Camera -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -55,6 +85,11 @@
             android:exported="false" />
         <activity
             android:name=".activity.HomeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".activity.MapActivity"
             android:exported="false" />
         <activity
             android:name=".activity.ForgotPasswordActivity"
@@ -64,6 +99,31 @@
             android:exported="false" />
         <activity
             android:name=".activity.RegisterActivity"
+            android:exported="false" /> <!-- Parking Activities -->
+        <activity
+            android:name=".activity.ParkingLotsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ParkingLotDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.FloorDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SpotSelectionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.VehicleSelectionActivity"
+            android:exported="false" />
+        <!-- Reservation Activities -->
+        <activity
+            android:name=".activity.ReservationConfirmActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ReservationDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ReservationListActivity"
             android:exported="false" />
         <activity
             android:name=".activity.SplashActivity"

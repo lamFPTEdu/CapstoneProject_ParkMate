@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dimensions for small phones (width >= 360dp) -->
+    <dimen name="bottom_nav_icon_size">22dp</dimen>
+    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="bottom_nav_vertical_padding">6dp</dimen>
+
+    <dimen name="search_container_height">52dp</dimen>
+    <dimen name="search_container_radius">14dp</dimen>
+    <dimen name="search_container_horizontal_padding">14dp</dimen>
+    <dimen name="search_container_icon_size">18dp</dimen>
+    <dimen name="search_container_spacing">10dp</dimen>
+    <dimen name="search_filter_button_size">40dp</dimen>
+    <dimen name="search_filter_button_radius">12dp</dimen>
+    <dimen name="search_component_margin_horizontal">16dp</dimen>
+    <dimen name="search_component_margin_top">28dp</dimen>
+
+    <dimen name="profile_header_height">180dp</dimen>
+    <dimen name="profile_avatar_size">90dp</dimen>
+    <dimen name="profile_avatar_margin_top">35dp</dimen>
+    <dimen name="profile_menu_item_height">60dp</dimen>
+    <dimen name="profile_menu_item_padding">14dp</dimen>
+    <dimen name="profile_menu_item_margin">10dp</dimen>
+    <dimen name="profile_section_margin_top">20dp</dimen>
+</resources>
+

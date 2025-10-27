@@ -3,11 +3,14 @@ package com.parkmate.android.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -29,6 +32,8 @@ import com.parkmate.android.repository.AuthRepository;
 import com.parkmate.android.utils.LoadingButton;
 import com.parkmate.android.utils.TokenManager;
 
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -36,6 +41,7 @@ import retrofit2.HttpException;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "LoginActivity";
     private TextInputEditText etEmail, etPassword;
     private CheckBox cbRememberMe;
     private MaterialButton btnLogin;
@@ -44,19 +50,81 @@ public class LoginActivity extends AppCompatActivity {
 
     private AuthRepository authRepository;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private LoadingButton loadingButton; // Thay thế LoadingDialogFragment
+    private LoadingButton loadingButton;
     private static final String PREF_LOGIN = "login_prefs";
     private static final String KEY_REMEMBER_EMAIL = "remember_email";
+
+    private Handler timeoutWarningHandler;
+    private Runnable timeoutWarningRunnable;
+    private boolean isLoggingIn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Kiểm tra xem user đã đăng nhập chưa (có token hợp lệ)
+        if (checkIfAlreadyLoggedIn()) {
+            navigateToHome();
+            return;
+        }
+
         setContentView(R.layout.layout_login);
+
+        // Setup edge-to-edge display
+        com.parkmate.android.utils.EdgeToEdgeHelper.setupEdgeToEdge(this);
+
         authRepository = new AuthRepository();
         initViews();
         restoreRememberedEmail();
         setupClickListeners();
         setupColoredRegisterText();
+
+        // Kiểm tra xem có bị redirect do token hết hạn không
+        checkSessionExpired();
+    }
+
+    /**
+     * Kiểm tra và hiển thị thông báo nếu phiên đăng nhập hết hạn
+     */
+    private void checkSessionExpired() {
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra("SESSION_EXPIRED", false)) {
+            Toast.makeText(this, "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Kiểm tra xem user đã đăng nhập chưa bằng cách check token và userId
+     * @return true nếu đã có token và userId hợp lệ
+     */
+    private boolean checkIfAlreadyLoggedIn() {
+        try {
+            String token = TokenManager.getInstance().getToken();
+            String userId = com.parkmate.android.utils.UserManager.getInstance().getUserId();
+
+            // Nếu có token và userId thì coi như đã đăng nhập
+            boolean isLoggedIn = token != null && !token.isEmpty() &&
+                                userId != null && !userId.isEmpty();
+
+            if (isLoggedIn) {
+                Log.d(TAG, "User already logged in - Token exists, navigating to Home");
+            }
+
+            return isLoggedIn;
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking login status", e);
+            return false;
+        }
+    }
+
+    /**
+     * Chuyển về màn hình Home và xóa back stack để không quay lại LoginActivity
+     */
+    private void navigateToHome() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void initViews() {
@@ -69,7 +137,6 @@ public class LoginActivity extends AppCompatActivity {
         ivGoogleLogin = findViewById(R.id.ivGoogleLogin);
         ivFacebookLogin = findViewById(R.id.ivFacebookLogin);
 
-        // Khởi tạo LoadingButton
         loadingButton = new LoadingButton(btnLogin);
     }
 
@@ -120,23 +187,50 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void performLogin(String email, String password, boolean rememberMe) {
-        loadingButton.showLoading("Đang đăng nhập..."); // Hiển thị loading trong button
+        if (isLoggingIn) {
+            Toast.makeText(this, "Đang xử lý đăng nhập, vui lòng đợi...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        isLoggingIn = true;
+        loadingButton.showLoading("Đang đăng nhập...");
+
+        // Cảnh báo nếu đăng nhập quá 10 giây
+        timeoutWarningHandler = new Handler(Looper.getMainLooper());
+        timeoutWarningRunnable = () -> {
+            if (isLoggingIn) {
+                Toast.makeText(LoginActivity.this, "Kết nối chậm, vui lòng đợi thêm...", Toast.LENGTH_LONG).show();
+            }
+        };
+        timeoutWarningHandler.postDelayed(timeoutWarningRunnable, 10000); // 10 giây
+
         LoginRequest req = new LoginRequest(email, password);
         compositeDisposable.add(
                 authRepository.login(req)
+                        .timeout(60, TimeUnit.SECONDS) // Timeout 60 giây
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 resp -> {
-                                    loadingButton.hideLoading(); // Ẩn loading
+                                    cancelTimeoutWarning();
+                                    isLoggingIn = false;
+                                    loadingButton.hideLoading();
                                     handleLoginSuccess(resp, email, rememberMe);
                                 },
                                 throwable -> {
-                                    loadingButton.hideLoading(); // Ẩn loading
+                                    cancelTimeoutWarning();
+                                    isLoggingIn = false;
+                                    loadingButton.hideLoading();
                                     handleLoginError(throwable);
                                 }
                         )
         );
+    }
+
+    private void cancelTimeoutWarning() {
+        if (timeoutWarningHandler != null && timeoutWarningRunnable != null) {
+            timeoutWarningHandler.removeCallbacks(timeoutWarningRunnable);
+        }
     }
 
     private void handleLoginSuccess(LoginResponse resp, String email, boolean rememberMe) {
@@ -145,24 +239,66 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, resp != null && resp.getMessage() != null ? resp.getMessage() : "Đăng nhập thất bại", Toast.LENGTH_LONG).show();
             return;
         }
+
         // Lưu token
         String rawToken = resp.getAnyToken();
+        Log.d(TAG, "========== LOGIN SUCCESS ==========");
+        Log.d(TAG, "Raw token from backend: " + (rawToken != null ? "YES (length=" + rawToken.length() + ")" : "NO - NULL!"));
+
         if (rawToken != null && !rawToken.isEmpty()) {
             String cleaned = rawToken.startsWith("Bearer ") ? rawToken.substring(7) : rawToken;
-            try { TokenManager.getInstance().saveToken(cleaned); } catch (Exception ignored) {}
+            Log.d(TAG, "Token after cleaning: " + cleaned.substring(0, Math.min(50, cleaned.length())) + "...");
+
+            try {
+                TokenManager.getInstance().saveToken(cleaned);
+
+                // KIỂM TRA LẠI token đã được lưu chưa
+                String verifyToken = TokenManager.getInstance().getToken();
+                if (verifyToken != null && verifyToken.equals(cleaned)) {
+                    Log.d(TAG, "✅ Token saved and verified successfully!");
+                } else {
+                    Log.e(TAG, "❌ Token save FAILED - verification mismatch!");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "❌ EXCEPTION when saving token: " + e.getMessage(), e);
+            }
+        } else {
+            Log.e(TAG, "❌ WARNING: Backend returned NULL or EMPTY token!");
         }
 
-        // Lưu thông tin user
+        // Lưu thông tin user - ƯU TIÊN LẤY userId TỪ data.userResponse.id (id: 9) thay vì account.id (id: 13)
         try {
-            String userId = resp.getUserId();
-            if (userId == null && resp.getData() != null) {
-                userId = resp.getData().getUserId();
+            String userId = null;
+            String username = null;
+
+            // Ưu tiên lấy từ data.userResponse.id (đây mới là userId thực sự để dùng cho entityId)
+            if (resp.getData() != null && resp.getData().getUserResponse() != null) {
+                Long userResponseId = resp.getData().getUserResponse().getId();
+                if (userResponseId != null) {
+                    userId = String.valueOf(userResponseId);
+                    Log.d(TAG, "✅ Got userId from userResponse.id: " + userId);
+                }
+
+                // Lấy email từ account làm username
+                if (resp.getData().getUserResponse().getAccount() != null) {
+                    username = resp.getData().getUserResponse().getAccount().getEmail();
+                }
             }
 
-            // Lấy username từ response
-            String username = resp.getUsername();
-            if (username == null && resp.getData() != null) {
-                username = resp.getData().getUsername();
+            // Fallback: nếu không có userResponse.id thì lấy từ các field khác
+            if (userId == null) {
+                userId = resp.getUserId();
+                if (userId == null && resp.getData() != null) {
+                    userId = resp.getData().getUserId();
+                }
+                Log.d(TAG, "⚠️ Fallback userId: " + userId);
+            }
+
+            if (username == null) {
+                username = resp.getUsername();
+                if (username == null && resp.getData() != null) {
+                    username = resp.getData().getUsername();
+                }
             }
 
             // Fallback: lấy tên từ email nếu backend không trả username
@@ -177,7 +313,11 @@ public class LoginActivity extends AppCompatActivity {
                 // Fallback: dùng phần trước @ của email làm username
                 com.parkmate.android.utils.UserManager.getInstance().setUsername(userName);
             }
-        } catch (Exception ignored) {}
+
+            Log.d(TAG, "User info saved - ID: " + userId + ", Email: " + email + ", Username: " + username);
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Error saving user info", e);
+        }
 
         applyRememberMe(email, rememberMe);
         Toast.makeText(this, resp.getMessage() != null ? resp.getMessage() : "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
@@ -198,6 +338,22 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleLoginError(Throwable t) {
+        // Xử lý timeout
+        if (t instanceof java.util.concurrent.TimeoutException) {
+            Toast.makeText(this, "Kết nối quá chậm, vui lòng kiểm tra mạng và thử lại", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (t instanceof java.net.SocketTimeoutException) {
+            Toast.makeText(this, "Không thể kết nối đến máy chủ, vui lòng thử lại", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (t instanceof java.net.UnknownHostException || t instanceof java.net.ConnectException) {
+            Toast.makeText(this, "Không có kết nối mạng, vui lòng kiểm tra và thử lại", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         if (t instanceof HttpException) {
             HttpException http = (HttpException) t;
             try {
@@ -256,6 +412,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        cancelTimeoutWarning();
         compositeDisposable.clear();
     }
 }

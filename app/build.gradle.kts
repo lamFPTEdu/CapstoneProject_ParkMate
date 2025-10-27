@@ -14,6 +14,15 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Lấy api key từ gradle.properties (project.findProperty trả Any?)
+        val openmapApiKey: String = (project.findProperty("openmapApiKey") ?: "") as String
+        // BuildConfig field trong Kotlin DSL
+        buildConfigField("String", "OPENMAP_API_KEY", openmapApiKey)
+
+        // Tối ưu hóa cho mọi thiết bị
+        vectorDrawables.useSupportLibrary = true
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -34,6 +43,12 @@ android {
 
     buildFeatures {
         buildConfig = true // Bật tạo lớp BuildConfig để dùng buildConfigField
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 
     compileOptions {
@@ -69,4 +84,10 @@ dependencies {
 
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // MapLibre SDK cho bản đồ
+    implementation("org.maplibre.gl:android-sdk:11.0.0")
 }

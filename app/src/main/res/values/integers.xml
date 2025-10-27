@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tăng timeout để tránh ANR trên thiết bị chậm -->
+    <integer name="activity_transition_timeout">1000</integer>
+    <integer name="location_timeout">5000</integer>
+    <integer name="map_load_timeout">10000</integer>
+
+    <!-- Animation durations -->
+    <integer name="animation_duration_short">200</integer>
+    <integer name="animation_duration_medium">300</integer>
+    <integer name="animation_duration_long">400</integer>
+</resources>
+

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CapstoneProject_ParkMate</string>
+    <string name="app_name">Capstoneproject_parkmate</string>
 
     <!-- Toolbar Strings -->
     <string name="navigation_button">Nút điều hướng</string>
@@ -12,8 +12,8 @@
     <string name="email_hint">Nhập email của bạn</string>
     <string name="send">Gửi</string>
     <string name="check_email">Kiểm tra email của bạn</string>
-    <string name="check_email_description">Chúng tôi đã gửi mã OTP khôi phục mật khẩu đến email của bạn.</string>
-    <string name="enter_otp">Nhập mã OTP</string>
+    <string name="check_email_description">Chúng tôi đã gửi mã otp khôi phục mật khẩu đến email của bạn.</string>
+    <string name="enter_otp">Nhập mã otp</string>
     <string name="otp_description">Nhập mã 6 chữ số được gửi đến địa chỉ email của bạn.</string>
     <string name="otp_hint">Nhập mã 6 chữ số</string>
     <string name="verify">Xác nhận</string>
@@ -35,8 +35,8 @@
 
     <!-- Registration OTP verification Strings -->
     <string name="register_check_email">Kiểm tra email của bạn</string>
-    <string name="register_check_email_description">Đã tạo tài khoản thành công vui lòng xác nhận để OTP được gửi đến email của bạn.</string>
-    <string name="register_enter_otp">Nhập mã OTP xác thực</string>
+    <string name="register_check_email_description">Để tạo tài khoản thành công vui lòng xác nhận mã otp được gửi đến email của bạn.</string>
+    <string name="register_enter_otp">Nhập mã otp xác thực</string>
     <string name="register_otp_description">Nhập mã 6 chữ số được gửi đến email để hoàn tất đăng ký tài khoản.</string>
     <string name="register_button_verify">Xác nhận</string>
     <string name="register_button_continue">Tiếp tục</string>
@@ -56,14 +56,110 @@
     <!-- Profile Screen Strings -->
     <string name="profile_title">Hồ sơ</string>
     <string name="profile_edit">Chỉnh sửa</string>
-    <string name="profile_user_name">Người dùng ParkMate</string>
+    <string name="profile_user_name">Người dùng parkmate</string>
     <string name="profile_user_email">user@parkmate.com</string>
     <string name="profile_menu_my_bookings">Đặt chỗ của tôi</string>
     <string name="profile_menu_my_vehicles">Quản lý xe của tôi</string>
     <string name="profile_menu_payment_methods">Phương thức thanh toán</string>
     <string name="profile_menu_parking_history">Lịch sử đỗ xe</string>
     <string name="profile_menu_settings">Cài đặt</string>
-    <string name="profile_menu_help_support">Trợ giúp &amp; Hỗ trợ</string>
+    <string name="profile_menu_help_support">Trợ giúp &amp; hỗ trợ</string>
     <string name="profile_menu_logout">Đăng xuất</string>
     <string name="profile_avatar_desc">Ảnh đại diện</string>
+
+    <!-- Vehicle List Strings -->
+    <string name="vehicle_list_title">Phương tiện của tôi</string>
+    <string name="vehicle_back_button">Quay lại</string>
+    <string name="vehicle_add_new">+ Thêm xe mới</string>
+    <string name="vehicle_default_badge">Mặc định</string>
+    <string name="vehicle_edit_button">Sửa thông tin xe</string>
+    <string name="vehicle_delete_button">Xóa xe</string>
+    <string name="vehicle_icon_description">Biểu tượng xe</string>
+    <string name="vehicle_delete_title">Xóa phương tiện</string>
+    <string name="vehicle_delete_message">Bạn có chắc chắn muốn xóa xe %1$s?</string>
+    <string name="vehicle_delete_confirm">Xóa</string>
+    <string name="vehicle_delete_cancel">Hủy</string>
+    <string name="vehicle_deleted_success">Đã xóa xe</string>
+    <string name="vehicle_selected">Đã chọn: %1$s</string>
+    <string name="vehicle_add_new_toast">Thêm xe mới</string>
+    <string name="vehicle_edit_toast">Sửa xe: %1$s</string>
+
+    <!-- Add Vehicle Strings -->
+    <string name="add_vehicle_title">Thêm xe mới</string>
+    <string name="back_button">Quay lại</string>
+    <string name="vehicle_image_label">Ảnh xe</string>
+    <string name="upload_vehicle_image">Nhấn để tải ảnh xe</string>
+    <string name="upload_image_hint">JPG, PNG (tối đa 5MB)</string>
+    <string name="remove_image">Xóa ảnh</string>
+    <string name="vehicle_type_label">Loại xe *</string>
+    <string name="vehicle_type_hint">Chọn loại xe</string>
+    <string name="license_plate_label">Biển số xe *</string>
+    <string name="license_plate_hint">VD: 51A-12345</string>
+    <string name="vehicle_brand_label">Hãng xe *</string>
+    <string name="vehicle_brand_hint">VD: Honda, Yamaha, Toyota</string>
+    <string name="vehicle_model_label">Model xe *</string>
+    <string name="vehicle_model_hint">VD: Wave Alpha, Camry</string>
+    <string name="vehicle_color_label">Màu xe *</string>
+    <string name="vehicle_color_hint">VD: Đỏ, Xanh, Trắng</string>
+    <string name="is_electric_vehicle">Xe điện</string>
+    <string name="add_vehicle_button">Thêm xe</string>
+
+    <!-- Vehicle Types -->
+    <string name="vehicle_type_motorbike">Xe máy</string>
+    <string name="vehicle_type_bike">Xe đạp</string>
+    <string name="vehicle_type_car_up_to_9_seats">Ô tô (đến 9 chỗ)</string>
+    <string name="vehicle_type_other">Khác</string>
+
+    <!-- Add Vehicle Messages -->
+    <string name="add_vehicle_success">Thêm xe thành công!</string>
+    <string name="add_vehicle_error">Không thể thêm xe. Vui lòng thử lại.</string>
+    <string name="add_vehicle_validation_error">Vui lòng điền đầy đủ thông tin bắt buộc</string>
+    <string name="image_picker_title">Chọn ảnh xe</string>
+
+    <!-- Edit Vehicle Strings -->
+    <string name="edit_vehicle_title">Sửa thông tin xe</string>
+    <string name="update_vehicle_button">Cập nhật</string>
+    <string name="update_vehicle_success">Cập nhật xe thành công!</string>
+    <string name="update_vehicle_error">Không thể cập nhật xe. Vui lòng thử lại.</string>
+
+    <!-- Verify CCCD Strings -->
+    <string name="verify_cccd_title">Xác thực CCCD</string>
+    <string name="verify_cccd_subtitle">Vui lòng nhập thông tin CCCD/CMND và tải lên ảnh để xác thực tài khoản và kích hoạt ví</string>
+    <string name="cccd_number">Số CCCD/CMND</string>
+    <string name="full_name_cccd">Họ và tên (trên CCCD)</string>
+    <string name="gender">Giới tính</string>
+    <string name="date_of_birth">Ngày sinh</string>
+    <string name="nationality">Quốc tịch</string>
+    <string name="permanent_address">Địa chỉ thường trú</string>
+    <string name="issue_date">Ngày cấp</string>
+    <string name="issue_place">Nơi cấp</string>
+    <string name="expiry_date">Ngày hết hạn</string>
+    <string name="upload_title">Tải lên ảnh CCCD</string>
+    <string name="front_image_title">Mặt Trước CCCD/CMND</string>
+    <string name="back_image_title">Mặt Sau CCCD/CMND</string>
+    <string name="take_front_photo">Chụp Ảnh Mặt Trước</string>
+    <string name="take_back_photo">Chụp Ảnh Mặt Sau</string>
+    <string name="commitment_text">Tôi cam kết thông tin trên là đúng và chịu trách nhiệm về tính chính xác của thông tin đã cung cấp</string>
+    <string name="verify_button">Xác thực</string>
+    <string name="front_side_id">Front side of ID</string>
+    <string name="back_side_id">Back side of ID</string>
+    <string name="camera_icon">Camera icon</string>
+    <string name="upload_success">Upload success</string>
+
+    <!-- Wallet Strings -->
+    <string name="wallet_title">Ví của tôi</string>
+    <string name="wallet_icon_description">Biểu tượng ví</string>
+    <string name="wallet_balance_label">Số dư khả dụng</string>
+    <string name="wallet_balance_placeholder">1.250.000đ</string>
+    <string name="wallet_id_placeholder">ID: PM-123456789</string>
+    <string name="wallet_top_up">Nạp tiền</string>
+    <string name="wallet_withdraw">Rút tiền</string>
+    <string name="wallet_recent_transactions">Giao dịch gần đây</string>
+    <string name="wallet_view_all">Xem tất cả</string>
+    <string name="wallet_transaction_history">Lịch sử giao dịch</string>
+    <string name="wallet_empty_state_title">Chưa có giao dịch</string>
+    <string name="wallet_empty_state_description">Các giao dịch của bạn sẽ hiển thị tại đây</string>
+    <string name="wallet_no_transaction">Không có giao dịch</string>
+    <string name="transaction_icon_description">Biểu tượng giao dịch</string>
+
 </resources>
