@@ -73,23 +73,32 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="Tất cả"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="#D1D5DB"
+                app:chipStrokeWidth="1dp"/>
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipTopup"
+                android:id="@+id/chipTopUp"
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nạp tiền"
                 android:textSize="14sp"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="#D1D5DB"
+                app:chipStrokeWidth="1dp"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipPayment"
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thanh toán" />
+                android:text="Thanh toán"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="#D1D5DB"
+                app:chipStrokeWidth="1dp"/>
 
         </com.google.android.material.chip.ChipGroup>
 
@@ -98,10 +107,12 @@
     <!-- Divider -->
     <View
         android:id="@+id/divider"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="1dp"
-        android:background="#D1D5DB"
-        app:layout_constraintTop_toBottomOf="@+id/scrollViewFilter" />
+        android:background="#E5E7EB"
+        app:layout_constraintTop_toBottomOf="@+id/scrollViewFilter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Main content -->
     <FrameLayout
