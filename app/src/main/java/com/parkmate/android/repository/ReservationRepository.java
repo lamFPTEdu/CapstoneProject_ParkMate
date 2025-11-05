@@ -68,6 +68,30 @@ public class ReservationRepository {
     }
 
     /**
+     * Lấy danh sách reservation của user hiện tại với pagination
+     * @param page Page number
+     * @param size Page size
+     * @return Single<ReservationListResponse>
+     */
+    public Single<ReservationListResponse> getMyReservations(int page, int size) {
+        // Sắp xếp theo createdAt desc để đơn mới nhất lên đầu
+        return apiService.getMyReservations(true, page, size, "createdAt", "desc")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess(response -> {
+                    Log.d(TAG, "Get my reservations page " + page + " success");
+                })
+                .doOnError(error -> {
+                    if (error instanceof HttpException) {
+                        HttpException he = (HttpException) error;
+                        Log.e(TAG, "Get reservations HTTP " + he.code() + " msg=" + he.message());
+                    } else {
+                        Log.e(TAG, "Get reservations error: " + error.getMessage(), error);
+                    }
+                });
+    }
+
+    /**
      * Lấy chi tiết reservation theo ID
      * @param id ID của reservation
      * @return Single<ReservationResponse>

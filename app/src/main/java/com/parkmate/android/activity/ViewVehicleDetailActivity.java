@@ -7,13 +7,17 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.cardview.widget.CardView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.textfield.TextInputEditText;
 import com.parkmate.android.R;
 import com.parkmate.android.model.Vehicle;
@@ -34,6 +38,9 @@ public class ViewVehicleDetailActivity extends AppCompatActivity {
 
     private ImageButton btnBack;
     private ImageButton btnEdit;
+    private CardView cvVehicleImage;
+    private ImageView ivVehicleImage;
+    private LinearLayout llUploadPlaceholder;
     private AutoCompleteTextView actvVehicleType;
     private TextInputEditText etLicensePlate;
     private TextInputEditText etBrand;
@@ -83,6 +90,9 @@ public class ViewVehicleDetailActivity extends AppCompatActivity {
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
         btnEdit = findViewById(R.id.btnEdit);
+        cvVehicleImage = findViewById(R.id.cvVehicleImage);
+        ivVehicleImage = findViewById(R.id.ivVehicleImage);
+        llUploadPlaceholder = findViewById(R.id.llUploadPlaceholder);
         actvVehicleType = findViewById(R.id.actvVehicleType);
         etLicensePlate = findViewById(R.id.etLicensePlate);
         etBrand = findViewById(R.id.etBrand);
@@ -145,6 +155,29 @@ public class ViewVehicleDetailActivity extends AppCompatActivity {
 
     private void populateVehicleData() {
         if (vehicle == null) return;
+
+        // Hiển thị ảnh xe
+        if (vehicle.getVehiclePhotoUrl() != null && !vehicle.getVehiclePhotoUrl().isEmpty()) {
+            String imageUrl = vehicle.getVehiclePhotoUrl();
+            // Nếu là đường dẫn tương đối, thêm base URL
+            if (!imageUrl.startsWith("http")) {
+                imageUrl = ApiClient.getBaseUrl() + imageUrl;
+            }
+
+            ivVehicleImage.setVisibility(View.VISIBLE);
+            llUploadPlaceholder.setVisibility(View.GONE);
+
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_image_24)
+                    .error(R.drawable.ic_image_24)
+                    .centerCrop()
+                    .into(ivVehicleImage);
+        } else {
+            // Không có ảnh, hiển thị placeholder
+            ivVehicleImage.setVisibility(View.GONE);
+            llUploadPlaceholder.setVisibility(View.VISIBLE);
+        }
 
         etLicensePlate.setText(vehicle.getLicensePlate());
         etBrand.setText(vehicle.getBrand());

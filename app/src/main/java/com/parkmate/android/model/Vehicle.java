@@ -33,6 +33,15 @@ public class Vehicle implements Serializable {
     @SerializedName("isDefault")
     private boolean isDefault;
 
+    @SerializedName("vehiclePhotoUrl")
+    private String vehiclePhotoUrl;
+
+    @SerializedName("hasSubscriptionInThisParkingLot")
+    private boolean hasSubscriptionInThisParkingLot;
+
+    @SerializedName("inReservation")
+    private boolean inReservation;
+
     public Vehicle() {
     }
 
@@ -116,5 +125,29 @@ public class Vehicle implements Serializable {
 
     public void setDefault(boolean aDefault) {
         isDefault = aDefault;
+    }
+
+    public String getVehiclePhotoUrl() {
+        return vehiclePhotoUrl;
+    }
+
+    public void setVehiclePhotoUrl(String vehiclePhotoUrl) {
+        this.vehiclePhotoUrl = vehiclePhotoUrl;
+    }
+
+    public boolean isHasSubscriptionInThisParkingLot() {
+        return hasSubscriptionInThisParkingLot;
+    }
+
+    public void setHasSubscriptionInThisParkingLot(boolean hasSubscriptionInThisParkingLot) {
+        this.hasSubscriptionInThisParkingLot = hasSubscriptionInThisParkingLot;
+    }
+
+    public boolean isInReservation() {
+        return inReservation;
+    }
+
+    public void setInReservation(boolean inReservation) {
+        this.inReservation = inReservation;
     }
 }

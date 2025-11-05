@@ -1,124 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardVehicle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
+    android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
     app:strokeWidth="2dp"
-    app:strokeColor="@color/border_color"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?attr/selectableItemBackground">
+    app:strokeColor="@color/gray_300"
+    app:cardBackgroundColor="@color/white">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-        <!-- Vehicle Icon -->
-        <ImageView
-            android:id="@+id/ivVehicleIcon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_car"
-            android:padding="8dp"
-            android:background="@drawable/circle_background_light"
-            app:tint="@color/primary"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rbSelectVehicle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            app:buttonTint="@color/radio_button_color" />
 
-        <!-- Vehicle Info -->
         <LinearLayout
-            android:id="@+id/layoutVehicleInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintStart_toEndOf="@id/ivVehicleIcon"
-            app:layout_constraintEnd_toStartOf="@id/ivSelected"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <!-- License Plate -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="4dp">
-
-                <TextView
-                    android:id="@+id/tvLicensePlate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="29A-12345"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    tools:ignore="HardcodedText" />
-
-                <!-- Default Badge -->
-                <TextView
-                    android:id="@+id/ivDefault"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Mặc định"
-                    android:textSize="10sp"
-                    android:textColor="@color/white"
-                    android:background="@drawable/badge_background"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
-                    android:layout_marginStart="8dp"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
-            </LinearLayout>
-
-            <!-- Brand/Model -->
             <TextView
-                android:id="@+id/tvVehicleBrand"
+                android:id="@+id/tvVehiclePlate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Honda Wave Alpha"
+                android:text="@string/vehicle_selection_placeholder_plate"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/tvVehicleDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/vehicle_selection_placeholder_desc"
                 android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="2dp"
-                tools:ignore="HardcodedText" />
+                android:textColor="@color/gray_600" />
 
-            <!-- Vehicle Type -->
             <TextView
-                android:id="@+id/tvVehicleType"
+                android:id="@+id/tvVehicleStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Xe máy"
+                android:layout_marginTop="4dp"
+                android:text="@string/vehicle_selection_unavailable"
                 android:textSize="12sp"
-                android:textColor="@color/text_tertiary"
-                tools:ignore="HardcodedText" />
+                android:textColor="@color/red_500"
+                android:visibility="gone" />
 
         </LinearLayout>
 
-        <!-- Selected Indicator -->
-        <ImageView
-            android:id="@+id/ivSelected"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_check_circle"
-            app:tint="@color/primary"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:visibility="visible" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
 

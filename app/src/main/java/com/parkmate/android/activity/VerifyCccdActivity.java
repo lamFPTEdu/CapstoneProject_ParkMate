@@ -24,6 +24,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -682,12 +685,50 @@ public class VerifyCccdActivity extends AppCompatActivity {
             Log.d(TAG, "Front ID image already uploaded: " + frontImagePath);
         }
 
+        // Load ảnh mặt trước từ presigned URL nếu có
+        if (userData.getFrontPhotoPresignedUrl() != null && !userData.getFrontPhotoPresignedUrl().isEmpty()) {
+            Log.d(TAG, "Loading front image from URL: " + userData.getFrontPhotoPresignedUrl());
+
+            RequestOptions options = new RequestOptions()
+                    .placeholder(R.drawable.bg_image_placeholder) // placeholder khi đang load
+                    .error(R.drawable.bg_image_placeholder) // ảnh hiển thị khi lỗi
+                    .diskCacheStrategy(DiskCacheStrategy.NONE) // không cache vì URL có thời hạn
+                    .skipMemoryCache(true);
+
+            Glide.with(this)
+                    .load(userData.getFrontPhotoPresignedUrl())
+                    .apply(options)
+                    .into(ivFrontImage);
+
+            ivFrontImage.setVisibility(View.VISIBLE);
+            llFrontImagePlaceholder.setVisibility(View.GONE);
+        }
+
         // Đường dẫn ảnh mặt sau
         if (userData.getBackIdImgPath() != null && !userData.getBackIdImgPath().isEmpty()) {
             backImagePath = userData.getBackIdImgPath();
             backImageUploaded = true;
             ivBackUploadSuccess.setVisibility(View.VISIBLE);
             Log.d(TAG, "Back ID image already uploaded: " + backImagePath);
+        }
+
+        // Load ảnh mặt sau từ presigned URL nếu có
+        if (userData.getBackPhotoPresignedUrl() != null && !userData.getBackPhotoPresignedUrl().isEmpty()) {
+            Log.d(TAG, "Loading back image from URL: " + userData.getBackPhotoPresignedUrl());
+
+            RequestOptions options = new RequestOptions()
+                    .placeholder(R.drawable.bg_image_placeholder) // placeholder khi đang load
+                    .error(R.drawable.bg_image_placeholder) // ảnh hiển thị khi lỗi
+                    .diskCacheStrategy(DiskCacheStrategy.NONE) // không cache vì URL có thời hạn
+                    .skipMemoryCache(true);
+
+            Glide.with(this)
+                    .load(userData.getBackPhotoPresignedUrl())
+                    .apply(options)
+                    .into(ivBackImage);
+
+            ivBackImage.setVisibility(View.VISIBLE);
+            llBackImagePlaceholder.setVisibility(View.GONE);
         }
 
         Log.d(TAG, "User data pre-filled successfully");

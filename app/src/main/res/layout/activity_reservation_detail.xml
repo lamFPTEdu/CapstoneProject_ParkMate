@@ -287,6 +287,41 @@
                     </LinearLayout>
 
                     <!-- Vehicle Info -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thông tin xe"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- License Plate -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Biển số:"
+                            android:textColor="@color/text_secondary"/>
+
+                        <TextView
+                            android:id="@+id/tvVehicleLicensePlate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="51H-91991"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"/>
+
+                    </LinearLayout>
+
+                    <!-- Vehicle Type -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -296,14 +331,14 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Xe:"
+                            android:text="Loại xe:"
                             android:textColor="@color/text_secondary"/>
 
                         <TextView
-                            android:id="@+id/tvVehicleInfo"
+                            android:id="@+id/tvVehicleType"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Xe: 51H1-23232"
+                            android:text="Ô tô (đến 9 chỗ)"
                             android:textColor="@color/text_primary"/>
 
                     </LinearLayout>

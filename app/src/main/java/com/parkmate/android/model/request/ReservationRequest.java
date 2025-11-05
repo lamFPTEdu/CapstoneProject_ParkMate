@@ -3,9 +3,12 @@ package com.parkmate.android.model.request;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Request body để tạo reservation
+ * Request body để tạo reservation mới
  */
 public class ReservationRequest {
+
+    @SerializedName("ownedByMe")
+    private boolean ownedByMe;
 
     @SerializedName("vehicleId")
     private Long vehicleId;
@@ -13,37 +16,43 @@ public class ReservationRequest {
     @SerializedName("parkingLotId")
     private Long parkingLotId;
 
-    @SerializedName("spotId")
-    private Long spotId;
-
-    @SerializedName("reservationFee")
-    private int reservationFee;
+    @SerializedName("initialFee")
+    private long initialFee;
 
     @SerializedName("reservedFrom")
-    private String reservedFrom; // ISO 8601: "2025-10-22T11:07:50"
+    private String reservedFrom; // ISO 8601: "2024-07-01T10:00:00"
 
-    @SerializedName("reservedUntil")
-    private String reservedUntil; // ISO 8601: "2025-11-20T11:00:00"
+    @SerializedName("assumedStayMinute")
+    private int assumedStayMinute; // Thời gian dự kiến ở (phút)
 
-    @SerializedName("ownedByMe")
-    private boolean ownedByMe;
+    @SerializedName("holdId")
+    private String holdId; // Hold ID từ API hold reservation
 
     // Constructor
     public ReservationRequest() {
+        this.ownedByMe = true; // Luôn true vì đây là reservation của user hiện tại
     }
 
-    public ReservationRequest(Long vehicleId, Long parkingLotId, Long spotId,
-                              int reservationFee, String reservedFrom, String reservedUntil) {
+    public ReservationRequest(Long vehicleId, Long parkingLotId, long initialFee,
+                              String reservedFrom, int assumedStayMinute, String holdId) {
+        this.ownedByMe = true;
         this.vehicleId = vehicleId;
         this.parkingLotId = parkingLotId;
-        this.spotId = spotId;
-        this.reservationFee = reservationFee;
+        this.initialFee = initialFee;
         this.reservedFrom = reservedFrom;
-        this.reservedUntil = reservedUntil;
-        this.ownedByMe = true; // Luôn set true vì đây là reservation của user hiện tại
+        this.assumedStayMinute = assumedStayMinute;
+        this.holdId = holdId;
     }
 
     // Getters & Setters
+    public boolean isOwnedByMe() {
+        return ownedByMe;
+    }
+
+    public void setOwnedByMe(boolean ownedByMe) {
+        this.ownedByMe = ownedByMe;
+    }
+
     public Long getVehicleId() {
         return vehicleId;
     }
@@ -60,20 +69,12 @@ public class ReservationRequest {
         this.parkingLotId = parkingLotId;
     }
 
-    public Long getSpotId() {
-        return spotId;
+    public long getInitialFee() {
+        return initialFee;
     }
 
-    public void setSpotId(Long spotId) {
-        this.spotId = spotId;
-    }
-
-    public int getReservationFee() {
-        return reservationFee;
-    }
-
-    public void setReservationFee(int reservationFee) {
-        this.reservationFee = reservationFee;
+    public void setInitialFee(long initialFee) {
+        this.initialFee = initialFee;
     }
 
     public String getReservedFrom() {
@@ -84,19 +85,19 @@ public class ReservationRequest {
         this.reservedFrom = reservedFrom;
     }
 
-    public String getReservedUntil() {
-        return reservedUntil;
+    public int getAssumedStayMinute() {
+        return assumedStayMinute;
     }
 
-    public void setReservedUntil(String reservedUntil) {
-        this.reservedUntil = reservedUntil;
+    public void setAssumedStayMinute(int assumedStayMinute) {
+        this.assumedStayMinute = assumedStayMinute;
     }
 
-    public boolean isOwnedByMe() {
-        return ownedByMe;
+    public String getHoldId() {
+        return holdId;
     }
 
-    public void setOwnedByMe(boolean ownedByMe) {
-        this.ownedByMe = ownedByMe;
+    public void setHoldId(String holdId) {
+        this.holdId = holdId;
     }
 }

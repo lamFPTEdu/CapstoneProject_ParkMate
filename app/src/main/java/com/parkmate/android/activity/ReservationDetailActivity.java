@@ -44,7 +44,8 @@ public class ReservationDetailActivity extends AppCompatActivity {
     private TextView tvReservationFee;
     private TextView tvReservedFrom;
     private TextView tvSpotInfo;
-    private TextView tvVehicleInfo;
+    private TextView tvVehicleLicensePlate;
+    private TextView tvVehicleType;
     private MaterialButton btnDone;
     private ProgressBar progressBar;
 
@@ -78,7 +79,11 @@ public class ReservationDetailActivity extends AppCompatActivity {
     }
 
     private void getDataFromIntent() {
-        reservation = (Reservation) getIntent().getSerializableExtra("reservation");
+        reservation = (Reservation) getIntent().getSerializableExtra("RESERVATION");
+        if (reservation == null) {
+            // Fallback to old key
+            reservation = (Reservation) getIntent().getSerializableExtra("reservation");
+        }
         if (reservation == null) {
             Toast.makeText(this, "Không tìm thấy thông tin đặt chỗ", Toast.LENGTH_SHORT).show();
             finish();
@@ -93,7 +98,8 @@ public class ReservationDetailActivity extends AppCompatActivity {
         tvReservationFee = findViewById(R.id.tvReservationFee);
         tvReservedFrom = findViewById(R.id.tvReservedFrom);
         tvSpotInfo = findViewById(R.id.tvSpotInfo);
-        tvVehicleInfo = findViewById(R.id.tvVehicleInfo);
+        tvVehicleLicensePlate = findViewById(R.id.tvVehicleLicensePlate);
+        tvVehicleType = findViewById(R.id.tvVehicleType);
         btnDone = findViewById(R.id.btnDone);
         progressBar = findViewById(R.id.progressBar);
     }
@@ -111,7 +117,7 @@ public class ReservationDetailActivity extends AppCompatActivity {
         if (reservation == null) return;
 
         // Hiển thị ID
-        tvReservationId.setText("Mã đặt chỗ: #" + reservation.getId());
+        tvReservationId.setText("" + reservation.getId());
 
         // Hiển thị trạng thái với màu background đúng
         tvStatus.setText(reservation.getStatusDisplayName());
@@ -125,24 +131,28 @@ public class ReservationDetailActivity extends AppCompatActivity {
         String timeRange = formatDateTimeRange(reservation.getReservedFrom(), reservation.getReservedUntil());
         tvReservedFrom.setText(timeRange);
 
-        // Hiển thị thông tin chỗ đỗ - API đã trả về parkingLotName và spotName
+        // Hiển thị thông tin bãi đỗ - API mới trả về parkingLotName
         String spotInfo;
-        if (reservation.getParkingLotName() != null && reservation.getSpotName() != null) {
-            spotInfo = String.format("%s\nChỗ đỗ: %s",
-                reservation.getParkingLotName(),
-                reservation.getSpotName());
+        if (reservation.getParkingLotName() != null && !reservation.getParkingLotName().isEmpty()) {
+            spotInfo = reservation.getParkingLotName();
         } else {
-            // Fallback nếu không có thông tin tên
-            spotInfo = String.format("Bãi: %s\nChỗ: %s",
-                reservation.getParkingLotId(),
-                reservation.getSpotId());
+            // Fallback nếu không có tên
+            spotInfo = "Bãi đỗ ID: " + reservation.getParkingLotId();
         }
         tvSpotInfo.setText(spotInfo);
 
-        // Hiển thị thông tin xe
-        // Note: Nếu cần hiển thị biển số xe, có thể cần thêm vào API response
-        String vehicleInfo = "Xe ID: " + reservation.getVehicleId();
-        tvVehicleInfo.setText(vehicleInfo);
+        // Hiển thị thông tin xe - API mới đã trả về vehicleLicensePlate và vehicleType
+        if (reservation.getVehicleLicensePlate() != null && !reservation.getVehicleLicensePlate().isEmpty()) {
+            tvVehicleLicensePlate.setText(reservation.getVehicleLicensePlate());
+        } else {
+            tvVehicleLicensePlate.setText("N/A");
+        }
+
+        if (reservation.getVehicleType() != null && !reservation.getVehicleType().isEmpty()) {
+            tvVehicleType.setText(getVehicleTypeDisplayName(reservation.getVehicleType()));
+        } else {
+            tvVehicleType.setText("N/A");
+        }
     }
 
     private void setStatusBackground(String status) {
@@ -151,16 +161,19 @@ public class ReservationDetailActivity extends AppCompatActivity {
         int backgroundColor;
         switch (status) {
             case "PENDING":
-                backgroundColor = 0xFFFF9800; // Orange
+                backgroundColor = 0xFFFF9800; // Orange - Đặt rồi nhưng chưa vào bãi
                 break;
-            case "CONFIRMED":
-                backgroundColor = 0xFF4CAF50; // Green
-                break;
-            case "CANCELLED":
-                backgroundColor = 0xFFF44336; // Red
+            case "ACTIVE":
+                backgroundColor = 0xFF4CAF50; // Green - Xe đang trong bãi
                 break;
             case "COMPLETED":
-                backgroundColor = 0xFF2196F3; // Blue
+                backgroundColor = 0xFF2196F3; // Blue - Xe ra khỏi bãi hoàn thành
+                break;
+            case "CANCELLED":
+                backgroundColor = 0xFFF44336; // Red - Booking bị hủy
+                break;
+            case "EXPIRED":
+                backgroundColor = 0xFF9E9E9E; // Gray - Hết hạn
                 break;
             default:
                 backgroundColor = 0xFF9E9E9E; // Gray
@@ -200,10 +213,15 @@ public class ReservationDetailActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         btnDone.setOnClickListener(v -> {
-            // Chuyển về màn hình ReservationList và clear back stack
-            Intent intent = new Intent(this, ReservationListActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            // Chuyển về màn hình Danh sách đặt chỗ và clear toàn bộ back stack
+            // Sau đó khi bấm back sẽ về ProfileActivity
+            Intent profileIntent = new Intent(this, ProfileActivity.class);
+            profileIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            Intent listIntent = new Intent(this, ReservationListActivity.class);
+
+            startActivity(profileIntent);
+            startActivity(listIntent);
             finish();
         });
     }
@@ -211,6 +229,23 @@ public class ReservationDetailActivity extends AppCompatActivity {
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         ivQrCode.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
+    private String getVehicleTypeDisplayName(String vehicleType) {
+        if (vehicleType == null) return "Không xác định";
+
+        switch (vehicleType) {
+            case "MOTORBIKE":
+                return "Xe máy";
+            case "BIKE":
+                return "Xe đạp";
+            case "CAR_UP_TO_9_SEATS":
+                return "Ô tô (đến 9 chỗ)";
+            case "OTHER":
+                return "Khác";
+            default:
+                return vehicleType;
+        }
     }
 
     private String formatDateTimeRange(String fromDateTime, String untilDateTime) {

@@ -109,7 +109,7 @@ public class VehicleActivity extends AppCompatActivity {
         vehicleAdapter = new VehicleAdapter(new VehicleAdapter.OnVehicleClickListener() {
             @Override
             public void onDeleteClick(Vehicle vehicle, int position) {
-                showDeleteConfirmDialog(vehicle, position);
+                showDeleteConfirmDialog(vehicle);
             }
 
             @Override
@@ -198,8 +198,18 @@ public class VehicleActivity extends AppCompatActivity {
             if (response.getContent() != null) {
                 List<Vehicle> newVehicles = response.getContent();
 
-                // Thêm xe mới vào danh sách
-                vehicleList.addAll(newVehicles);
+                // Lọc chỉ lấy những xe có active = true (chưa bị xóa)
+                List<Vehicle> activeVehicles = new ArrayList<>();
+                for (Vehicle vehicle : newVehicles) {
+                    if (vehicle.isActive()) {
+                        activeVehicles.add(vehicle);
+                    }
+                }
+
+                android.util.Log.d("VehicleActivity", "Total vehicles from API: " + newVehicles.size() + ", Active vehicles: " + activeVehicles.size());
+
+                // Thêm xe active vào danh sách
+                vehicleList.addAll(activeVehicles);
                 vehicleAdapter.setVehicleList(vehicleList);
 
                 // Kiểm tra xem đã hết dữ liệu chưa
@@ -259,18 +269,18 @@ public class VehicleActivity extends AppCompatActivity {
         });
     }
 
-    private void showDeleteConfirmDialog(Vehicle vehicle, int position) {
+    private void showDeleteConfirmDialog(Vehicle vehicle) {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.vehicle_delete_title)
                 .setMessage(getString(R.string.vehicle_delete_message, vehicle.getLicensePlate()))
-                .setPositiveButton(R.string.vehicle_delete_confirm, (dialog, which) -> {
-                    deleteVehicle(vehicle, position);
-                })
+                .setPositiveButton(R.string.vehicle_delete_confirm, (dialog, which) -> deleteVehicle(vehicle))
                 .setNegativeButton(R.string.vehicle_delete_cancel, null)
                 .show();
     }
 
-    private void deleteVehicle(Vehicle vehicle, int position) {
+    private void deleteVehicle(Vehicle vehicle) {
+        android.util.Log.d("VehicleActivity", "Deleting vehicle: ID=" + vehicle.getId() + ", plate=" + vehicle.getLicensePlate());
+
         // Hiển thị progress
         showLoading(true);
 
@@ -281,24 +291,27 @@ public class VehicleActivity extends AppCompatActivity {
                 .subscribe(
                     response -> {
                         showLoading(false);
+                        android.util.Log.d("VehicleActivity", "Delete response: success=" + (response != null && response.isSuccess()));
+
                         if (response != null && response.isSuccess()) {
-                            // Xóa thành công
-                            vehicleAdapter.removeVehicle(position);
-                            vehicleList.remove(position);
+                            // Xóa thành công (backend set active = false)
+                            // Reload lại danh sách để tự động lọc xe đã bị xóa
                             Toast.makeText(this, R.string.vehicle_deleted_success, Toast.LENGTH_SHORT).show();
+                            loadVehicles();
                         } else {
                             // API trả về lỗi
                             String errorMsg = response != null && response.getMessage() != null
                                 ? response.getMessage()
                                 : "Không thể xóa xe";
+                            android.util.Log.e("VehicleActivity", "Delete failed: " + errorMsg);
                             Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
                         }
                     },
                     throwable -> {
                         showLoading(false);
+                        android.util.Log.e("VehicleActivity", "Delete error: " + throwable.getMessage(), throwable);
                         String errorMessage = "Không thể xóa xe: " + throwable.getMessage();
                         Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
-                        throwable.printStackTrace();
                     }
                 )
         );

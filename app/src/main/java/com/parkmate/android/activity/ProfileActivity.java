@@ -9,7 +9,14 @@ import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.bumptech.glide.Glide;
 import com.parkmate.android.R;
+import com.parkmate.android.model.response.UserInfoResponse;
+import com.parkmate.android.network.ApiClient;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ProfileActivity extends BaseActivity {
 
@@ -27,6 +34,8 @@ public class ProfileActivity extends BaseActivity {
     private ConstraintLayout menuHelpSupport;
     private ConstraintLayout menuLogout;
 
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
     @Override
     protected int getLayoutResourceId() {
         return R.layout.activity_profile;
@@ -36,11 +45,14 @@ public class ProfileActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Setup toolbar without search
-        setupToolbar(false); // false = show back button
+        // Setup toolbar with title, no back button (vì đã có bottom nav)
+        setupToolbarWithTitle(getString(R.string.profile_title), false);
 
         // Setup bottom navigation with Account tab selected
         setupBottomNavigation(true, R.id.nav_account);
+
+        // Load notification badge count
+        loadNotificationBadgeCount();
 
         initProfileViews();
         loadUserInfo(); // Load thông tin user đã đăng nhập
@@ -74,6 +86,7 @@ public class ProfileActivity extends BaseActivity {
     private void loadUserInfo() {
         try {
             com.parkmate.android.utils.UserManager userManager = com.parkmate.android.utils.UserManager.getInstance();
+            String userId = userManager.getUserId();
 
             // Hiển thị username thay vì name
             String username = userManager.getUsername();
@@ -81,13 +94,18 @@ public class ProfileActivity extends BaseActivity {
                 tvUserName.setText(username);
             } else if (tvUserName != null) {
                 // Fallback nếu không có username
-                tvUserName.setText("User");
+                tvUserName.setText(R.string.profile_user_name);
             }
 
             // Hiển thị email user (giữ nguyên)
             String userEmail = userManager.getUserEmail();
             if (tvUserEmail != null && userEmail != null) {
                 tvUserEmail.setText(userEmail);
+            }
+
+            // Load profile image từ API
+            if (userId != null && !userId.isEmpty()) {
+                loadProfileImage(userId);
             }
 
         } catch (Exception e) {
@@ -101,18 +119,75 @@ public class ProfileActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Load profile image từ API
+     */
+    private void loadProfileImage(String userId) {
+        android.util.Log.d("ProfileActivity", "Loading profile image for userId: " + userId);
+
+        compositeDisposable.add(
+                ApiClient.getApiService().getUserInfo(userId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    android.util.Log.d("ProfileActivity", "getUserInfo response received");
+                                    if (response != null && response.isSuccess() && response.getData() != null) {
+                                        UserInfoResponse.UserData userData = response.getData();
+                                        String profileImageUrl = userData.getProfilePicturePresignedUrl();
+
+                                        android.util.Log.d("ProfileActivity", "Profile image URL: " + profileImageUrl);
+
+                                        if (profileImageUrl != null && !profileImageUrl.isEmpty() && profileAvatar != null) {
+                                            android.util.Log.d("ProfileActivity", "Loading image with Glide");
+                                            Glide.with(ProfileActivity.this)
+                                                    .load(profileImageUrl)
+                                                    .placeholder(R.drawable.ic_person_24)
+                                                    .error(R.drawable.ic_person_24)
+                                                    .circleCrop()
+                                                    .into(profileAvatar);
+                                        } else {
+                                            android.util.Log.d("ProfileActivity", "No profile image URL or avatar view is null");
+                                        }
+
+                                        // Update username if available from API
+                                        String firstName = userData.getFirstName();
+                                        String lastName = userData.getLastName();
+                                        if (firstName != null && lastName != null && !firstName.isEmpty() && !lastName.isEmpty()) {
+                                            String fullName = firstName + " " + lastName;
+                                            android.util.Log.d("ProfileActivity", "Updating username to: " + fullName);
+                                            if (tvUserName != null) {
+                                                tvUserName.setText(fullName);
+                                            }
+                                            // Update UserManager
+                                            com.parkmate.android.utils.UserManager.getInstance().setUsername(fullName);
+                                        }
+                                    } else {
+                                        android.util.Log.e("ProfileActivity", "Invalid response or no data");
+                                    }
+                                },
+                                error -> {
+                                    // Silently fail - just use default avatar
+                                    android.util.Log.e("ProfileActivity", "Error loading profile image", error);
+                                }
+                        )
+        );
+    }
+
     private void setupClickListeners() {
         if (btnEditProfile != null) {
             btnEditProfile.setOnClickListener(v -> {
-                // TODO: Navigate to edit profile screen
-                Toast.makeText(this, "Chỉnh sửa hồ sơ", Toast.LENGTH_SHORT).show();
+                // Navigate to edit profile screen
+                android.content.Intent intent = new android.content.Intent(this, EditProfileActivity.class);
+                startActivityForResult(intent, 100);
             });
         }
 
         if (profileAvatar != null) {
             profileAvatar.setOnClickListener(v -> {
-                // TODO: Show avatar options (change photo, view photo)
-                Toast.makeText(this, "Thay đổi ảnh đại diện", Toast.LENGTH_SHORT).show();
+                // Navigate to edit profile screen (same as edit button)
+                android.content.Intent intent = new android.content.Intent(this, EditProfileActivity.class);
+                startActivityForResult(intent, 100);
             });
         }
 
@@ -134,8 +209,9 @@ public class ProfileActivity extends BaseActivity {
 
         if (menuPaymentMethods != null) {
             menuPaymentMethods.setOnClickListener(v -> {
-                // TODO: Navigate to payment methods screen
-                Toast.makeText(this, "Phương thức thanh toán", Toast.LENGTH_SHORT).show();
+                // Navigate to Account QR Code screen
+                android.content.Intent intent = new android.content.Intent(this, AccountQrActivity.class);
+                startActivity(intent);
             });
         }
 
@@ -149,8 +225,9 @@ public class ProfileActivity extends BaseActivity {
 
         if (menuParkingHistory != null) {
             menuParkingHistory.setOnClickListener(v -> {
-                // TODO: Navigate to parking history screen
-                Toast.makeText(this, "Lịch sử đỗ xe", Toast.LENGTH_SHORT).show();
+                // Navigate to parking history screen
+                android.content.Intent intent = new android.content.Intent(this, ParkingHistoryActivity.class);
+                startActivity(intent);
             });
         }
 
@@ -202,5 +279,40 @@ public class ProfileActivity extends BaseActivity {
         if (ivNavigation != null) {
             ivNavigation.setVisibility(View.GONE);
         }
+    }
+
+    /**
+     * Load số lượng notifications chưa đọc từ SharedPreferences
+     */
+    private void loadNotificationBadgeCount() {
+        try {
+            android.content.SharedPreferences prefs = getSharedPreferences("parkmate_notifications", MODE_PRIVATE);
+            int unreadCount = prefs.getInt("unread_count", 0);
+            setupNotificationBadge(unreadCount);
+        } catch (Exception e) {
+            setupNotificationBadge(0);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge khi user quay lại màn hình
+        loadNotificationBadgeCount();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            // Refresh profile after edit
+            loadUserInfo();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.clear();
     }
 }

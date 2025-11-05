@@ -14,6 +14,8 @@ import com.parkmate.android.model.Vehicle;
 import com.parkmate.android.model.request.UpdateUserRequest;
 import com.parkmate.android.model.response.UpdateUserResponse;
 import com.parkmate.android.model.response.UserInfoResponse;
+import com.parkmate.android.model.response.UserProfileResponse;
+import com.parkmate.android.model.response.MobileDeviceResponse;
 import com.parkmate.android.model.response.ParkingLotResponse;
 import com.parkmate.android.model.response.ParkingLotDetailResponse;
 import com.parkmate.android.model.response.ParkingFloorDetailResponse;
@@ -26,6 +28,10 @@ import com.parkmate.android.model.Payment;
 import com.parkmate.android.model.PaymentCancel;
 import com.parkmate.android.model.PaymentStatus;
 import com.parkmate.android.model.response.TransactionResponse;
+import com.parkmate.android.model.request.CreateMobileDeviceRequest;
+import com.parkmate.android.model.response.ParkingSessionResponse;
+
+import java.util.Map;
 
 import io.reactivex.rxjava3.core.Single;
 import okhttp3.MultipartBody;
@@ -73,6 +79,17 @@ public interface ApiService {
             @Query("ownedByMe") boolean ownedByMe
     );
 
+    // Lấy danh sách xe với filter (cho reservation)
+    @GET("api/v1/user-service/vehicle")
+    Single<ApiResponse<VehicleResponse>> getVehiclesWithFilter(
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("sortBy") String sortBy,
+            @Query("sortOrder") String sortOrder,
+            @Query("ownedByMe") boolean ownedByMe,
+            @Query("parkingLotId") Long parkingLotId
+    );
+
     // Thêm xe mới
     @POST("api/v1/user-service/vehicle")
     Single<ApiResponse<Vehicle>> addVehicle(@Body AddVehicleRequest request);
@@ -84,6 +101,10 @@ public interface ApiService {
     // Lấy thông tin user theo ID
     @GET("api/v1/user-service/users/{id}")
     Single<UserInfoResponse> getUserInfo(@Path("id") String userId);
+
+    // Lấy thông tin user hiện tại (bao gồm QR code)
+    @GET("api/v1/user-service/users/me")
+    Single<ApiResponse<UserProfileResponse>> getCurrentUserProfile();
 
     // Xóa xe
     @DELETE("api/v1/user-service/vehicle/{id}")
@@ -120,6 +141,14 @@ public interface ApiService {
     @GET("/api/v1/parking-service/areas/{id}")
     Single<AreaDetailResponse> getAreaDetail(@Path("id") Long id);
 
+    @GET("/api/v1/parking-service/lots/{id}/available-spots")
+    Single<com.parkmate.android.model.response.AvailableSpotResponse> checkAvailableSpots(
+            @Path("id") Long parkingLotId,
+            @Query("reservedFrom") String reservedFrom,
+            @Query("assumedStayMinute") int assumedStayMinute,
+            @Query("vehicleType") String vehicleType
+    );
+
     // Reservation APIs
     @POST("/api/v1/user-service/reservations")
     Single<ReservationResponse> createReservation(@Body ReservationRequest request);
@@ -127,21 +156,38 @@ public interface ApiService {
     @GET("/api/v1/user-service/reservations")
     Single<ReservationListResponse> getMyReservations(@Query("ownedByMe") Boolean ownedByMe);
 
+    @GET("/api/v1/user-service/reservations")
+    Single<ReservationListResponse> getMyReservations(
+            @Query("ownedByMe") Boolean ownedByMe,
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("sortBy") String sortBy,
+            @Query("sortOrder") String sortOrder
+    );
+
     @GET("/api/v1/user-service/reservations/{id}")
     Single<ReservationResponse> getReservationById(@Path("id") Long id);
 
     @PUT("/api/v1/user-service/reservations/{id}/cancel")
     Single<ReservationResponse> cancelReservation(@Path("id") Long id);
 
+    // Hold Reservation APIs
+    @POST("/api/v1/user-service/reservations/hold")
+    Single<ApiResponse<com.parkmate.android.model.response.HoldReservationResponse>> holdReservation(
+            @Body com.parkmate.android.model.request.HoldReservationRequest request
+    );
+
+    @DELETE("/api/v1/user-service/reservations/hold/{holdId}")
+    Single<ApiResponse<Void>> releaseHold(@Path("holdId") String holdId);
+
 
     // Payment APIs
     @POST("/api/v1/payment-service/payos/payment")
     Single<ApiResponse<Payment>> createPayment(@Query("amount") long amount);
 
-    @PUT("/api/v1/payment-service/payos/cancel")
+    @POST("/api/v1/payment-service/payos/cancel")
     Single<ApiResponse<PaymentCancel>> cancelPayment(
-            @Query("orderCode") long orderCode,
-            @Query("reason") String reason
+            @Query("orderCode") long orderCode
     );
 
     @GET("/api/v1/payment-service/payos/status/{orderCode}")
@@ -160,4 +206,36 @@ public interface ApiService {
     // Wallet APIs
     @GET("/api/v1/payment-service/wallets/me")
     Single<WalletResponse> getMyWallet();
+
+    // Mobile Device APIs (for Push Notifications)
+    // Đăng ký FCM token để nhận push notifications
+    @POST("/api/v1/user-service/mobile-device")
+    Single<ApiResponse<MobileDeviceResponse>> registerMobileDevice(@Body CreateMobileDeviceRequest request);
+
+    // Parking Session APIs (Lịch sử đỗ xe)
+    @GET("/api/v1/parking-service/sessions")
+    Single<ApiResponse<ParkingSessionResponse>> getParkingSessions(
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("sortBy") String sortBy,
+            @Query("sortOrder") String sortOrder,
+            @Query("ownedByMe") boolean ownedByMe
+    );
+
+    @GET("/api/v1/parking-service/sessions")
+    Single<ApiResponse<ParkingSessionResponse>> getParkingSessionsWithFilters(
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("sortBy") String sortBy,
+            @Query("sortOrder") String sortOrder,
+            @Query("ownedByMe") boolean ownedByMe,
+            @Query("sessionStatus") String sessionStatus,
+            @Query("referenceType") String referenceType,
+            @Query("startTime") String startTime,
+            @Query("endTime") String endTime,
+            @Query("totalLessThan") Long totalLessThan,
+            @Query("totalMoreThan") Long totalMoreThan,
+            @Query("durationMinuteGreaterThan") Integer durationMinuteGreaterThan,
+            @Query("durationMinuteLessThan") Integer durationMinuteLessThan
+    );
 }

@@ -31,7 +31,6 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
  * Activity hiển thị danh sách reservation của user
  */
 public class ReservationListActivity extends AppCompatActivity {
-
     private static final String TAG = "ReservationList";
 
     // Views
@@ -48,6 +47,12 @@ public class ReservationListActivity extends AppCompatActivity {
     // Repository
     private ReservationRepository reservationRepository;
     private CompositeDisposable compositeDisposable;
+
+    // Pagination
+    private int currentPage = 0;
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+    private static final int PAGE_SIZE = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,48 +100,85 @@ public class ReservationListActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        rvReservations.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        rvReservations.setLayoutManager(layoutManager);
         rvReservations.setAdapter(adapter);
+
+        // Add infinite scroll listener
+        rvReservations.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                if (!isLoading && !isLastPage) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                            && firstVisibleItemPosition >= 0
+                            && totalItemCount >= PAGE_SIZE) {
+                        loadMoreReservations();
+                    }
+                }
+            }
+        });
     }
 
     private void setupSwipeRefresh() {
-        swipeRefreshLayout.setOnRefreshListener(this::loadReservations);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            currentPage = 0;
+            isLastPage = false;
+            reservationList.clear();
+            loadReservations();
+        });
         swipeRefreshLayout.setColorSchemeResources(R.color.primary);
     }
 
     private void loadReservations() {
+        if (isLoading) return;
+
+        isLoading = true;
         showLoading(true);
 
         compositeDisposable.add(
-            reservationRepository.getMyReservations()
+            reservationRepository.getMyReservations(currentPage, PAGE_SIZE)
                 .subscribe(
                     response -> {
+                        isLoading = false;
                         showLoading(false);
                         swipeRefreshLayout.setRefreshing(false);
 
                         if (response.isSuccess() && response.getData() != null) {
-                            reservationList.clear();
-
                             // Lấy content từ PageResponse
                             if (response.getData().getContent() != null) {
-                                reservationList.addAll(response.getData().getContent());
-                            }
+                                List<Reservation> newReservations = response.getData().getContent();
 
-                            adapter.notifyDataSetChanged();
+                                if (currentPage == 0) {
+                                    reservationList.clear();
+                                }
 
-                            // Hiển thị empty state nếu không có data
-                            if (reservationList.isEmpty()) {
-                                tvEmptyState.setVisibility(View.VISIBLE);
-                                rvReservations.setVisibility(View.GONE);
-                            } else {
-                                tvEmptyState.setVisibility(View.GONE);
-                                rvReservations.setVisibility(View.VISIBLE);
+                                reservationList.addAll(newReservations);
+
+                                // Check if this is the last page
+                                isLastPage = response.getData().isLast();
+
+
+                                adapter.notifyDataSetChanged();
+
+                                // Hiển thị empty state nếu không có data
+                                if (reservationList.isEmpty()) {
+                                    tvEmptyState.setVisibility(View.VISIBLE);
+                                    rvReservations.setVisibility(View.GONE);
+                                } else {
+                                    tvEmptyState.setVisibility(View.GONE);
+                                    rvReservations.setVisibility(View.VISIBLE);
+                                }
                             }
-                        } else {
-                            Toast.makeText(this, "Không thể tải danh sách đặt chỗ", Toast.LENGTH_SHORT).show();
                         }
                     },
                     error -> {
+                        isLoading = false;
                         showLoading(false);
                         swipeRefreshLayout.setRefreshing(false);
                         Log.e(TAG, "Lỗi tải danh sách: " + error.getMessage(), error);
@@ -144,6 +186,13 @@ public class ReservationListActivity extends AppCompatActivity {
                     }
                 )
         );
+    }
+
+    private void loadMoreReservations() {
+        if (!isLoading && !isLastPage) {
+            currentPage++;
+            loadReservations();
+        }
     }
 
     private void showLoading(boolean show) {
@@ -162,6 +211,9 @@ public class ReservationListActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Reload khi quay lại màn hình
+        currentPage = 0;
+        isLastPage = false;
+        reservationList.clear();
         loadReservations();
     }
 }

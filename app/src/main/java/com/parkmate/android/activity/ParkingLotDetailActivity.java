@@ -1,8 +1,11 @@
 package com.parkmate.android.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -12,6 +15,8 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -24,13 +29,14 @@ import com.parkmate.android.model.response.ParkingLotDetailResponse;
 import com.parkmate.android.repository.ParkingRepository;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ParkingLotDetailActivity extends AppCompatActivity {
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
 
     private ImageButton btnBack;
     private ImageView ivParkingImage;
@@ -39,15 +45,16 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
     private TextView tvAddress;
     private TextView tvOperatingHours;
     private TextView tvCapacity;
-    private RecyclerView rvFloors;
+    private Button btnGetDirections;
+    private Button btnReserveSpot;
     private ProgressBar progressBar;
-
-    private FloorAdapter floorAdapter;
     private ParkingRepository parkingRepository;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private Long parkingLotId;
     private String parkingLotName;
+    private Double parkingLotLatitude;
+    private Double parkingLotLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,18 +95,25 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         tvAddress = findViewById(R.id.tvAddress);
         tvOperatingHours = findViewById(R.id.tvOperatingHours);
         tvCapacity = findViewById(R.id.tvCapacity);
-        rvFloors = findViewById(R.id.rvFloors);
+        btnGetDirections = findViewById(R.id.btnGetDirections);
+        btnReserveSpot = findViewById(R.id.btnReserveSpot);
         progressBar = findViewById(R.id.progressBar);
     }
 
     private void setupRecyclerView() {
-        floorAdapter = new FloorAdapter(new ArrayList<>(), this::onFloorClick);
-        rvFloors.setLayoutManager(new LinearLayoutManager(this));
-        rvFloors.setAdapter(floorAdapter);
+        // Removed floor selection
     }
 
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> finish());
+        btnGetDirections.setOnClickListener(v -> openDirections());
+        btnReserveSpot.setOnClickListener(v -> openVehicleSelection());
+    }
+
+    private void openVehicleSelection() {
+        Intent intent = new Intent(this, VehicleSelectionActivity.class);
+        intent.putExtra("PARKING_LOT_ID", parkingLotId);
+        startActivity(intent);
     }
 
     private void loadParkingLotDetail() {
@@ -151,6 +165,10 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         tvParkingName.setText(parkingLot.getName());
         tvAddress.setText(parkingLot.getFullAddress());
 
+        // Save location for directions
+        parkingLotLatitude = parkingLot.getLatitude();
+        parkingLotLongitude = parkingLot.getLongitude();
+
         // Set status badge
         tvStatusBadge.setText(parkingLot.getStatus());
         if ("ACTIVE".equals(parkingLot.getStatus())) {
@@ -169,33 +187,88 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
                 .sum();
             tvCapacity.setText("Total capacity: " + totalCapacity + " vehicles");
         }
-
-        // Set floors
-        if (parkingLot.getParkingFloors() != null) {
-            floorAdapter.updateData(parkingLot.getParkingFloors());
-        }
-    }
-
-    private void onFloorClick(ParkingLotDetailResponse.ParkingFloor floor) {
-        Intent intent = new Intent(this, FloorDetailActivity.class);
-        intent.putExtra("parking_lot_id", parkingLotId);
-        intent.putExtra("floor_id", floor.getId());
-        intent.putExtra("floor_name", floor.getFloorName());
-        intent.putExtra("parking_lot_name", parkingLotName);
-        startActivity(intent);
     }
 
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        if (show) {
-            rvFloors.setVisibility(View.GONE);
-        } else {
-            rvFloors.setVisibility(View.VISIBLE);
-        }
     }
 
     private void showError(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Mở chỉ đường từ vị trí hiện tại đến bãi xe
+     * Quay về HomeActivity và vẽ route trên map
+     */
+    private void openDirections() {
+        android.util.Log.d("ParkingLotDetail", "╔════════════════════════════════════════╗");
+        android.util.Log.d("ParkingLotDetail", "║   OPEN DIRECTIONS CLICKED             ║");
+        android.util.Log.d("ParkingLotDetail", "╚════════════════════════════════════════╝");
+
+        Toast.makeText(this, "Đang mở chỉ đường...", Toast.LENGTH_SHORT).show();
+
+        if (parkingLotLatitude == null || parkingLotLongitude == null) {
+            android.util.Log.e("ParkingLotDetail", "ERROR: No coordinates - Lat: " + parkingLotLatitude + ", Lng: " + parkingLotLongitude);
+            showError("Không có thông tin vị trí bãi xe");
+            return;
+        }
+
+        android.util.Log.d("ParkingLotDetail", "Coordinates OK - Lat: " + parkingLotLatitude + ", Lng: " + parkingLotLongitude);
+
+        // Kiểm tra permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            android.util.Log.d("ParkingLotDetail", "Requesting location permission...");
+            // Request permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+            return;
+        }
+
+        android.util.Log.d("ParkingLotDetail", "Permission OK, opening HomeActivity");
+        // Mở HomeActivity với thông tin destination để vẽ route
+        openHomeActivityWithRoute();
+    }
+
+    /**
+     * Mở HomeActivity và truyền thông tin để vẽ route
+     */
+    private void openHomeActivityWithRoute() {
+        android.util.Log.d("ParkingLotDetail", "Creating intent to HomeActivity");
+        android.util.Log.d("ParkingLotDetail", "  - destination_lat: " + parkingLotLatitude);
+        android.util.Log.d("ParkingLotDetail", "  - destination_lng: " + parkingLotLongitude);
+        android.util.Log.d("ParkingLotDetail", "  - destination_name: " + parkingLotName);
+
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.putExtra("destination_lat", parkingLotLatitude);
+        intent.putExtra("destination_lng", parkingLotLongitude);
+        intent.putExtra("destination_name", parkingLotName);
+
+        // Clear stack và quay về Home
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        android.util.Log.d("ParkingLotDetail", "Starting HomeActivity...");
+        startActivity(intent);
+        android.util.Log.d("ParkingLotDetail", "Finishing ParkingLotDetailActivity");
+        finish(); // Đóng ParkingLotDetailActivity
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                          @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, mở HomeActivity với route
+                openHomeActivityWithRoute();
+            } else {
+                // Permission denied
+                showError("Cần quyền truy cập vị trí để chỉ đường");
+            }
+        }
     }
 
     @Override

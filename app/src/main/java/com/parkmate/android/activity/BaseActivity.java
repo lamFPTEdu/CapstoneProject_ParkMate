@@ -29,11 +29,18 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected BottomNavigationView bottomNavigationView;
     protected FrameLayout contentFrame;
 
+    // Toolbar title and action button
+    protected TextView tvToolbarTitle;
+    protected ImageView ivToolbarAction;
+
     // Search components trong toolbar
     protected ConstraintLayout searchContainer;
-    protected ImageView ivSearchIcon;
     protected TextView tvSearchPlaceholder;
     protected FrameLayout btnFilter;
+
+    // Notification components (removed from toolbar, now in bottom nav)
+    // Bottom nav notification badge
+    protected TextView tvBottomNavNotificationBadge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,11 +64,17 @@ public abstract class BaseActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         contentFrame = findViewById(R.id.content_frame);
 
-        // Khởi tạo search components từ layout_search_destination
-        // Root của search destination component
+        // Khởi tạo toolbar title và action button
+        tvToolbarTitle = findViewById(R.id.tvToolbarTitle);
+        ivToolbarAction = findViewById(R.id.ivToolbarAction);
+
+        // Khởi tạo search components từ toolbar
         searchContainer = findViewById(R.id.searchDestinationRoot);
         tvSearchPlaceholder = findViewById(R.id.tvSearchPlaceholder);
         btnFilter = findViewById(R.id.btnFilter);
+
+        // Khởi tạo notification badge từ bottom nav
+        tvBottomNavNotificationBadge = findViewById(R.id.tvBottomNavNotificationBadge);
 
         if (toolbar != null) {
             setSupportActionBar(toolbar);
@@ -125,6 +138,83 @@ public abstract class BaseActivity extends AppCompatActivity {
                 // Hiển thị mũi tên quay lại cho các màn hình khác
                 ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
                 ivNavigation.setOnClickListener(v -> onBackPressed());
+            }
+        }
+    }
+
+    /**
+     * Thiết lập toolbar với title (không có search, chỉ có title text)
+     *
+     * @param title Text hiển thị trên toolbar
+     * @param showBackButton true để hiển thị nút back, false để ẩn nút navigation
+     */
+    protected void setupToolbarWithTitle(String title, boolean showBackButton) {
+        // Ẩn search container
+        if (searchContainer != null) {
+            searchContainer.setVisibility(View.GONE);
+        }
+
+        // Ẩn action button mặc định
+        if (ivToolbarAction != null) {
+            ivToolbarAction.setVisibility(View.GONE);
+        }
+
+        // Hiển thị title trên toolbar
+        if (tvToolbarTitle != null) {
+            tvToolbarTitle.setVisibility(View.VISIBLE);
+            tvToolbarTitle.setText(title);
+        }
+
+        // Thiết lập nút navigation
+        if (ivNavigation != null) {
+            if (showBackButton) {
+                ivNavigation.setVisibility(View.VISIBLE);
+                ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
+                ivNavigation.setOnClickListener(v -> onBackPressed());
+            } else {
+                // Ẩn nút navigation hoàn toàn
+                ivNavigation.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    /**
+     * Thiết lập toolbar với title và action button icon (vd: icon "Đọc tất cả")
+     *
+     * @param title Text hiển thị trên toolbar
+     * @param showBackButton true để hiển thị nút back, false để ẩn nút navigation
+     * @param actionIconRes Resource ID của icon action button
+     * @param actionClickListener Listener khi click action button
+     */
+    protected void setupToolbarWithTitleAndAction(String title, boolean showBackButton,
+                                                  int actionIconRes, View.OnClickListener actionClickListener) {
+        // Ẩn search container
+        if (searchContainer != null) {
+            searchContainer.setVisibility(View.GONE);
+        }
+
+        // Hiển thị title
+        if (tvToolbarTitle != null) {
+            tvToolbarTitle.setVisibility(View.VISIBLE);
+            tvToolbarTitle.setText(title);
+        }
+
+        // Hiển thị action button với icon
+        if (ivToolbarAction != null && actionIconRes != 0 && actionClickListener != null) {
+            ivToolbarAction.setVisibility(View.VISIBLE);
+            ivToolbarAction.setImageResource(actionIconRes);
+            ivToolbarAction.setOnClickListener(actionClickListener);
+        }
+
+        // Thiết lập nút navigation
+        if (ivNavigation != null) {
+            if (showBackButton) {
+                ivNavigation.setVisibility(View.VISIBLE);
+                ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
+                ivNavigation.setOnClickListener(v -> onBackPressed());
+            } else {
+                // Ẩn nút navigation hoàn toàn
+                ivNavigation.setVisibility(View.GONE);
             }
         }
     }
@@ -200,6 +290,74 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     /**
+     * Thiết lập notification badge trên bottom navigation
+     *
+     * @param unreadCount số lượng notification chưa đọc (0 = ẩn badge)
+     */
+    protected void setupNotificationBadge(int unreadCount) {
+        if (tvBottomNavNotificationBadge == null || bottomNavigationView == null) {
+            android.util.Log.e("BaseActivity", "Badge views are null!");
+            return;
+        }
+
+        android.util.Log.d("BaseActivity", "Setting up badge with count: " + unreadCount);
+
+        if (unreadCount > 0) {
+            tvBottomNavNotificationBadge.setVisibility(View.VISIBLE);
+            tvBottomNavNotificationBadge.setText(unreadCount > 99 ? "99+" : String.valueOf(unreadCount));
+
+            // Tính toán vị trí badge dựa trên số item trong bottom nav
+            // Notification là item thứ 4 (index 3) trong 5 items: Home, Parking, Wallet, Notification, Account
+            bottomNavigationView.post(() -> {
+                int itemCount = bottomNavigationView.getMenu().size();
+                int notificationIndex = 3; // nav_notification là item thứ 4 (index 3)
+                float navWidth = bottomNavigationView.getWidth();
+                float itemWidth = navWidth / (float) itemCount;
+
+                // Tính toán vị trí X của badge
+                // Từ giữa màn hình (vì layout_gravity="center_horizontal")
+                // Di chuyển đến vị trí icon notification
+                float centerX = navWidth / 2f;
+                float notificationCenterX = (notificationIndex * itemWidth) + (itemWidth / 2f);
+                float offsetX = notificationCenterX - centerX;
+
+                // Thêm offset nhỏ để badge nằm ở góc phải trên của icon
+                float badgeOffsetX = offsetX + (itemWidth * 0.15f);
+
+                tvBottomNavNotificationBadge.setTranslationX(badgeOffsetX);
+
+                android.util.Log.d("BaseActivity", "Badge position - navWidth: " + navWidth +
+                    ", itemWidth: " + itemWidth + ", offsetX: " + badgeOffsetX);
+            });
+        } else {
+            tvBottomNavNotificationBadge.setVisibility(View.GONE);
+            android.util.Log.d("BaseActivity", "Badge hidden (count = 0)");
+        }
+    }
+
+    /**
+     * Load và hiển thị badge số lượng notifications chưa đọc
+     * Helper method để các activity dễ dàng cập nhật badge
+     */
+    protected void loadAndShowNotificationBadge() {
+        try {
+            android.content.SharedPreferences prefs = getSharedPreferences("parkmate_notifications", MODE_PRIVATE);
+            int unreadCount = prefs.getInt("unread_count", 0);
+            setupNotificationBadge(unreadCount);
+        } catch (Exception e) {
+            setupNotificationBadge(0);
+        }
+    }
+
+    /**
+     * Mở màn hình notifications
+     */
+    protected void openNotifications() {
+        Intent intent = new Intent(this, NotificationActivity.class);
+        startActivity(intent);
+    }
+
+    /**
      * Thiết lập BottomNavigationView
      *
      * @param showBottomNav true nếu muốn hiển thị bottom navigation, false nếu muốn ẩn
@@ -229,6 +387,37 @@ public abstract class BaseActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Thiết lập BottomNavigationView nhưng KHÔNG highlight item nào
+     * Dùng cho các trang không nằm trong bottom nav menu (VD: ParkingLotDetailActivity)
+     *
+     * @param showBottomNav true nếu muốn hiển thị bottom navigation, false nếu muốn ẩn
+     */
+    protected void setupBottomNavigationWithoutSelection(boolean showBottomNav) {
+        if (bottomNavigationView == null) return;
+        if (!showBottomNav) {
+            bottomNavigationView.setVisibility(android.view.View.GONE);
+            return;
+        }
+        bottomNavigationView.setVisibility(android.view.View.VISIBLE);
+
+        // Disable ripple effect completely
+        try { bottomNavigationView.setItemRippleColor(null); } catch (Exception ignored) {}
+
+        // CLEAR selected item - không highlight item nào
+        bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
+        for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
+            bottomNavigationView.getMenu().getItem(i).setChecked(false);
+        }
+        bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
+
+        // Xử lý sự kiện khi chọn item trên bottom navigation
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            handleBottomNavSelection(item);
+            return true;
+        });
+    }
+
     private void handleBottomNavSelection(MenuItem item) {
         int id = item.getItemId();
         String currentClassName = this.getClass().getSimpleName();
@@ -243,6 +432,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         } else if (id == R.id.nav_parking) {
             if (!currentClassName.equals("ParkingLotsActivity")) {
                 Intent intent = new Intent(this, ParkingLotsActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+            }
+        } else if (id == R.id.nav_notification) {
+            if (!currentClassName.equals("NotificationActivity")) {
+                Intent intent = new Intent(this, NotificationActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 overridePendingTransition(0, 0);

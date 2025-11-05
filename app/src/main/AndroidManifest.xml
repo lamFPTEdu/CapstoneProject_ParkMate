@@ -37,10 +37,10 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/parkmate_icon"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/parkmate_round_icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.CapstoneProject_ParkMate"
         android:usesCleartextTraffic="true"
@@ -69,6 +69,9 @@
             android:exported="false" />
         <activity
             android:name=".activity.VerifyCccdActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.AccountQrActivity"
             android:exported="false" /> <!-- FileProvider for Camera -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -83,6 +86,10 @@
         <activity
             android:name=".activity.ProfileActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.EditProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.HomeActivity"
             android:exported="false"
@@ -103,6 +110,10 @@
         <activity
             android:name=".activity.ParkingLotsActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.SearchParkingActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.ParkingLotDetailActivity"
             android:exported="false" />
@@ -126,6 +137,9 @@
             android:name=".activity.ReservationListActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.ParkingHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.SplashActivity"
             android:exported="true">
             <intent-filter>
@@ -134,6 +148,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Notification Activity -->
+        <activity
+            android:name=".activity.NotificationActivity"
+            android:exported="false" />
+
+        <!-- Firebase Cloud Messaging Service -->
+        <service
+            android:name=".service.ParkMateFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

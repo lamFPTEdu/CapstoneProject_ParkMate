@@ -52,8 +52,14 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Reservation reservation = reservationList.get(position);
 
-        // Hiển thị thông tin
-        holder.tvReservationId.setText(String.format("#%s", reservation.getId()));
+        // Hiển thị biển số xe thay vì ID
+        String licensePlate = reservation.getVehicleLicensePlate();
+        if (licensePlate != null && !licensePlate.isEmpty()) {
+            holder.tvReservationId.setText(licensePlate);
+        } else {
+            holder.tvReservationId.setText(String.format("#%s", reservation.getId()));
+        }
+
         holder.tvStatus.setText(reservation.getStatusDisplayName());
 
         // Hiển thị tổng phí (totalFee hoặc initialFee)
@@ -99,16 +105,19 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         int backgroundColor;
         switch (status) {
             case "PENDING":
-                backgroundColor = 0xFFFF9800; // Orange
+                backgroundColor = 0xFFFF9800; // Orange - Đặt rồi nhưng chưa vào bãi
                 break;
-            case "CONFIRMED":
-                backgroundColor = 0xFF4CAF50; // Green
-                break;
-            case "CANCELLED":
-                backgroundColor = 0xFFF44336; // Red
+            case "ACTIVE":
+                backgroundColor = 0xFF4CAF50; // Green - Xe đang trong bãi
                 break;
             case "COMPLETED":
-                backgroundColor = 0xFF2196F3; // Blue
+                backgroundColor = 0xFF2196F3; // Blue - Xe ra khỏi bãi hoàn thành
+                break;
+            case "CANCELLED":
+                backgroundColor = 0xFFF44336; // Red - Booking bị hủy
+                break;
+            case "EXPIRED":
+                backgroundColor = 0xFF9E9E9E; // Gray - Hết hạn
                 break;
             default:
                 backgroundColor = 0xFF9E9E9E; // Gray

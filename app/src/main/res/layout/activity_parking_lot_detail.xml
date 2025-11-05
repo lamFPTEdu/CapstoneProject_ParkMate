@@ -114,35 +114,52 @@
             app:layout_constraintStart_toStartOf="@+id/tvParkingName"
             app:layout_constraintTop_toBottomOf="@+id/tvOperatingHours"
             tools:text="Total capacity: 150 vehicles" />
-
-        <!-- Floors Section Title -->
-        <TextView
-            android:id="@+id/tvFloorsTitle"
+        <!-- Get Directions Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGetDirections"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:text="Chọn tầng đỗ xe"
-            android:textColor="#101828"
-            android:textSize="20sp"
+            android:text="Chỉ đường đến bãi xe"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
             android:textStyle="bold"
+            app:backgroundTint="@color/colorPrimary"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_directions_24"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvCapacity" />
 
-        <!-- Floors RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvFloors"
+        <!-- Reserve Spot Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReserveSpot"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="32dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:text="Đặt chỗ"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/primary"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_add_circle_24"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvFloorsTitle"
-            tools:itemCount="3"
-            tools:listitem="@layout/item_floor" />
+            app:layout_constraintTop_toBottomOf="@+id/btnGetDirections" />
 
         <!-- Loading -->
         <ProgressBar

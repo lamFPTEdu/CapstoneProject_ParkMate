@@ -16,13 +16,13 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Icon xe -->
+        <!-- Icon/Ảnh xe -->
         <ImageView
             android:id="@+id/ivVehicleIcon"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:padding="12dp"
             android:background="@drawable/bg_image_placeholder"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_car_24"
             android:contentDescription="@string/vehicle_icon_description"
             app:tint="@color/colorPrimary"
@@ -72,6 +72,24 @@
             app:layout_constraintStart_toStartOf="@+id/tvLicensePlate"
             app:layout_constraintTop_toBottomOf="@+id/tvLicensePlate"
             tools:text="Honda • Đỏ" />
+
+        <!-- Badge trạng thái (vé tháng/đang đặt chỗ) -->
+        <TextView
+            android:id="@+id/tvStatusBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_status_inactive"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@+id/tvVehicleInfo"
+            app:layout_constraintTop_toBottomOf="@+id/tvVehicleInfo"
+            tools:text="Đã có vé tháng"
+            tools:visibility="visible" />
 
         <!-- Nút xóa -->
         <ImageButton
