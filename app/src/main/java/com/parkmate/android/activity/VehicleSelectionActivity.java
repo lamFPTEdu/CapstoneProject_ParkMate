@@ -1,31 +1,33 @@
 package com.parkmate.android.activity;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.parkmate.android.R;
 import com.parkmate.android.adapter.VehicleSelectionAdapter;
 import com.parkmate.android.model.Vehicle;
+import com.parkmate.android.model.response.AvailableSpotResponse;
+import com.parkmate.android.model.response.VehicleResponse;
 import com.parkmate.android.network.ApiClient;
-import com.parkmate.android.network.ApiService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -33,264 +35,371 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class VehicleSelectionActivity extends AppCompatActivity {
 
-    private static final String TAG = "VehicleSelectionActivity";
-
     private MaterialToolbar toolbar;
-    private TextView tvVehicleTypeRequired;
-    private TextView tvNoVehicles;
+    private TextInputEditText etReservedFrom;
+    private TextInputEditText etAssumedMinutes;
     private RecyclerView rvVehicles;
-    private MaterialButton btnContinue;
+    private TextView tvNoVehicles;
+    private MaterialButton btnCheckAvailability;
     private ProgressBar progressBar;
 
     private VehicleSelectionAdapter vehicleAdapter;
-    private ApiService apiService;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    // Data from previous screen
     private Long parkingLotId;
-    private Long floorId;
-    private Long areaId;
-    private Long spotId;
-    private String parkingLotName;
-    private String floorName;
-    private String areaName;
-    private String spotName;
-    private String vehicleTypeRequired;
+    private Long selectedVehicleId = null;
+    private Calendar selectedDateTime;
+    private final SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+    private final SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
-    // Pricing information
-    private Integer initialCharge;
-    private Integer stepRate;
-    private Integer stepMinute;
-    private Integer initialDurationMinute;
-    private String pricingRuleName;
-
-    private Vehicle selectedVehicle;
+    // Pagination for vehicles
+    private int currentVehiclePage = 0;
+    private boolean isLoadingVehicles = false;
+    private boolean isLastVehiclePage = false;
+    private static final int VEHICLE_PAGE_SIZE = 4;
+    private final java.util.List<Vehicle> allVehicles = new java.util.ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_vehicle_selection);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        initializeViews();
-        setupToolbar();
-        setupRecyclerView();
-        setupClickListeners();
-
-        apiService = ApiClient.getApiService();
-
-        // Get data from intent
-        getIntentData();
-
-        if (vehicleTypeRequired == null) {
-            showError("Không xác định được loại xe yêu cầu");
+        parkingLotId = getIntent().getLongExtra("PARKING_LOT_ID", -1);
+        if (parkingLotId == -1) {
+            Toast.makeText(this, "Invalid parking lot ID", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Set vehicle type required text
-        tvVehicleTypeRequired.setText("Khu vực yêu cầu: " + getVehicleTypeDisplayName(vehicleTypeRequired));
-
-        loadUserVehicles();
+        initializeViews();
+        setupClickListeners();
+        loadVehicles();
     }
 
     private void initializeViews() {
         toolbar = findViewById(R.id.toolbar);
-        tvVehicleTypeRequired = findViewById(R.id.tvVehicleTypeRequired);
-        tvNoVehicles = findViewById(R.id.tvNoVehicles);
+        etReservedFrom = findViewById(R.id.etReservedFrom);
+        etAssumedMinutes = findViewById(R.id.etAssumedMinutes);
         rvVehicles = findViewById(R.id.rvVehicles);
-        btnContinue = findViewById(R.id.btnContinue);
+        tvNoVehicles = findViewById(R.id.tvNoVehicles);
+        btnCheckAvailability = findViewById(R.id.btnCheckAvailability);
         progressBar = findViewById(R.id.progressBar);
-    }
 
-    private void setupToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
         toolbar.setNavigationOnClickListener(v -> finish());
-    }
 
-    private void getIntentData() {
-        parkingLotId = getIntent().getLongExtra("parking_lot_id", -1);
-        floorId = getIntent().getLongExtra("floor_id", -1);
-        areaId = getIntent().getLongExtra("area_id", -1);
-        spotId = getIntent().getLongExtra("spot_id", -1);
-        parkingLotName = getIntent().getStringExtra("parking_lot_name");
-        floorName = getIntent().getStringExtra("floor_name");
-        areaName = getIntent().getStringExtra("area_name");
-        spotName = getIntent().getStringExtra("spot_name");
-        vehicleTypeRequired = getIntent().getStringExtra("vehicle_type");
+        vehicleAdapter = new VehicleSelectionAdapter((vehicle, position) -> {
+            onVehicleSelected(vehicle);
+        });
 
-        // Get pricing data
-        initialCharge = getIntent().getIntExtra("initial_charge", 0);
-        stepRate = getIntent().getIntExtra("step_rate", 0);
-        stepMinute = getIntent().getIntExtra("step_minute", 0);
-        initialDurationMinute = getIntent().getIntExtra("initial_duration_minute", 0);
-        pricingRuleName = getIntent().getStringExtra("pricing_rule_name");
-    }
-
-    private void setupRecyclerView() {
-        vehicleAdapter = new VehicleSelectionAdapter(this, new ArrayList<>(), this::onVehicleClick);
-        rvVehicles.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        rvVehicles.setLayoutManager(layoutManager);
         rvVehicles.setAdapter(vehicleAdapter);
+
+        // Add infinite scroll listener for vehicles
+        rvVehicles.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                // Load more when user scrolled to last 2 items
+                if (!isLoadingVehicles && !isLastVehiclePage && dy > 0) {
+                    if ((visibleItemCount + firstVisibleItemPosition + 2) >= totalItemCount
+                            && firstVisibleItemPosition >= 0) {
+                        android.util.Log.d("VehicleSelection", "Loading more vehicles...");
+                        loadMoreVehicles();
+                    }
+                }
+            }
+        });
+
+        selectedDateTime = Calendar.getInstance();
     }
 
     private void setupClickListeners() {
-        btnContinue.setOnClickListener(v -> {
-            if (selectedVehicle != null) {
-                proceedToBooking();
-            } else {
-                showError("Vui lòng chọn xe");
+        etReservedFrom.setOnClickListener(v -> showDateTimePicker());
+        btnCheckAvailability.setOnClickListener(v -> checkAvailableSpots());
+
+        // Add text watcher for etAssumedMinutes
+        etAssumedMinutes.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkFormValidity();
             }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
         });
     }
 
-    private void loadUserVehicles() {
+    private void showDateTimePicker() {
+        Calendar now = Calendar.getInstance();
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    selectedDateTime.set(Calendar.YEAR, year);
+                    selectedDateTime.set(Calendar.MONTH, month);
+                    selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                    // Show time picker
+                    new TimePickerDialog(
+                            this,
+                            (timeView, hourOfDay, minute) -> {
+                                selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                selectedDateTime.set(Calendar.MINUTE, minute);
+                                selectedDateTime.set(Calendar.SECOND, 0);
+
+                                etReservedFrom.setText(displayDateFormat.format(selectedDateTime.getTime()));
+                                checkFormValidity();
+                            },
+                            now.get(Calendar.HOUR_OF_DAY),
+                            now.get(Calendar.MINUTE),
+                            true
+                    ).show();
+                },
+                now.get(Calendar.YEAR),
+                now.get(Calendar.MONTH),
+                now.get(Calendar.DAY_OF_MONTH)
+        );
+
+        datePickerDialog.getDatePicker().setMinDate(now.getTimeInMillis());
+        datePickerDialog.show();
+    }
+
+    private void loadVehicles() {
+        if (isLoadingVehicles) return;
+
+        isLoadingVehicles = true;
         showLoading(true);
 
-        // Gọi API giống VehicleActivity - lấy tất cả xe của user với ownedByMe=true
         compositeDisposable.add(
-            apiService.getVehicles(0, 100, "createdAt", "desc", true)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> {
-                        showLoading(false);
-                        Log.d(TAG, "API Response success: " + response.isSuccess());
+                ApiClient.getApiService()
+                        .getVehiclesWithFilter(currentVehiclePage, VEHICLE_PAGE_SIZE, "createdAt", "asc", true, parkingLotId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    isLoadingVehicles = false;
+                                    showLoading(false);
 
-                        if (response.isSuccess() && response.getData() != null) {
-                            List<Vehicle> allVehicles = response.getData().getContent();
-                            Log.d(TAG, "Total vehicles from API: " + allVehicles.size());
-                            Log.d(TAG, "Vehicle type required: " + vehicleTypeRequired);
+                                    if (response.isSuccess() && response.getData() != null) {
+                                        VehicleResponse vehicleResponse = response.getData();
+                                        android.util.Log.d("VehicleSelection", "Page " + currentVehiclePage +
+                                            " - Total elements: " + vehicleResponse.getTotalElements() +
+                                            ", Total pages: " + vehicleResponse.getTotalPages() +
+                                            ", Is last: " + vehicleResponse.isLast() +
+                                            ", Content size: " + (vehicleResponse.getContent() != null ? vehicleResponse.getContent().size() : 0));
 
-                            // Log tất cả xe
-                            for (Vehicle v : allVehicles) {
-                                Log.d(TAG, "Vehicle: " + v.getLicensePlate() +
-                                    ", Type: " + v.getVehicleType() +
-                                    ", Active: " + v.isActive());
-                            }
+                                        if (vehicleResponse.getContent() != null && !vehicleResponse.getContent().isEmpty()) {
+                                            // Filter out inactive vehicles (soft deleted)
+                                            java.util.List<Vehicle> activeVehicles = new java.util.ArrayList<>();
+                                            for (Vehicle vehicle : vehicleResponse.getContent()) {
+                                                if (vehicle.isActive()) {
+                                                    activeVehicles.add(vehicle);
+                                                }
+                                            }
 
-                            List<Vehicle> compatibleVehicles = filterVehiclesByType(allVehicles);
-                            Log.d(TAG, "Compatible vehicles after filter: " + compatibleVehicles.size());
+                                            android.util.Log.d("VehicleSelection", "Active vehicles in this page: " + activeVehicles.size() +
+                                                ", Total vehicles loaded: " + (allVehicles.size() + activeVehicles.size()));
 
-                            if (compatibleVehicles.isEmpty()) {
-                                showNoVehiclesMessage();
-                            } else {
-                                displayVehicles(compatibleVehicles);
-                            }
-                        } else {
-                            showError("Không thể lấy danh sách xe");
-                        }
-                    },
-                    error -> {
-                        showLoading(false);
-                        Log.e(TAG, "Error loading vehicles: " + error.getMessage(), error);
-                        showError("Lỗi khi tải danh sách xe: " + error.getMessage());
-                    }
-                )
+                                            if (!activeVehicles.isEmpty()) {
+                                                allVehicles.addAll(activeVehicles);
+                                                vehicleAdapter.updateVehicles(allVehicles);
+
+                                                // Check if this is the last page
+                                                isLastVehiclePage = vehicleResponse.isLast();
+
+                                                tvNoVehicles.setVisibility(View.GONE);
+                                                rvVehicles.setVisibility(View.VISIBLE);
+
+                                                // Auto-load next page if total vehicles < 5 (not enough to fill screen and enable scroll)
+                                                if (allVehicles.size() < 5 && !isLastVehiclePage) {
+                                                    android.util.Log.d("VehicleSelection", "Auto-loading next page because only " + allVehicles.size() + " vehicles loaded");
+                                                    // Post delayed to avoid blocking UI
+                                                    rvVehicles.postDelayed(() -> loadMoreVehicles(), 300);
+                                                }
+                                            } else if (currentVehiclePage == 0) {
+                                                showNoVehicles();
+                                            }
+                                        } else if (currentVehiclePage == 0) {
+                                            showNoVehicles();
+                                        }
+                                    } else {
+                                        showError(response.getError() != null ? response.getError() : "Failed to load vehicles");
+                                    }
+                                },
+                                throwable -> {
+                                    isLoadingVehicles = false;
+                                    showLoading(false);
+                                    android.util.Log.e("VehicleSelection", "Error loading vehicles", throwable);
+                                    showError("Network error: " + throwable.getMessage());
+                                }
+                        )
         );
     }
 
-    private List<Vehicle> filterVehiclesByType(List<Vehicle> allVehicles) {
-        List<Vehicle> filtered = new ArrayList<>();
-        for (Vehicle vehicle : allVehicles) {
-            Log.d(TAG, "Filtering vehicle: " + vehicle.getLicensePlate() +
-                ", Active: " + vehicle.isActive() +
-                ", Type: " + vehicle.getVehicleType() +
-                ", Required: " + vehicleTypeRequired +
-                ", Match: " + vehicleTypeRequired.equals(vehicle.getVehicleType()));
-
-            // Lọc theo: xe đang hoạt động VÀ đúng loại xe yêu cầu
-            if (vehicle.isActive() && vehicleTypeRequired.equals(vehicle.getVehicleType())) {
-                filtered.add(vehicle);
-                Log.d(TAG, "Vehicle added to filtered list: " + vehicle.getLicensePlate());
-            }
+    private void loadMoreVehicles() {
+        if (!isLoadingVehicles && !isLastVehiclePage) {
+            currentVehiclePage++;
+            loadVehicles();
         }
-        return filtered;
     }
 
-    private void displayVehicles(List<Vehicle> vehicles) {
-        Log.d(TAG, "displayVehicles called with " + vehicles.size() + " vehicles");
-        tvNoVehicles.setVisibility(View.GONE);
-        rvVehicles.setVisibility(View.VISIBLE);
-        vehicleAdapter.updateData(vehicles);
+    private void onVehicleSelected(Vehicle vehicle) {
+        // Check if vehicle is disabled
+        if (vehicle.isHasSubscriptionInThisParkingLot() || vehicle.isInReservation()) {
+            String message = vehicle.isHasSubscriptionInThisParkingLot()
+                ? "Xe này đã có vé tháng tại bãi xe này"
+                : "Xe này đang trong phiên đặt chỗ khác";
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        selectedVehicleId = vehicle.getId();
+        checkFormValidity();
     }
 
-    private void showNoVehiclesMessage() {
-        tvNoVehicles.setVisibility(View.VISIBLE);
-        rvVehicles.setVisibility(View.GONE);
-        btnContinue.setEnabled(false);
+    private void checkFormValidity() {
+        String reservedFrom = etReservedFrom.getText() != null ? etReservedFrom.getText().toString() : "";
+        String assumedMinutes = etAssumedMinutes.getText() != null ? etAssumedMinutes.getText().toString() : "";
 
-        tvNoVehicles.setText(String.format(
-            "Bạn chưa có xe %s phù hợp.\n\nVui lòng thêm xe trong phần Quản lý xe để tiếp tục đặt chỗ.",
-            getVehicleTypeDisplayName(vehicleTypeRequired)
-        ));
+        boolean isValid = !TextUtils.isEmpty(reservedFrom)
+                && !TextUtils.isEmpty(assumedMinutes)
+                && selectedVehicleId != null;
+
+        btnCheckAvailability.setEnabled(isValid);
     }
 
-    private void onVehicleClick(Vehicle vehicle) {
-        selectedVehicle = vehicle;
-        vehicleAdapter.setSelectedVehicle(vehicle);
-        btnContinue.setEnabled(true);
+    private void checkAvailableSpots() {
+        String assumedMinutesStr = etAssumedMinutes.getText() != null ? etAssumedMinutes.getText().toString() : "";
+        if (TextUtils.isEmpty(assumedMinutesStr)) {
+            Toast.makeText(this, "Vui lòng nhập thời gian dự kiến", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int assumedMinutes;
+        try {
+            assumedMinutes = Integer.parseInt(assumedMinutesStr);
+            if (assumedMinutes <= 0) {
+                Toast.makeText(this, "Thời gian phải lớn hơn 0", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Thời gian không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (selectedVehicleId == null) {
+            Toast.makeText(this, "Vui lòng chọn xe", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String reservedFrom = apiDateFormat.format(selectedDateTime.getTime());
+
+        // Get vehicle type from selected vehicle ID
+        showLoading(true);
+        compositeDisposable.add(
+                ApiClient.getApiService()
+                        .getVehicleById(selectedVehicleId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    if (response.isSuccess() && response.getData() != null) {
+                                        Vehicle vehicle = response.getData();
+                                        checkAvailableSpotsWithVehicle(vehicle, reservedFrom, assumedMinutes);
+                                    } else {
+                                        showLoading(false);
+                                        showError("Không thể lấy thông tin xe");
+                                    }
+                                },
+                                throwable -> {
+                                    showLoading(false);
+                                    android.util.Log.e("VehicleSelection", "Error getting vehicle", throwable);
+                                    showError("Network error: " + throwable.getMessage());
+                                }
+                        )
+        );
     }
 
-    private void proceedToBooking() {
-        // Chuyển sang màn hình xác nhận đặt chỗ
+    private void checkAvailableSpotsWithVehicle(Vehicle vehicle, String reservedFrom, int assumedMinutes) {
+        compositeDisposable.add(
+                ApiClient.getApiService()
+                        .checkAvailableSpots(parkingLotId, reservedFrom, assumedMinutes, vehicle.getVehicleType())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    showLoading(false);
+                                    if (response.isSuccess() && response.getData() != null) {
+                                        handleAvailableSpotResponse(response.getData());
+                                    } else {
+                                        showError(response.getError() != null ? response.getError() : "Failed to check availability");
+                                    }
+                                },
+                                throwable -> {
+                                    showLoading(false);
+                                    android.util.Log.e("VehicleSelection", "Error checking spots", throwable);
+                                    showError("Network error: " + throwable.getMessage());
+                                }
+                        )
+        );
+    }
+
+    private void handleAvailableSpotResponse(AvailableSpotResponse.Data data) {
+        if (data.getAvailableCapacity() <= 0) {
+            // No spots available
+            new AlertDialog.Builder(this)
+                    .setTitle("Hết chỗ")
+                    .setMessage("Rất tiếc, bãi xe đã hết chỗ trong khung giờ bạn chọn.")
+                    .setPositiveButton("OK", null)
+                    .show();
+        } else {
+            // Navigate directly to confirmation
+            navigateToConfirmation(data);
+        }
+    }
+
+    private void navigateToConfirmation(AvailableSpotResponse.Data data) {
+        String reservedFrom = apiDateFormat.format(selectedDateTime.getTime());
+        String assumedMinutesStr = etAssumedMinutes.getText() != null ? etAssumedMinutes.getText().toString() : "";
+        int assumedMinutes = Integer.parseInt(assumedMinutesStr);
+
         Intent intent = new Intent(this, ReservationConfirmActivity.class);
-        intent.putExtra("parking_lot_id", parkingLotId);
-        intent.putExtra("floor_id", floorId);
-        intent.putExtra("area_id", areaId);
-        intent.putExtra("spot_id", spotId);
-        intent.putExtra("parking_lot_name", parkingLotName);
-        intent.putExtra("floor_name", floorName);
-        intent.putExtra("area_name", areaName);
-        intent.putExtra("spot_name", spotName);
-        intent.putExtra("vehicle_id", selectedVehicle.getId());
-        intent.putExtra("vehicle_plate", selectedVehicle.getLicensePlate());
-        intent.putExtra("vehicle_type", selectedVehicle.getVehicleType());
-
-        // Add pricing data
-        intent.putExtra("initial_charge", initialCharge);
-        intent.putExtra("step_rate", stepRate);
-        intent.putExtra("step_minute", stepMinute);
-        intent.putExtra("initial_duration_minute", initialDurationMinute);
-        intent.putExtra("pricing_rule_name", pricingRuleName);
+        intent.putExtra("PARKING_LOT_ID", parkingLotId);
+        intent.putExtra("VEHICLE_ID", selectedVehicleId);
+        intent.putExtra("RESERVED_FROM", reservedFrom);
+        intent.putExtra("ASSUMED_STAY_MINUTE", assumedMinutes);
+        intent.putExtra("SPOT_DATA", data);
 
         startActivity(intent);
     }
 
+    private void showNoVehicles() {
+        rvVehicles.setVisibility(View.GONE);
+        tvNoVehicles.setVisibility(View.VISIBLE);
+    }
+
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        if (show) {
-            rvVehicles.setVisibility(View.GONE);
-            tvNoVehicles.setVisibility(View.GONE);
-        }
+        btnCheckAvailability.setEnabled(!show);
     }
 
     private void showError(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    private String getVehicleTypeDisplayName(String vehicleType) {
-        if (vehicleType == null) return "";
-        switch (vehicleType) {
-            case "CAR_UP_TO_9_SEATS": return "Ô tô (dưới 9 chỗ)";
-            case "MOTORBIKE": return "Xe máy";
-            case "BIKE": return "Xe đạp";
-            default: return vehicleType;
-        }
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        compositeDisposable.dispose();
+        compositeDisposable.clear();
     }
 }
+

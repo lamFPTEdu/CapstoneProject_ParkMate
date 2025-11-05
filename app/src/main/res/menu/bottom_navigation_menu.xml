@@ -16,6 +16,11 @@
         android:title="Ví" />
 
     <item
+        android:id="@+id/nav_notification"
+        android:icon="@drawable/ic_notifications_24"
+        android:title="Thông báo" />
+
+    <item
         android:id="@+id/nav_account"
         android:icon="@drawable/ic_person_24"
         android:title="Tài khoản" />

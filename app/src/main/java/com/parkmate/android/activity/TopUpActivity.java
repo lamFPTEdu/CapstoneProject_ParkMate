@@ -227,12 +227,13 @@ public class TopUpActivity extends AppCompatActivity {
 
     private void cancelPayment() {
         showLoading();
-        Disposable disposable = paymentRepository.cancelPayment(currentOrderCode, "Người dùng hủy giao dịch")
+        Disposable disposable = paymentRepository.cancelPayment(currentOrderCode)
                 .subscribe(
                         response -> {
                             hideLoading();
                             if (response.isSuccess()) {
                                 Toast.makeText(this, "Đã hủy giao dịch", Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK); // Thông báo cho WalletActivity reload dữ liệu
                                 finish();
                             } else {
                                 String errorMsg = response.getError() != null ? response.getError() : "Không thể hủy giao dịch";
@@ -258,14 +259,20 @@ public class TopUpActivity extends AppCompatActivity {
                                 PaymentStatus statusData = response.getData();
                                 if ("COMPLETED".equals(statusData.getTransactionStatus())) {
                                     Toast.makeText(this, "Nạp tiền thành công: " + formatCurrency(statusData.getAmount()), Toast.LENGTH_LONG).show();
-                                    setResult(RESULT_OK);
+                                    setResult(RESULT_OK); // Reload WalletActivity
                                     finish();
                                 } else if ("CANCELLED".equals(statusData.getTransactionStatus())) {
                                     showError("Giao dịch đã bị hủy");
+                                    setResult(RESULT_OK); // Reload WalletActivity để cập nhật trạng thái
+                                    finish();
                                 } else if ("PENDING".equals(statusData.getTransactionStatus())) {
                                     Toast.makeText(this, "Giao dịch đang chờ xử lý. Vui lòng kiểm tra lại sau.", Toast.LENGTH_SHORT).show();
+                                    setResult(RESULT_OK); // Reload WalletActivity để cập nhật trạng thái
+                                    finish();
                                 } else {
                                     Toast.makeText(this, "Trạng thái: " + statusData.getTransactionStatus(), Toast.LENGTH_SHORT).show();
+                                    setResult(RESULT_OK); // Reload WalletActivity để cập nhật trạng thái
+                                    finish();
                                 }
                             } else {
                                 String errorMsg = response.getError() != null ? response.getError() : "Không thể kiểm tra trạng thái";

@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -18,18 +20,27 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.parkmate.android.R;
+import com.parkmate.android.model.request.CreateMobileDeviceRequest;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
+import com.parkmate.android.network.OsrmApiClient;
+import com.parkmate.android.network.OsrmApiService;
 import com.parkmate.android.model.response.ParkingLotResponse;
+import com.parkmate.android.model.RouteResponse;
+import com.parkmate.android.util.PolylineUtils;
 
 import org.maplibre.android.MapLibre;
 import org.maplibre.android.annotations.Icon;
 import org.maplibre.android.annotations.IconFactory;
 import org.maplibre.android.annotations.Marker;
 import org.maplibre.android.annotations.MarkerOptions;
+import org.maplibre.android.annotations.Polyline;
+import org.maplibre.android.annotations.PolylineOptions;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
+import org.maplibre.android.geometry.LatLngBounds;
 import org.maplibre.android.location.LocationComponent;
 import org.maplibre.android.location.LocationComponentActivationOptions;
 import org.maplibre.android.location.engine.LocationEngine;
@@ -66,8 +77,13 @@ public class HomeActivity extends BaseActivity {
     private boolean isFirstLocationUpdate = true;
     private LocationEngineCallback<LocationEngineResult> locationCallback;
     private ApiService apiService;
+    private OsrmApiService osrmApiService;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private final java.util.HashMap<Long, Long> markerToParkingLotMap = new java.util.HashMap<>();
+
+    // Routing variables
+    private Polyline currentRoutePolyline;
+    private Marker destinationMarker;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -93,6 +109,7 @@ public class HomeActivity extends BaseActivity {
 
         // Khởi tạo API service
         apiService = ApiClient.getApiService();
+        osrmApiService = OsrmApiClient.getApiService();
         Log.d(TAG, "✓ API service initialized");
 
         // Setup toolbar with search (no navigation icon for Home screen)
@@ -100,12 +117,15 @@ public class HomeActivity extends BaseActivity {
                 true, // isMainScreen = true
                 "Tìm kiếm bãi đỗ xe...",
                 v -> onSearchBarClicked(),
-                v -> onFilterClicked(),
+                null, // No filter button - search handled in SearchParkingActivity
                 false // Hide navigation icon
         );
 
         // Setup bottom navigation with Home selected
         setupBottomNavigation(true, R.id.nav_home);
+
+        // Load notification badge count from API
+        loadNotificationBadgeCount();
 
         // Khởi tạo MapView
         initMapView(savedInstanceState);
@@ -114,16 +134,73 @@ public class HomeActivity extends BaseActivity {
         if (!checkLocationPermission()) {
             requestLocationPermission();
         }
+
+        // Đăng ký FCM token
+        registerFcmToken();
+
+        // Xử lý intent để vẽ route nếu có
+        handleRoutingIntent();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d(TAG, "onNewIntent called");
+        setIntent(intent); // Important: update the intent
+
+        // Reset navbar highlight về Home khi routing intent
+        if (intent.hasExtra("destination_lat")) {
+            setupBottomNavigation(true, R.id.nav_home);
+        }
+
+        handleRoutingIntent();
+    }
+
+    /**
+     * Xử lý intent khi được gọi từ ParkingLotDetailActivity để vẽ route
+     */
+    private void handleRoutingIntent() {
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("destination_lat") && intent.hasExtra("destination_lng")) {
+            double destLat = intent.getDoubleExtra("destination_lat", 0);
+            double destLng = intent.getDoubleExtra("destination_lng", 0);
+            String destName = intent.getStringExtra("destination_name");
+
+            Log.d(TAG, "╔════════════════════════════════════════╗");
+            Log.d(TAG, "║   ROUTING INTENT DETECTED             ║");
+            Log.d(TAG, "║   Destination: " + destName);
+            Log.d(TAG, "║   Location: [" + destLat + ", " + destLng + "]");
+            Log.d(TAG, "╚════════════════════════════════════════╝");
+
+            // Hiển thị toast để user biết đang xử lý
+            Toast.makeText(this, "Đang tìm đường đến " + (destName != null ? destName : "bãi xe") + "...", Toast.LENGTH_SHORT).show();
+
+            // Đợi map load xong rồi vẽ route
+            if (mapLibreMap != null && mapLibreMap.getStyle() != null && locationComponent != null) {
+                Log.d(TAG, "Map is ready, drawing route now");
+                drawRouteToDestination(destLat, destLng, destName);
+            } else {
+                // Đợi map load
+                Log.d(TAG, "Map not ready, waiting 3 seconds...");
+                mapView.postDelayed(() -> {
+                    if (mapLibreMap != null && mapLibreMap.getStyle() != null) {
+                        Log.d(TAG, "Map ready after delay, drawing route");
+                        drawRouteToDestination(destLat, destLng, destName);
+                    } else {
+                        Log.e(TAG, "Map still not ready after delay!");
+                        Toast.makeText(this, "Bản đồ chưa sẵn sàng, vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                    }
+                }, 3000);
+            }
+        } else {
+            Log.d(TAG, "No routing intent extras found");
+        }
     }
 
     private void onSearchBarClicked() {
-        Toast.makeText(this, "Mở màn hình tìm kiếm", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to search activity
-    }
-
-    private void onFilterClicked() {
-        Toast.makeText(this, "Mở bộ lọc", Toast.LENGTH_SHORT).show();
-        // TODO: Show filter dialog
+        Intent intent = new Intent(this, SearchParkingActivity.class);
+        intent.putExtra(SearchParkingActivity.EXTRA_FROM_ACTIVITY, "HomeActivity");
+        startActivity(intent);
     }
 
     private void initMapView(Bundle savedInstanceState) {
@@ -142,13 +219,6 @@ public class HomeActivity extends BaseActivity {
                     com.parkmate.android.BuildConfig.OPENMAP_API_KEY.replace("\"", "");
 
             map.setStyle(styleUrl, style -> onStyleLoaded(style));
-
-            // Set camera position mặc định (Hà Nội)
-            CameraPosition position = new CameraPosition.Builder()
-                    .target(new LatLng(21.0285, 105.8542))
-                    .zoom(13)
-                    .build();
-            map.setCameraPosition(position);
         });
 
         // My location button
@@ -358,6 +428,9 @@ public class HomeActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         if (mapView != null) mapView.onResume();
+
+        // Refresh notification badge khi user quay lại màn hình
+        loadNotificationBadgeCount();
     }
 
     @Override
@@ -377,6 +450,263 @@ public class HomeActivity extends BaseActivity {
         super.onSaveInstanceState(outState);
         if (mapView != null) mapView.onSaveInstanceState(outState);
     }
+
+    // ============= ROUTING METHODS =============
+
+    /**
+     * Vẽ route từ vị trí hiện tại đến đích
+     */
+    @SuppressWarnings("MissingPermission")
+    private void drawRouteToDestination(double destLat, double destLng, String destName) {
+        Log.d(TAG, "╔════════════════════════════════════════╗");
+        Log.d(TAG, "║   DRAW ROUTE TO DESTINATION           ║");
+        Log.d(TAG, "║   Name: " + destName);
+        Log.d(TAG, "║   Dest: [" + destLat + ", " + destLng + "]");
+        Log.d(TAG, "╚════════════════════════════════════════╝");
+
+        if (mapLibreMap == null) {
+            Log.e(TAG, "ERROR: mapLibreMap is null");
+            Toast.makeText(this, "Bản đồ chưa sẵn sàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (locationComponent == null) {
+            Log.e(TAG, "ERROR: locationComponent is null");
+            Toast.makeText(this, "Location component chưa sẵn sàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Map and location component OK");
+
+        // Lấy vị trí hiện tại
+        Location currentLocation = locationComponent.getLastKnownLocation();
+        if (currentLocation == null) {
+            Log.e(TAG, "ERROR: Current location is null");
+            Toast.makeText(this, "Không thể lấy vị trí hiện tại", Toast.LENGTH_SHORT).show();
+            // Chỉ zoom đến đích thôi
+            animateCameraToLocation(destLat, destLng, 16);
+            return;
+        }
+
+        double originLat = currentLocation.getLatitude();
+        double originLng = currentLocation.getLongitude();
+
+        Log.d(TAG, "Current location: [" + originLat + ", " + originLng + "]");
+        Log.d(TAG, "Drawing route from current location to destination");
+
+        // Xóa route cũ nếu có
+        clearRoute();
+
+        // Gọi OSRM API để lấy route
+        String coordinates = originLng + "," + originLat + ";" + destLng + "," + destLat;
+
+        compositeDisposable.add(
+            osrmApiService.getRoute(coordinates, "full", "polyline", true)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    response -> handleRouteResponse(response, destLat, destLng, destName),
+                    error -> handleRouteError(error, destLat, destLng)
+                )
+        );
+    }
+
+    /**
+     * Xử lý response từ OSRM API
+     */
+    private void handleRouteResponse(RouteResponse response, double destLat, double destLng, String destName) {
+        if (!"Ok".equals(response.getCode()) || response.getRoutes() == null || response.getRoutes().isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy đường đi", Toast.LENGTH_SHORT).show();
+            animateCameraToLocation(destLat, destLng, 16);
+            return;
+        }
+
+        RouteResponse.Route route = response.getRoutes().get(0);
+        String polylineEncoded = route.getGeometry();
+
+        if (polylineEncoded == null || polylineEncoded.isEmpty()) {
+            Toast.makeText(this, "Không có dữ liệu đường đi", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Decode polyline
+        List<LatLng> routePoints = PolylineUtils.decode(polylineEncoded);
+
+        Log.d(TAG, "Route decoded: " + routePoints.size() + " points");
+
+        // Vẽ route lên map
+        drawRouteOnMap(routePoints);
+
+        // Thêm marker đích
+        addDestinationMarker(destLat, destLng, destName);
+
+        // Zoom camera để thấy toàn bộ route
+        fitCameraToRoute(routePoints);
+    }
+
+    /**
+     * Xử lý lỗi khi call OSRM API
+     */
+    private void handleRouteError(Throwable error, double destLat, double destLng) {
+        Log.e(TAG, "Error getting route", error);
+        Toast.makeText(this, "Lỗi khi tìm đường: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+        // Vẫn zoom đến đích
+        animateCameraToLocation(destLat, destLng, 16);
+    }
+
+    /**
+     * Vẽ polyline route lên map
+     */
+    private void drawRouteOnMap(List<LatLng> points) {
+        if (mapLibreMap == null || points == null || points.isEmpty()) {
+            return;
+        }
+
+        // Tạo polyline options với màu primary
+        int routeColor = ContextCompat.getColor(this, R.color.primary);
+
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .addAll(points)
+                .color(routeColor)
+                .width(8f);
+
+        // Thêm polyline vào map
+        currentRoutePolyline = mapLibreMap.addPolyline(polylineOptions);
+
+        Log.d(TAG, "Route polyline added to map");
+    }
+
+    /**
+     * Thêm marker đích
+     */
+    private void addDestinationMarker(double lat, double lng, String name) {
+        if (mapLibreMap == null) return;
+
+        // Tạo icon màu đỏ cho đích đến
+        Icon destinationIcon = createDestinationMarkerIcon();
+
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(new LatLng(lat, lng))
+                .title(name != null ? name : "Điểm đến")
+                .snippet("Bãi xe đỗ")
+                .icon(destinationIcon);
+
+        destinationMarker = mapLibreMap.addMarker(markerOptions);
+
+        Log.d(TAG, "Destination marker added");
+    }
+
+    /**
+     * Tạo icon chữ P màu đỏ cho marker đích đến
+     */
+    private Icon createDestinationMarkerIcon() {
+        int redColor = ContextCompat.getColor(this, android.R.color.holo_red_dark);
+        int whiteColor = ContextCompat.getColor(this, R.color.white);
+
+        // Tạo bitmap với kích thước tương tự marker thường
+        int width = 120;
+        int height = 120; // Vuông để chứa chữ P
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        float centerX = width / 2f;
+        float centerY = height / 2f;
+        float circleRadius = 50f; // Bán kính hình tròn
+
+        // Paint cho hình tròn chính
+        Paint circlePaint = new Paint();
+        circlePaint.setAntiAlias(true);
+        circlePaint.setColor(redColor);
+        circlePaint.setStyle(Paint.Style.FILL);
+
+        // Paint cho viền trắng
+        Paint strokePaint = new Paint();
+        strokePaint.setAntiAlias(true);
+        strokePaint.setColor(whiteColor);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setStrokeWidth(8);
+
+        // Vẽ hình tròn với viền trắng
+        canvas.drawCircle(centerX, centerY, circleRadius + 4, strokePaint);
+        canvas.drawCircle(centerX, centerY, circleRadius, circlePaint);
+
+        // Paint cho chữ P
+        Paint textPaint = new Paint();
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(whiteColor);
+        textPaint.setTextSize(70f); // Kích thước chữ lớn
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
+
+        // Vẽ chữ P ở giữa
+        float textY = centerY - ((textPaint.descent() + textPaint.ascent()) / 2);
+        canvas.drawText("P", centerX, textY, textPaint);
+
+        IconFactory iconFactory = IconFactory.getInstance(this);
+        return iconFactory.fromBitmap(bitmap);
+    }
+
+    /**
+     * Zoom camera để thấy toàn bộ route
+     */
+    private void fitCameraToRoute(List<LatLng> points) {
+        if (mapLibreMap == null || points == null || points.isEmpty()) {
+            return;
+        }
+
+        // Tạo LatLngBounds từ các điểm
+        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        for (LatLng point : points) {
+            boundsBuilder.include(point);
+        }
+        LatLngBounds bounds = boundsBuilder.build();
+
+        // Animate camera với padding
+        int padding = 100; // pixels
+        mapLibreMap.animateCamera(
+            org.maplibre.android.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding),
+            2000
+        );
+
+        Log.d(TAG, "Camera fitted to route bounds");
+    }
+
+    /**
+     * Xóa route hiện tại
+     */
+    private void clearRoute() {
+        if (currentRoutePolyline != null && mapLibreMap != null) {
+            mapLibreMap.removePolyline(currentRoutePolyline);
+            currentRoutePolyline = null;
+            Log.d(TAG, "Route cleared");
+        }
+
+        if (destinationMarker != null && mapLibreMap != null) {
+            mapLibreMap.removeMarker(destinationMarker);
+            destinationMarker = null;
+            Log.d(TAG, "Destination marker cleared");
+        }
+    }
+
+    /**
+     * Animate camera đến location cụ thể
+     */
+    private void animateCameraToLocation(double lat, double lng, double zoom) {
+        if (mapLibreMap == null) return;
+
+        LatLng latLng = new LatLng(lat, lng);
+        CameraPosition position = new CameraPosition.Builder()
+                .target(latLng)
+                .zoom(zoom)
+                .build();
+
+        mapLibreMap.animateCamera(
+                org.maplibre.android.camera.CameraUpdateFactory.newCameraPosition(position),
+                1500
+        );
+    }
+
+    // ============= END ROUTING METHODS =============
 
     @Override
     protected void onDestroy() {
@@ -452,8 +782,8 @@ public class HomeActivity extends BaseActivity {
             List<ParkingLotResponse.ParkingLot> allParkingLots = response.getData().getContent();
             Log.d(TAG, "Received " + allParkingLots.size() + " parking lots from API");
 
-            // Lọc chỉ lấy bãi xe trong bán kính 10km
-            double radiusKm = 10.0;
+            // Lọc chỉ lấy bãi xe trong bán kính 50km
+            double radiusKm = 50.0;
             List<ParkingLotResponse.ParkingLot> nearbyLots = new java.util.ArrayList<>();
 
             for (ParkingLotResponse.ParkingLot lot : allParkingLots) {
@@ -539,11 +869,14 @@ public class HomeActivity extends BaseActivity {
 
             Log.d(TAG, "Adding marker: " + lot.getName() + " at [" + lat + ", " + lng + "]");
 
+            // Tạo snippet với thông tin cơ bản
+            String snippet = lot.getFullAddress() + "\n" + lot.getOperatingHours();
+
             // Tạo marker
             MarkerOptions markerOptions = new MarkerOptions()
                     .position(new LatLng(lat, lng))
                     .title(lot.getName())
-                    .snippet(lot.getFullAddress() + "\n" + lot.getOperatingHours())
+                    .snippet(snippet)
                     .icon(customIcon);
 
             Marker marker = mapLibreMap.addMarker(markerOptions);
@@ -565,37 +898,50 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    // Tạo icon marker màu xanh primary
+    // Tạo icon marker chữ P màu xanh primary
     private Icon createPrimaryColorMarkerIcon() {
         // Lấy màu primary từ resources
         int primaryColor = ContextCompat.getColor(this, R.color.primary);
+        int whiteColor = ContextCompat.getColor(this, R.color.white);
 
-        // Tạo bitmap với hình tròn màu primary
-        int size = 60; // Kích thước marker
-        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        // Tạo bitmap với kích thước tương tự pin cũ
+        int width = 120;
+        int height = 120; // Vuông để chứa chữ P
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
-        // Vẽ hình tròn màu primary
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setColor(primaryColor);
-        paint.setStyle(Paint.Style.FILL);
+        float centerX = width / 2f;
+        float centerY = height / 2f;
+        float circleRadius = 50f; // Bán kính hình tròn
 
-        // Vẽ viền trắng bên ngoài
+        // Paint cho hình tròn chính
+        Paint circlePaint = new Paint();
+        circlePaint.setAntiAlias(true);
+        circlePaint.setColor(primaryColor);
+        circlePaint.setStyle(Paint.Style.FILL);
+
+        // Paint cho viền trắng
         Paint strokePaint = new Paint();
         strokePaint.setAntiAlias(true);
-        strokePaint.setColor(ContextCompat.getColor(this, R.color.white));
+        strokePaint.setColor(whiteColor);
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setStrokeWidth(6);
+        strokePaint.setStrokeWidth(8);
 
-        float radius = size / 2f - 5;
-        float centerX = size / 2f;
-        float centerY = size / 2f;
+        // Vẽ hình tròn với viền trắng
+        canvas.drawCircle(centerX, centerY, circleRadius + 4, strokePaint);
+        canvas.drawCircle(centerX, centerY, circleRadius, circlePaint);
 
-        // Vẽ viền trắng
-        canvas.drawCircle(centerX, centerY, radius + 3, strokePaint);
-        // Vẽ hình tròn màu primary
-        canvas.drawCircle(centerX, centerY, radius, paint);
+        // Paint cho chữ P
+        Paint textPaint = new Paint();
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(whiteColor);
+        textPaint.setTextSize(70f); // Kích thước chữ lớn
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
+
+        // Vẽ chữ P ở giữa
+        float textY = centerY - ((textPaint.descent() + textPaint.ascent()) / 2);
+        canvas.drawText("P", centerX, textY, textPaint);
 
         // Tạo icon từ bitmap
         IconFactory iconFactory = IconFactory.getInstance(this);
@@ -629,5 +975,87 @@ public class HomeActivity extends BaseActivity {
         intent.putExtra("parking_lot_name", parkingLotName);
         startActivity(intent);
     }
-}
 
+    // ============= FIREBASE NOTIFICATION METHODS =============
+
+    /**
+     * Đăng ký FCM token với server
+     */
+    private void registerFcmToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+
+                    // Get new FCM registration token
+                    String token = task.getResult();
+                    Log.d(TAG, "FCM Token: " + token);
+
+                    // Send token to server
+                    sendTokenToServer(token);
+                });
+    }
+
+    /**
+     * Gửi FCM token lên server để đăng ký device
+     * Backend sẽ check ownedByMe=true và lấy userId từ JWT token
+     */
+    private void sendTokenToServer(String token) {
+        try {
+            String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            String deviceName = Build.MANUFACTURER + " " + Build.MODEL;
+            String deviceOs = "ANDROID";
+
+            Log.d(TAG, "Registering device - DeviceId: " + deviceId + ", DeviceName: " + deviceName + ", Token: " + token.substring(0, 20) + "...");
+
+            // Backend sẽ tự lấy userId từ JWT token khi check ownedByMe=true
+            CreateMobileDeviceRequest request = new CreateMobileDeviceRequest(
+                    deviceId,
+                    deviceName,
+                    deviceOs,
+                    token
+            );
+
+            compositeDisposable.add(
+                    apiService.registerMobileDevice(request)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    response -> {
+                                        if (response.isSuccess()) {
+                                            Log.d(TAG, "✓ Device registered successfully with server");
+                                            Log.d(TAG, "✓ Response: " + response.getData());
+                                        } else {
+                                            Log.e(TAG, "Failed to register device: " + response.getMessage());
+                                        }
+                                    },
+                                    error -> {
+                                        Log.e(TAG, "Error registering device: " + error.getMessage(), error);
+                                    }
+                            )
+            );
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending token to server: " + e.getMessage(), e);
+        }
+    }
+
+    // ============= NOTIFICATION BADGE METHODS =============
+
+    /**
+     * Load số lượng notifications chưa đọc từ SharedPreferences
+     */
+    private void loadNotificationBadgeCount() {
+        try {
+            SharedPreferences prefs = getSharedPreferences("parkmate_notifications", Context.MODE_PRIVATE);
+            int unreadCount = prefs.getInt("unread_count", 0);
+            setupNotificationBadge(unreadCount);
+            Log.d(TAG, "✓ Unread notifications from local storage: " + unreadCount);
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting unread count from SharedPreferences: " + e.getMessage());
+            setupNotificationBadge(0);
+        }
+    }
+}

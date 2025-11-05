@@ -6,10 +6,16 @@ import com.parkmate.android.model.Vehicle;
 import com.parkmate.android.model.request.AddVehicleRequest;
 import com.parkmate.android.model.response.ApiResponse;
 import com.parkmate.android.model.response.VehicleResponse;
+import com.parkmate.android.model.response.UploadImageResponse;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
 
+import java.io.File;
+
 import io.reactivex.rxjava3.core.Single;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.HttpException;
 
 public class VehicleRepository {
@@ -91,6 +97,49 @@ public class VehicleRepository {
                         Log.e(TAG, "Get vehicle by id HTTP " + he.code() + " msg=" + he.message());
                     } else {
                         Log.e(TAG, "Get vehicle by id error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
+    /**
+     * Upload ảnh xe
+     * @param entityId ID của xe (vehicle)
+     * @param imageFile File ảnh cần upload
+     */
+    public Single<UploadImageResponse> uploadVehicleImage(Long entityId, File imageFile) {
+        // Detect MIME type từ file extension
+        String mimeType = "image/jpeg"; // Default
+        String fileName = imageFile.getName().toLowerCase();
+        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+            mimeType = "image/jpeg";
+        } else if (fileName.endsWith(".png")) {
+            mimeType = "image/png";
+        } else if (fileName.endsWith(".webp")) {
+            mimeType = "image/webp";
+        }
+
+        Log.d(TAG, "Uploading vehicle image: entityId=" + entityId);
+        Log.d(TAG, "File: " + imageFile.getName() + ", size=" + imageFile.length() + " bytes");
+        Log.d(TAG, "MIME type: " + mimeType);
+
+        RequestBody requestFile = RequestBody.create(MediaType.parse(mimeType), imageFile);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
+
+        return apiService.uploadIdImage(entityId, "VEHICLE_IMAGE", body)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Upload vehicle image HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Upload error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Upload vehicle image error: " + err.getMessage(), err);
                     }
                 });
     }

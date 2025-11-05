@@ -18,12 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -59,10 +55,11 @@ public class RegisterActivity extends AppCompatActivity {
 
     // Views cho Basic Info
     private ViewFlipper viewFlipper;
+    private androidx.appcompat.widget.Toolbar toolbar;
     private TextInputEditText etEmail, etPassword, etConfirmPassword, etPhoneNumber;
     private TextInputEditText etFirstName, etLastName;
     private MaterialButton btnNext;
-    private ImageView ivBack, ivGoogleSignUp, ivFacebookSignUp;
+    private ImageView ivGoogleSignUp, ivFacebookSignUp;
     private TextView tvLoginLink;
 
     // Views cho Check Email & OTP
@@ -96,7 +93,14 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void initViews() {
         viewFlipper = findViewById(R.id.viewFlipper);
-        ivBack = findViewById(R.id.ivBack);
+
+        // Setup toolbar
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
         // Basic Info views
         etEmail = findViewById(R.id.etEmail);
@@ -112,7 +116,8 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        ivBack.setOnClickListener(v -> {
+        // Toolbar navigation
+        toolbar.setNavigationOnClickListener(v -> {
             if (viewFlipper.getDisplayedChild() > 0) {
                 viewFlipper.showPrevious();
             } else {
@@ -126,6 +131,16 @@ public class RegisterActivity extends AppCompatActivity {
                 performRegister();
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        if (viewFlipper.getDisplayedChild() > 0) {
+            viewFlipper.showPrevious();
+        } else {
+            finish();
+        }
+        return true;
     }
 
     private void performRegister() {

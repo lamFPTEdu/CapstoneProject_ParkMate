@@ -1,9 +1,7 @@
 package com.parkmate.android.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,8 +21,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.parkmate.android.R;
@@ -33,8 +29,11 @@ import com.parkmate.android.model.request.AddVehicleRequest;
 import com.parkmate.android.model.response.ApiResponse;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
+import com.parkmate.android.repository.VehicleRepository;
+import com.parkmate.android.utils.FileUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,6 +58,7 @@ public class AddVehicleActivity extends AppCompatActivity {
     private Button btnAddVehicle;
 
     private ApiService apiService;
+    private VehicleRepository vehicleRepository;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private Uri selectedImageUri;
@@ -83,6 +83,7 @@ public class AddVehicleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_vehicle);
 
         apiService = ApiClient.getApiService();
+        vehicleRepository = new VehicleRepository();
 
         initViews();
         setupVehicleTypes();
@@ -129,7 +130,10 @@ public class AddVehicleActivity extends AppCompatActivity {
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
-        cvVehicleImage.setOnClickListener(v -> openImagePicker());
+        cvVehicleImage.setOnClickListener(v -> {
+            android.util.Log.d("AddVehicle", "CardView clicked - opening image picker");
+            openImagePicker();
+        });
 
         btnRemoveImage.setOnClickListener(v -> removeSelectedImage());
 
@@ -137,17 +141,14 @@ public class AddVehicleActivity extends AppCompatActivity {
     }
 
     private void openImagePicker() {
-        // Kiểm tra quyền đọc storage
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
-            return;
-        }
+        android.util.Log.d("AddVehicle", "openImagePicker called");
 
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        // Từ Android 13 (API 33) trở lên, không cần quyền READ_EXTERNAL_STORAGE để chọn ảnh từ gallery
+        // Chỉ cần sử dụng ACTION_PICK hoặc ACTION_GET_CONTENT
+        android.util.Log.d("AddVehicle", "Launching image picker");
+        Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        imagePickerLauncher.launch(Intent.createChooser(intent, getString(R.string.image_picker_title)));
+        imagePickerLauncher.launch(intent);
     }
 
     private void displaySelectedImage() {
@@ -290,21 +291,65 @@ public class AddVehicleActivity extends AppCompatActivity {
     }
 
     private void handleAddVehicleSuccess(ApiResponse<Vehicle> response) {
-        btnAddVehicle.setEnabled(true);
-        btnAddVehicle.setText(R.string.add_vehicle_button);
+        if (response != null && response.isSuccess() && response.getData() != null) {
+            Vehicle vehicle = response.getData();
+            Long vehicleId = vehicle.getId();
 
-        if (response != null && response.isSuccess()) {
-            Toast.makeText(this, R.string.add_vehicle_success, Toast.LENGTH_SHORT).show();
+            android.util.Log.d("AddVehicle", "Vehicle created successfully with ID: " + vehicleId);
 
-            // Trả kết quả về màn hình trước và đóng activity
-            setResult(RESULT_OK);
-            finish();
+            // Kiểm tra xem có ảnh cần upload không
+            if (selectedImageUri != null && vehicleId != null) {
+                // Upload ảnh xe
+                uploadVehicleImage(vehicleId);
+            } else {
+                // Không có ảnh, hoàn thành luôn
+                finishSuccess();
+            }
         } else {
+            btnAddVehicle.setEnabled(true);
+            btnAddVehicle.setText(R.string.add_vehicle_button);
+
             String errorMsg = response != null && response.getMessage() != null
                     ? response.getMessage()
                     : getString(R.string.add_vehicle_error);
             Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void uploadVehicleImage(Long vehicleId) {
+        btnAddVehicle.setText("Đang tải ảnh lên...");
+
+        File imageFile = FileUtils.getFileFromUri(this, selectedImageUri);
+        if (imageFile == null) {
+            Toast.makeText(this, "Không thể đọc ảnh xe", Toast.LENGTH_SHORT).show();
+            finishSuccess(); // Vẫn hoàn thành vì xe đã được tạo
+            return;
+        }
+
+        compositeDisposable.add(
+                vehicleRepository.uploadVehicleImage(vehicleId, imageFile)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    android.util.Log.d("AddVehicle", "Vehicle image uploaded successfully: " + response.getImagePath());
+                                    finishSuccess();
+                                },
+                                error -> {
+                                    android.util.Log.e("AddVehicle", "Error uploading vehicle image", error);
+                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng xe đã được tạo", Toast.LENGTH_SHORT).show();
+                                    finishSuccess(); // Vẫn hoàn thành vì xe đã được tạo
+                                }
+                        )
+        );
+    }
+
+    private void finishSuccess() {
+        btnAddVehicle.setEnabled(true);
+        btnAddVehicle.setText(R.string.add_vehicle_button);
+        Toast.makeText(this, "Thêm xe thành công!", Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);
+        finish();
     }
 
     private void handleAddVehicleError(Throwable throwable) {

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Capstoneproject_parkmate</string>
+    <string name="app_name">ParkMate</string>
 
     <!-- Toolbar Strings -->
     <string name="navigation_button">Nút điều hướng</string>
@@ -61,6 +61,7 @@
     <string name="profile_menu_my_bookings">Đặt chỗ của tôi</string>
     <string name="profile_menu_my_vehicles">Quản lý xe của tôi</string>
     <string name="profile_menu_payment_methods">Phương thức thanh toán</string>
+    <string name="profile_menu_account_qr">Mã QR tài khoản</string>
     <string name="profile_menu_parking_history">Lịch sử đỗ xe</string>
     <string name="profile_menu_settings">Cài đặt</string>
     <string name="profile_menu_help_support">Trợ giúp &amp; hỗ trợ</string>
@@ -160,6 +161,39 @@
     <string name="wallet_empty_state_title">Chưa có giao dịch</string>
     <string name="wallet_empty_state_description">Các giao dịch của bạn sẽ hiển thị tại đây</string>
     <string name="wallet_no_transaction">Không có giao dịch</string>
+    <string name="wallet_toggle_balance">Ẩn/hiện số dư</string>
     <string name="transaction_icon_description">Biểu tượng giao dịch</string>
+
+    <!-- Notification Strings -->
+    <string name="notifications">Thông báo</string>
+    <string name="notification_icon_description">Biểu tượng thông báo</string>
+    <string name="notifications_title">Thông báo</string>
+    <string name="notifications_empty_state_title">Chưa có thông báo</string>
+    <string name="notifications_empty_state_description">Các thông báo của bạn sẽ hiển thị tại đây</string>
+    <string name="notification_mark_all_read">Đánh dấu đã đọc tất cả</string>
+
+    <!-- Toolbar Strings -->
+    <string name="toolbar_action_button">Nút hành động</string>
+
+    <!-- Account QR Code Strings -->
+    <string name="qr_code_title">Mã QR tài khoản</string>
+    <string name="qr_code_description">Quét mã QR này để vào bãi xe mà không cần đặt trước</string>
+    <string name="qr_code_image_description">Mã QR tài khoản</string>
+    <string name="qr_code_save_button">Lưu mã QR</string>
+    <string name="qr_code_share_button">Chia sẻ mã QR</string>
+
+    <!-- Vehicle Selection Strings -->
+    <string name="vehicle_selection_unavailable">Không khả dụng</string>
+    <string name="vehicle_selection_has_subscription">Đã đăng ký vé tháng tại bãi này</string>
+    <string name="vehicle_selection_in_reservation">Đang trong phiên đặt chỗ khác</string>
+    <string name="vehicle_selection_placeholder_plate">30G-12345</string>
+    <string name="vehicle_selection_placeholder_desc">Honda - Wave</string>
+    <string name="vehicle_selection_title">Chọn xe đặt chỗ</string>
+    <string name="vehicle_selection_reserved_from_hint">Thời gian đặt chỗ</string>
+    <string name="vehicle_selection_assumed_minutes_hint">Thời gian dự kiến (phút)</string>
+    <string name="vehicle_selection_choose_vehicle">Chọn xe</string>
+    <string name="vehicle_selection_description">Chọn xe để đặt chỗ. Xe không khả dụng sẽ bị vô hiệu hóa.</string>
+    <string name="vehicle_selection_no_vehicles">Bạn chưa có xe nào</string>
+    <string name="vehicle_selection_check_availability">Kiểm tra chỗ trống</string>
 
 </resources>

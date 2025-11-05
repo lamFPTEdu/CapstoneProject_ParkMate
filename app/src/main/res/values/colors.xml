@@ -35,4 +35,9 @@
     <color name="chip_background_unselected">@color/white</color>
     <!-- Divider color -->
     <color name="divider">#E4E7EC</color>
+
+    <!-- Additional colors for vehicle selection -->
+    <color name="gray_300">#D1D5DB</color>
+    <color name="gray_600">#4B5563</color>
+    <color name="red_500">#EF4444</color>
 </resources>

@@ -1,9 +1,7 @@
 package com.parkmate.android.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,9 +21,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.textfield.TextInputEditText;
 import com.parkmate.android.R;
 import com.parkmate.android.model.Vehicle;
@@ -33,8 +30,11 @@ import com.parkmate.android.model.request.AddVehicleRequest;
 import com.parkmate.android.model.response.ApiResponse;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
+import com.parkmate.android.repository.VehicleRepository;
+import com.parkmate.android.utils.FileUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,12 +62,14 @@ public class EditVehicleActivity extends AppCompatActivity {
     private Button btnUpdateVehicle;
 
     private ApiService apiService;
+    private VehicleRepository vehicleRepository;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private Uri selectedImageUri;
     private String base64Image;
     private Long vehicleId;
     private Vehicle vehicle;
+    private boolean isImageChanged = false; // Flag để track xem ảnh có thay đổi không
 
     private final Map<String, String> vehicleTypeMap = new HashMap<>();
     private final Map<String, String> reverseVehicleTypeMap = new HashMap<>();
@@ -88,6 +90,7 @@ public class EditVehicleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_vehicle_detail);
 
         apiService = ApiClient.getApiService();
+        vehicleRepository = new VehicleRepository();
         vehicleId = getIntent().getLongExtra(EXTRA_VEHICLE_ID, -1L);
 
         if (vehicleId == -1L) {
@@ -180,6 +183,29 @@ public class EditVehicleActivity extends AppCompatActivity {
     private void populateVehicleData() {
         if (vehicle == null) return;
 
+        // Hiển thị ảnh xe hiện tại
+        if (vehicle.getVehiclePhotoUrl() != null && !vehicle.getVehiclePhotoUrl().isEmpty()) {
+            String imageUrl = vehicle.getVehiclePhotoUrl();
+            if (!imageUrl.startsWith("http")) {
+                imageUrl = ApiClient.getBaseUrl() + imageUrl;
+            }
+
+            ivVehicleImage.setVisibility(View.VISIBLE);
+            llUploadPlaceholder.setVisibility(View.GONE);
+            btnRemoveImage.setVisibility(View.VISIBLE);
+
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_image_24)
+                    .error(R.drawable.ic_image_24)
+                    .centerCrop()
+                    .into(ivVehicleImage);
+        } else {
+            ivVehicleImage.setVisibility(View.GONE);
+            llUploadPlaceholder.setVisibility(View.VISIBLE);
+            btnRemoveImage.setVisibility(View.GONE);
+        }
+
         etLicensePlate.setText(vehicle.getLicensePlate());
         etBrand.setText(vehicle.getBrand());
         etModel.setText(vehicle.getModel());
@@ -203,15 +229,10 @@ public class EditVehicleActivity extends AppCompatActivity {
     }
 
     private void openImagePicker() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
-            return;
-        }
-
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        // Từ Android 13 (API 33) trở lên, không cần quyền READ_EXTERNAL_STORAGE để chọn ảnh từ gallery
+        Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        imagePickerLauncher.launch(Intent.createChooser(intent, getString(R.string.image_picker_title)));
+        imagePickerLauncher.launch(intent);
     }
 
     private void displaySelectedImage() {
@@ -225,6 +246,8 @@ public class EditVehicleActivity extends AppCompatActivity {
                 ivVehicleImage.setVisibility(View.VISIBLE);
                 llUploadPlaceholder.setVisibility(View.GONE);
                 btnRemoveImage.setVisibility(View.VISIBLE);
+
+                isImageChanged = true; // Đánh dấu ảnh đã thay đổi
             } catch (IOException e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Không thể tải ảnh", Toast.LENGTH_SHORT).show();
@@ -279,7 +302,8 @@ public class EditVehicleActivity extends AppCompatActivity {
             return;
         }
 
-        AddVehicleRequest request = new AddVehicleRequest(licensePlate, brand, model, color, vehicleType, base64Image, isElectric);
+        // Không gửi licenseImage trong request, sẽ upload riêng sau
+        AddVehicleRequest request = new AddVehicleRequest(licensePlate, brand, model, color, vehicleType, null, isElectric);
         updateVehicle(request);
     }
 
@@ -294,12 +318,50 @@ public class EditVehicleActivity extends AppCompatActivity {
 
     private void handleUpdateSuccess(ApiResponse<Vehicle> response) {
         if (response.isSuccess()) {
-            Toast.makeText(this, "Cập nhật xe thành công", Toast.LENGTH_SHORT).show();
-            setResult(RESULT_OK);
-            finish();
+            // Nếu có ảnh mới được chọn, upload ảnh
+            if (isImageChanged && selectedImageUri != null) {
+                uploadVehicleImage();
+            } else {
+                finishSuccess();
+            }
         } else {
             Toast.makeText(this, response.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void uploadVehicleImage() {
+        btnUpdateVehicle.setText("Đang tải ảnh lên...");
+        btnUpdateVehicle.setEnabled(false);
+
+        File imageFile = FileUtils.getFileFromUri(this, selectedImageUri);
+        if (imageFile == null) {
+            Toast.makeText(this, "Không thể đọc ảnh xe", Toast.LENGTH_SHORT).show();
+            finishSuccess();
+            return;
+        }
+
+        compositeDisposable.add(
+                vehicleRepository.uploadVehicleImage(vehicleId, imageFile)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                uploadResponse -> {
+                                    android.util.Log.d("EditVehicle", "Vehicle image uploaded successfully: " + uploadResponse.getImagePath());
+                                    finishSuccess();
+                                },
+                                error -> {
+                                    android.util.Log.e("EditVehicle", "Error uploading vehicle image", error);
+                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng xe đã được cập nhật", Toast.LENGTH_SHORT).show();
+                                    finishSuccess();
+                                }
+                        )
+        );
+    }
+
+    private void finishSuccess() {
+        Toast.makeText(this, "Cập nhật xe thành công", Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);
+        finish();
     }
 
     private void handleUpdateError(Throwable throwable) {

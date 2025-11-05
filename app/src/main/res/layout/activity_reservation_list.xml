@@ -22,7 +22,6 @@
             android:background="@color/white"
             app:title="Danh sách đặt chỗ"
             app:titleTextColor="@color/text_primary"
-            app:titleCentered="true"
             app:navigationIcon="@drawable/ic_back_arrow"
             app:navigationIconTint="@color/text_primary" />
 

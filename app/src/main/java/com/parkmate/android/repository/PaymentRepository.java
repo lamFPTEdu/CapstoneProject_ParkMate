@@ -45,8 +45,8 @@ public class PaymentRepository {
     /**
      * Hủy thanh toán
      */
-    public Single<ApiResponse<PaymentCancel>> cancelPayment(long orderCode, String reason) {
-        return apiService.cancelPayment(orderCode, reason)
+    public Single<ApiResponse<PaymentCancel>> cancelPayment(long orderCode) {
+        return apiService.cancelPayment(orderCode)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(disposable -> Log.d(TAG, "Đang hủy thanh toán: " + orderCode))

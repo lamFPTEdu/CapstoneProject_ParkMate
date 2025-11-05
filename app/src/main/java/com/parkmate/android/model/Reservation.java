@@ -18,6 +18,12 @@ public class Reservation implements Serializable {
     @SerializedName("vehicleId")
     private String vehicleId;
 
+    @SerializedName("vehicleLicensePlate")
+    private String vehicleLicensePlate;
+
+    @SerializedName("vehicleType")
+    private String vehicleType;
+
     @SerializedName("parkingLotId")
     private String parkingLotId;
 
@@ -87,6 +93,22 @@ public class Reservation implements Serializable {
 
     public void setVehicleId(String vehicleId) {
         this.vehicleId = vehicleId;
+    }
+
+    public String getVehicleLicensePlate() {
+        return vehicleLicensePlate;
+    }
+
+    public void setVehicleLicensePlate(String vehicleLicensePlate) {
+        this.vehicleLicensePlate = vehicleLicensePlate;
+    }
+
+    public String getVehicleType() {
+        return vehicleType;
+    }
+
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
     }
 
     public String getParkingLotId() {
@@ -209,10 +231,11 @@ public class Reservation implements Serializable {
     public String getStatusDisplayName() {
         if (status == null) return "";
         switch (status) {
-            case "PENDING": return "Chờ xác nhận";
-            case "CONFIRMED": return "Đã xác nhận";
-            case "CANCELLED": return "Đã hủy";
+            case "PENDING": return "Chờ vào bãi";
+            case "ACTIVE": return "Đang đỗ xe";
             case "COMPLETED": return "Hoàn thành";
+            case "CANCELLED": return "Đã hủy";
+            case "EXPIRED": return "Hết hạn";
             default: return status;
         }
     }
@@ -221,9 +244,10 @@ public class Reservation implements Serializable {
         if (status == null) return android.R.color.darker_gray;
         switch (status) {
             case "PENDING": return android.R.color.holo_orange_dark;
-            case "CONFIRMED": return android.R.color.holo_green_dark;
-            case "CANCELLED": return android.R.color.holo_red_dark;
+            case "ACTIVE": return android.R.color.holo_green_dark;
             case "COMPLETED": return android.R.color.holo_blue_dark;
+            case "CANCELLED": return android.R.color.holo_red_dark;
+            case "EXPIRED": return android.R.color.darker_gray;
             default: return android.R.color.darker_gray;
         }
     }

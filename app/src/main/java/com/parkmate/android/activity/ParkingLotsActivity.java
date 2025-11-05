@@ -2,11 +2,7 @@ package com.parkmate.android.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -26,12 +22,15 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
+/**
+ * ParkingLotsActivity - Hiển thị danh sách tất cả bãi đỗ xe
+ * Search được xử lý trong SearchParkingActivity
+ * Filter chips ở local để lọc nhanh
+ */
 public class ParkingLotsActivity extends BaseActivity {
 
     private RecyclerView rvParkingLots;
     private ParkingLotAdapter parkingLotAdapter;
-    private EditText etSearch;
-    private ImageButton btnFilter;
     private ProgressBar progressBar;
     private View llEmptyState;
     private Chip chipAll, chipActive, chip24Hour;
@@ -40,22 +39,32 @@ public class ParkingLotsActivity extends BaseActivity {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private List<ParkingLotResponse.ParkingLot> parkingLots = new ArrayList<>();
 
-    // Filter variables
-    private String currentStatus = null;
+    // Filter state - Mặc định chỉ hiển thị bãi xe ACTIVE
+    private String currentStatus = "ACTIVE";
     private Boolean currentIs24Hour = null;
-    private String currentSearchQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Setup toolbar with search that opens SearchParkingActivity
+        setupToolbarWithSearch(
+                true, // Main screen (show menu icon, not back button)
+                "Tìm kiếm bãi đỗ xe...",
+                v -> openSearchActivity(),
+                null, // No filter button
+                false // Hide navigation icon completely for clean look
+        );
+
         initializeViews();
         setupRecyclerView();
-        setupSearch();
         setupFilters();
 
         // Setup bottom navigation
         setupBottomNavigation(true, R.id.nav_parking);
+
+        // Load notification badge count
+        loadNotificationBadgeCount();
 
         parkingRepository = new ParkingRepository();
         loadParkingLots();
@@ -63,8 +72,6 @@ public class ParkingLotsActivity extends BaseActivity {
 
     private void initializeViews() {
         rvParkingLots = findViewById(R.id.rvParkingLots);
-        etSearch = findViewById(R.id.etSearch);
-        btnFilter = findViewById(R.id.btnAdvancedFilter);
         progressBar = findViewById(R.id.progressBar);
         llEmptyState = findViewById(R.id.llEmptyState);
         chipAll = findViewById(R.id.chipAll);
@@ -78,32 +85,16 @@ public class ParkingLotsActivity extends BaseActivity {
         rvParkingLots.setAdapter(parkingLotAdapter);
     }
 
-    private void setupSearch() {
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                currentSearchQuery = s.toString().trim();
-                loadParkingLots();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        btnFilter.setOnClickListener(v -> {
-            // TODO: Implement advanced filter dialog
-            Toast.makeText(this, "Advanced filter coming soon", Toast.LENGTH_SHORT).show();
-        });
-    }
-
     private void setupFilters() {
-        // Chips are handled individually, no ChipGroup needed
+        // Thiết lập chip Active được chọn sẵn
+        chipActive.setChecked(true);
+        chipAll.setChecked(false);
 
         chipAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
+                // Uncheck other chips when "All" is selected
+                chipActive.setChecked(false);
+                chip24Hour.setChecked(false);
                 currentStatus = null;
                 currentIs24Hour = null;
                 loadParkingLots();
@@ -112,26 +103,43 @@ public class ParkingLotsActivity extends BaseActivity {
 
         chipActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
+                // Uncheck "All" when selecting specific filter
+                chipAll.setChecked(false);
                 currentStatus = "ACTIVE";
-                currentIs24Hour = null;
-                loadParkingLots();
+            } else {
+                // If unchecking and no other filter selected, show all
+                if (!chip24Hour.isChecked()) {
+                    chipAll.setChecked(true);
+                    currentStatus = null;
+                } else {
+                    currentStatus = null;
+                }
             }
+            loadParkingLots();
         });
 
         chip24Hour.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                currentStatus = null;
+                // Uncheck "All" when selecting specific filter
+                chipAll.setChecked(false);
                 currentIs24Hour = true;
-                loadParkingLots();
+            } else {
+                // If unchecking and no other filter selected, show all
+                if (!chipActive.isChecked()) {
+                    chipAll.setChecked(true);
+                    currentIs24Hour = null;
+                } else {
+                    currentIs24Hour = null;
+                }
             }
+            loadParkingLots();
         });
     }
 
-    private void setupToolbar() {
-        ImageButton btnBack = findViewById(R.id.btnBack);
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
-        }
+    private void openSearchActivity() {
+        Intent intent = new Intent(this, SearchParkingActivity.class);
+        intent.putExtra(SearchParkingActivity.EXTRA_FROM_ACTIVITY, "ParkingLotsActivity");
+        startActivity(intent);
     }
 
     private void loadParkingLots() {
@@ -140,12 +148,12 @@ public class ParkingLotsActivity extends BaseActivity {
         compositeDisposable.add(
             parkingRepository.getParkingLots(
                 null, // ownedByMe
-                currentSearchQuery.isEmpty() ? null : currentSearchQuery,
+                null, // name - load all (search in SearchParkingActivity)
                 null, // city
-                currentIs24Hour,
-                currentStatus,
+                currentIs24Hour, // filter by 24hour chip
+                currentStatus, // filter by status chip
                 0, // page
-                20, // size
+                50, // size - load more for better UX
                 "name", // sortBy
                 "ASC" // sortOrder
             )
@@ -161,12 +169,12 @@ public class ParkingLotsActivity extends BaseActivity {
 
                         updateEmptyState();
                     } else {
-                        showError("Failed to load parking lots");
+                        showError("Không thể tải danh sách bãi xe");
                     }
                 },
                 throwable -> {
                     showLoading(false);
-                    showError("Network error: " + throwable.getMessage());
+                    showError("Lỗi mạng: " + throwable.getMessage());
                 }
             )
         );
@@ -197,6 +205,26 @@ public class ParkingLotsActivity extends BaseActivity {
     @Override
     protected int getLayoutResourceId() {
         return R.layout.activity_parking_lots;
+    }
+
+    /**
+     * Load số lượng notifications chưa đọc từ SharedPreferences
+     */
+    private void loadNotificationBadgeCount() {
+        try {
+            android.content.SharedPreferences prefs = getSharedPreferences("parkmate_notifications", MODE_PRIVATE);
+            int unreadCount = prefs.getInt("unread_count", 0);
+            setupNotificationBadge(unreadCount);
+        } catch (Exception e) {
+            setupNotificationBadge(0);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge khi user quay lại màn hình
+        loadNotificationBadgeCount();
     }
 
     @Override

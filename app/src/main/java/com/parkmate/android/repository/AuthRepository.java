@@ -121,6 +121,49 @@ public class AuthRepository {
     }
 
     /**
+     * Upload ảnh profile của user
+     * @param entityId ID của user (account)
+     * @param imageFile File ảnh cần upload
+     */
+    public Single<UploadImageResponse> uploadProfileImage(Long entityId, File imageFile) {
+        // Detect MIME type từ file extension
+        String mimeType = "image/jpeg"; // Default
+        String fileName = imageFile.getName().toLowerCase();
+        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+            mimeType = "image/jpeg";
+        } else if (fileName.endsWith(".png")) {
+            mimeType = "image/png";
+        } else if (fileName.endsWith(".webp")) {
+            mimeType = "image/webp";
+        }
+
+        Log.d(TAG, "Uploading profile image: entityId=" + entityId);
+        Log.d(TAG, "File: " + imageFile.getName() + ", size=" + imageFile.length() + " bytes");
+        Log.d(TAG, "MIME type: " + mimeType);
+
+        RequestBody requestFile = RequestBody.create(MediaType.parse(mimeType), imageFile);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
+
+        return apiService.uploadIdImage(entityId, "AVATAR", body)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Upload profile image HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Upload error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Upload profile image error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
+    /**
      * Lấy thông tin user theo ID
      */
     public Single<UserInfoResponse> getUserInfo(String userId) {

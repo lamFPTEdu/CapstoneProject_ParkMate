@@ -77,6 +77,15 @@ public class UserInfoResponse {
         @SerializedName("backIdImgPath")
         private String backIdImgPath;
 
+        @SerializedName("frontPhotoPresignedUrl")
+        private String frontPhotoPresignedUrl;
+
+        @SerializedName("backPhotoPresignedUrl")
+        private String backPhotoPresignedUrl;
+
+        @SerializedName("profilePicturePresignedUrl")
+        private String profilePicturePresignedUrl;
+
         @SerializedName("status")
         private String status;
 
@@ -146,6 +155,18 @@ public class UserInfoResponse {
 
         public String getBackIdImgPath() {
             return backIdImgPath;
+        }
+
+        public String getFrontPhotoPresignedUrl() {
+            return frontPhotoPresignedUrl;
+        }
+
+        public String getBackPhotoPresignedUrl() {
+            return backPhotoPresignedUrl;
+        }
+
+        public String getProfilePicturePresignedUrl() {
+            return profilePicturePresignedUrl;
         }
 
         public String getStatus() {

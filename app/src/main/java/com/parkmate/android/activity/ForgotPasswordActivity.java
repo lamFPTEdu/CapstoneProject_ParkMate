@@ -1,32 +1,25 @@
 package com.parkmate.android.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.parkmate.android.R;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
     private ViewFlipper viewFlipper;
-    private ImageButton btnBack;
+    private androidx.appcompat.widget.Toolbar toolbar;
     private String userEmail;
 
     // Email Screen Views
@@ -71,7 +64,14 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
     private void initViews() {
         viewFlipper = findViewById(R.id.viewFlipper);
-        btnBack = findViewById(R.id.btnBack);
+
+        // Setup toolbar
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
         // Initialize Email Screen Views
         View emailView = viewFlipper.getChildAt(0);
@@ -119,8 +119,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // Back button listener
-        btnBack.setOnClickListener(v -> handleBackPress());
+        // Toolbar navigation listener
+        toolbar.setNavigationOnClickListener(v -> handleBackPress());
 
         // Email Screen Listeners
         btnSend.setOnClickListener(v -> {
@@ -263,6 +263,12 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         } else {
             finish();
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        handleBackPress();
+        return true;
     }
 }
 

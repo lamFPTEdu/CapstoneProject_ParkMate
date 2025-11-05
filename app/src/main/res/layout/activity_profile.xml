@@ -17,8 +17,8 @@
         <!-- Profile Header Background -->
         <View
             android:id="@+id/profileHeaderBackground"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/profile_header_height"
+            android:layout_width="406dp"
+            android:layout_height="197dp"
             android:background="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -50,7 +50,6 @@
             android:padding="8dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_person_24"
-            app:tint="@color/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -205,7 +204,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Payment Methods -->
+            <!-- Account QR Code -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/menuPaymentMethods"
                 android:layout_width="match_parent"
@@ -220,8 +219,8 @@
                     android:id="@+id/iconPayment"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_payment_methods"
-                    android:src="@drawable/ic_payment_24"
+                    android:contentDescription="@string/profile_menu_account_qr"
+                    android:src="@drawable/ic_qrcode_24"
                     app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -232,7 +231,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="@string/profile_menu_payment_methods"
+                    android:text="@string/profile_menu_account_qr"
                     android:textColor="@color/bottom_nav_text_active"
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -244,7 +243,7 @@
                     android:id="@+id/iconPaymentChevron"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:contentDescription="@string/profile_menu_payment_methods"
+                    android:contentDescription="@string/profile_menu_account_qr"
                     android:src="@drawable/ic_chevron_right_24"
                     app:tint="@color/colorPrimary"
                     app:layout_constraintBottom_toBottomOf="parent"

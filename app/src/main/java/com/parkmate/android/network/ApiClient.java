@@ -45,6 +45,10 @@ public final class ApiClient {
         return getRetrofit().create(ApiService.class);
     }
 
+    public static String getBaseUrl() {
+        return ApiConstants.getBaseUrl();
+    }
+
     private static OkHttpClient buildOkHttpClient() {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)

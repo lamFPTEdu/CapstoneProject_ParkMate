@@ -28,17 +28,103 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <!-- Search Destination Component - Sử dụng layout đã có sẵn -->
-        <include
-            layout="@layout/layout_search_destination"
+        <!-- Toolbar Title -->
+        <TextView
+            android:id="@+id/tvToolbarTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
             android:visibility="gone"
+            android:layout_marginStart="8dp"
             app:layout_constraintStart_toEndOf="@id/ivNavigation"
+            app:layout_constraintEnd_toStartOf="@id/ivToolbarAction"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Toolbar Action Button (Icon) -->
+        <ImageView
+            android:id="@+id/ivToolbarAction"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:visibility="gone"
+            android:contentDescription="@string/toolbar_action_button"
+            app:tint="@color/primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
+        <!-- Search Bar Container (Simple inline version) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/searchDestinationRoot"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_search_input"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toEndOf="@id/ivNavigation"
+            app:layout_constraintEnd_toStartOf="@id/btnFilter"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:id="@+id/ivSearchIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_search_24"
+                app:tint="#999999"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:contentDescription="Search" />
+
+            <TextView
+                android:id="@+id/tvSearchPlaceholder"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Tìm kiếm..."
+                android:textColor="#999999"
+                android:textSize="16sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                app:layout_constraintStart_toEndOf="@id/ivSearchIcon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Filter Button (for search bar) -->
+        <FrameLayout
+            android:id="@+id/btnFilter"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_search_input"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_filter_24"
+                app:tint="@color/colorPrimary"
+                android:contentDescription="Filter" />
+
+        </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -90,4 +91,10 @@ dependencies {
 
     // MapLibre SDK cho bản đồ
     implementation("org.maplibre.gl:android-sdk:11.0.0")
+
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
+
 }
