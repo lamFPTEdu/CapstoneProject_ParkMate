@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import androidx.recyclerview.widget.RecyclerView;
+import com.parkmate.android.R;
 
 public class MaxHeightRecyclerView extends RecyclerView {
     private int maxHeight = -1;
@@ -24,11 +25,11 @@ public class MaxHeightRecyclerView extends RecyclerView {
 
     private void initialize(Context context, AttributeSet attrs) {
         if (attrs != null) {
-            int[] attrsArray = {android.R.attr.maxHeight};
             TypedArray array = null;
             try {
-                array = context.obtainStyledAttributes(attrs, attrsArray);
-                maxHeight = array.getLayoutDimension(0, -1);
+                array = context.obtainStyledAttributes(attrs, R.styleable.MaxHeightRecyclerView, 0, 0);
+                // getDimensionPixelSize returns pixels for a dimension attribute
+                maxHeight = array.getDimensionPixelSize(R.styleable.MaxHeightRecyclerView_maxHeight, -1);
             } finally {
                 if (array != null) {
                     array.recycle();
