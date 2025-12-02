@@ -153,7 +153,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             } else {
                 // Hiển thị mũi tên quay lại cho các màn hình khác
                 ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                ivNavigation.setOnClickListener(v -> onBackPressed());
+                ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
             }
         }
     }
@@ -186,7 +186,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (showBackButton) {
                 ivNavigation.setVisibility(View.VISIBLE);
                 ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                ivNavigation.setOnClickListener(v -> onBackPressed());
+                ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
             } else {
                 // Ẩn nút navigation hoàn toàn
                 ivNavigation.setVisibility(View.GONE);
@@ -227,7 +227,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (showBackButton) {
                 ivNavigation.setVisibility(View.VISIBLE);
                 ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                ivNavigation.setOnClickListener(v -> onBackPressed());
+                ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
             } else {
                 // Ẩn nút navigation hoàn toàn
                 ivNavigation.setVisibility(View.GONE);
@@ -292,7 +292,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     ivNavigation.setOnClickListener(v -> openMenu());
                 } else {
                     ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                    ivNavigation.setOnClickListener(v -> onBackPressed());
+                    ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
                 }
             }
         }

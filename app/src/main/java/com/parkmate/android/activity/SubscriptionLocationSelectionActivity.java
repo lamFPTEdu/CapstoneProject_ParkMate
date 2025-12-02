@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -64,6 +65,7 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
         initializeViews();
         setupToolbar();
         setupViewPager();
+        setupBackPressedHandler();
     }
 
     private void initializeViews() {
@@ -78,7 +80,7 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Chọn vị trí đỗ xe");
         }
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void setupViewPager() {
@@ -119,6 +121,31 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
                 // Nếu user back về tab trước (không phải tab Spot) thì release held spot
                 if (position < 2) { // Tab 0 (Floor) hoặc Tab 1 (Area)
                     releaseHeldSpot();
+                }
+            }
+        });
+    }
+
+    private void setupBackPressedHandler() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                int currentItem = viewPager.getCurrentItem();
+
+                if (currentItem == 0) {
+                    // Đang ở tab Floor, back ra ngoài Activity
+                    // Release held spot trước khi finish (nếu có)
+                    releaseHeldSpot();
+                    // Disable this callback and let the system handle back press
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                } else {
+                    // Đang ở tab Area hoặc Spot, back về tab trước
+                    if (currentItem == 2) {
+                        // Từ Spot về Area - release held spot
+                        releaseHeldSpot();
+                    }
+                    viewPager.setCurrentItem(currentItem - 1, true);
                 }
             }
         });
@@ -265,25 +292,6 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
         super.onDestroy();
         // Release held spot khi activity bị destroy
         releaseHeldSpot();
-    }
-
-    @Override
-    public void onBackPressed() {
-        int currentItem = viewPager.getCurrentItem();
-
-        if (currentItem == 0) {
-            // Đang ở tab Floor, back ra ngoài Activity
-            // Release held spot trước khi finish (nếu có)
-            releaseHeldSpot();
-            super.onBackPressed();
-        } else {
-            // Đang ở tab Area hoặc Spot, back về tab trước
-            if (currentItem == 2) {
-                // Từ Spot về Area - release held spot
-                releaseHeldSpot();
-            }
-            viewPager.setCurrentItem(currentItem - 1, true);
-        }
     }
 
     /**
