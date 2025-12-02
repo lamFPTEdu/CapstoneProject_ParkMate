@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- App Bar with Toolbar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:elevation="4dp"
+        app:elevation="4dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/white"
+            app:navigationIcon="@drawable/ic_arrow_back_24"
+            app:navigationIconTint="@color/black"
+            app:title="Chi tiết bãi xe"
+            app:titleTextColor="@color/text_primary" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:paddingBottom="120dp"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Image ViewPager2 Slider -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                app:cardCornerRadius="0dp"
+                app:cardElevation="4dp">
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPagerImages"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <!-- Image Counter (1/4) -->
+                <TextView
+                    android:id="@+id/tvImageCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_image_counter"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:text="1/4"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:elevation="4dp"
+                    tools:ignore="HardcodedText" />
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Main Content Container -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Header: Name + Status -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/tvParkingName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Vincom Center Parking"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="#101828"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:id="@+id/tvStatusBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ACTIVE"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/bg_status_active"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        tools:ignore="HardcodedText" />
+
+                </LinearLayout>
+
+                <!-- Address with Directions Button -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_location_on_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/tvAddress"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="72 Lê Thánh Tôn, Bến Nghé, Hồ Chí Minh"
+                        android:textSize="14sp"
+                        android:textColor="#757575"
+                        tools:ignore="HardcodedText" />
+
+                    <!-- Compact Directions Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnGetDirections"
+                        style="@style/Widget.Material3.Button.Icon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        android:padding="0dp"
+                        app:cornerRadius="20dp"
+                        app:backgroundTint="@color/primary"
+                        app:icon="@drawable/ic_directions_24"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="24dp"
+                        app:iconTint="@color/white"
+                        android:contentDescription="Chỉ đường" />
+
+                </LinearLayout>
+
+                <!-- Quick Stats Cards -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="3"
+                    android:layout_marginBottom="16dp">
+
+                    <!-- Total Capacity -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="@android:color/white">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@drawable/ic_directions_car_24"
+                                app:tint="@color/primary"
+                                android:contentDescription="@null" />
+
+                            <TextView
+                                android:id="@+id/tvTotalCapacity"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="500"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="4dp"
+                                tools:ignore="HardcodedText" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tổng chỗ"
+                                android:textSize="12sp"
+                                android:textColor="#9E9E9E"
+                                tools:ignore="HardcodedText" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Total Floors -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="6dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="@android:color/white">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@drawable/ic_category"
+                                app:tint="#FF9800"
+                                android:contentDescription="@null" />
+
+                            <TextView
+                                android:id="@+id/tvTotalFloors"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="3"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="4dp"
+                                tools:ignore="HardcodedText" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tầng"
+                                android:textSize="12sp"
+                                android:textColor="#9E9E9E"
+                                tools:ignore="HardcodedText" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 24/7 or Operating Hours -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="@android:color/white">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@drawable/ic_time_24"
+                                app:tint="#4CAF50"
+                                android:contentDescription="@null" />
+
+                            <TextView
+                                android:id="@+id/tv24Hour"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="24/7"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="4dp"
+                                tools:ignore="HardcodedText" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Mở cửa"
+                                android:textSize="12sp"
+                                android:textColor="#9E9E9E"
+                                tools:ignore="HardcodedText" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <!-- Ratings Section (Moved Up) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRatingsSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Ratings Header with Average Rating and View More -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="⭐ Đánh giá"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                tools:ignore="HardcodedText" />
+
+                            <!-- Average Rating Display -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginEnd="8dp">
+
+                                <TextView
+                                    android:id="@+id/tvAverageRating"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#212121"
+                                    tools:text="3" />
+
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_star_filled"
+                                    android:layout_marginStart="4dp"
+                                    app:tint="@color/rating_star" />
+
+                                <TextView
+                                    android:id="@+id/tvTotalRatings"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="13sp"
+                                    android:textColor="@color/text_secondary"
+                                    android:layout_marginStart="4dp"
+                                    tools:text="(1)" />
+
+                            </LinearLayout>
+
+                            <!-- View More Button -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnViewAllRatings"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="4dp"
+                                app:icon="@drawable/ic_arrow_forward"
+                                app:iconGravity="end"
+                                app:iconSize="16dp"
+                                app:iconTint="@color/black"
+                                tools:ignore="HardcodedText" />
+
+                        </LinearLayout>
+
+                        <!-- Horizontal RecyclerView for Latest 3 Ratings -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvRatings"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_parking_lot_rating"
+                            tools:itemCount="3" />
+
+                        <!-- No Ratings Message -->
+                        <TextView
+                            android:id="@+id/tvNoRatings"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Chưa có đánh giá nào"
+                            android:textSize="14sp"
+                            android:textColor="#9E9E9E"
+                            android:gravity="center"
+                            android:padding="24dp"
+                            android:visibility="gone"
+                            tools:ignore="HardcodedText" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Available Spots Section -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@android:color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🅿️ Chỗ trống hiện tại"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:layout_marginBottom="12dp"
+                            tools:ignore="HardcodedText" />
+
+                        <!-- RecyclerView for Available Spots -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvAvailableSpots"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_available_spot"
+                            tools:itemCount="3" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Vehicle Type Tabs & Info Section -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@android:color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- TabLayout for Vehicle Types -->
+                        <com.google.android.material.tabs.TabLayout
+                            android:id="@+id/tabLayoutVehicleTypes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/white"
+                            app:tabMode="fixed"
+                            app:tabGravity="fill"
+                            app:tabIndicatorColor="@color/primary"
+                            app:tabSelectedTextColor="@color/primary"
+                            app:tabTextColor="#667085"
+                            app:tabIndicatorHeight="3dp" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#E0E0E0" />
+
+                        <!-- Content Container -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <!-- Subscription Packages Section -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="📅 Gói vé tháng"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginBottom="12dp"
+                                tools:ignore="HardcodedText" />
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvSubscriptionPackages"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                tools:listitem="@layout/item_subscription_package"
+                                tools:itemCount="3" />
+
+                            <TextView
+                                android:id="@+id/tvNoSubscription"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Không có gói vé tháng cho loại xe này"
+                                android:textSize="14sp"
+                                android:textColor="#9E9E9E"
+                                android:gravity="center"
+                                android:padding="24dp"
+                                android:visibility="gone"
+                                tools:ignore="HardcodedText" />
+
+                            <!-- Pricing Rules Section -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="💵 Bảng giá"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="24dp"
+                                android:layout_marginBottom="12dp"
+                                tools:ignore="HardcodedText" />
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvPricingRules"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                tools:listitem="@layout/item_pricing_rule"
+                                tools:itemCount="2" />
+
+                            <TextView
+                                android:id="@+id/tvNoPricing"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Không có bảng giá cho loại xe này"
+                                android:textSize="14sp"
+                                android:textColor="#9E9E9E"
+                                android:gravity="center"
+                                android:padding="24dp"
+                                android:visibility="gone"
+                                tools:ignore="HardcodedText" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Fixed Action Buttons at Bottom -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardActionButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:cardElevation="8dp"
+        app:cardCornerRadius="0dp"
+        app:cardBackgroundColor="@color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- Reserve Spot Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReserveSpot"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Đặt chỗ ngay"
+                android:textSize="15sp"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/primary"
+                app:icon="@drawable/ic_local_parking_24"
+                app:iconGravity="textStart"
+                android:layout_marginBottom="6dp"
+                tools:ignore="HardcodedText" />
+
+            <!-- Subscribe Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubscribe"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Đăng ký vé tháng"
+                android:textSize="15sp"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/primary"
+                app:icon="@drawable/ic_card_membership_24"
+                app:iconGravity="textStart"
+                tools:ignore="HardcodedText" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Loading Overlay -->
+    <FrameLayout
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

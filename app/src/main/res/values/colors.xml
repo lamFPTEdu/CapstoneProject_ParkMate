@@ -40,4 +40,14 @@
     <color name="gray_300">#D1D5DB</color>
     <color name="gray_600">#4B5563</color>
     <color name="red_500">#EF4444</color>
+    <color name="red">#EF4444</color>
+    <color name="green">#16A34A</color>
+
+    <!-- BLE Activity colors -->
+    <color name="light_primary">#E8EEFF</color>
+    <color name="light_yellow">#FEF3C7</color>
+    <color name="orange">#F59E0B</color>
+
+    <!-- Rating colors -->
+    <color name="rating_star">#FFD700</color>
 </resources>

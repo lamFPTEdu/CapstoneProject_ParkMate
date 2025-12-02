@@ -11,14 +11,15 @@
         android:title="Bãi đỗ xe" />
 
     <item
+        android:id="@+id/nav_ble"
+        android:icon="@drawable/ic_ble_highlighted"
+        android:title="BLE" />
+
+    <item
         android:id="@+id/nav_wallet"
         android:icon="@drawable/ic_account_balance_wallet_24"
         android:title="Ví" />
 
-    <item
-        android:id="@+id/nav_notification"
-        android:icon="@drawable/ic_notifications_24"
-        android:title="Thông báo" />
 
     <item
         android:id="@+id/nav_account"

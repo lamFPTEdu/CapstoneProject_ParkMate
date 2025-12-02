@@ -133,6 +133,34 @@
                         android:textColor="@color/text_secondary"
                         android:layout_marginTop="16dp"/>
 
+                    <!-- Save QR Button -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:layout_marginTop="16dp">
+
+                        <ImageButton
+                            android:id="@+id/btnSaveQr"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_circular_button"
+                            android:src="@drawable/ic_save_image"
+                            android:contentDescription="Lưu mã QR"
+                            android:scaleType="center"
+                            android:padding="12dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lưu mã QR"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginTop="8dp"/>
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>

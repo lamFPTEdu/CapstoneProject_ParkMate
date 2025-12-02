@@ -63,7 +63,7 @@
     <string name="profile_menu_payment_methods">Phương thức thanh toán</string>
     <string name="profile_menu_account_qr">Mã QR tài khoản</string>
     <string name="profile_menu_parking_history">Lịch sử đỗ xe</string>
-    <string name="profile_menu_settings">Cài đặt</string>
+    <string name="profile_menu_settings">Cài đặt BLE</string>
     <string name="profile_menu_help_support">Trợ giúp &amp; hỗ trợ</string>
     <string name="profile_menu_logout">Đăng xuất</string>
     <string name="profile_avatar_desc">Ảnh đại diện</string>
@@ -195,5 +195,19 @@
     <string name="vehicle_selection_description">Chọn xe để đặt chỗ. Xe không khả dụng sẽ bị vô hiệu hóa.</string>
     <string name="vehicle_selection_no_vehicles">Bạn chưa có xe nào</string>
     <string name="vehicle_selection_check_availability">Kiểm tra chỗ trống</string>
+
+    <!-- BLE Settings Strings -->
+    <string name="ble_beacon_desc">Nút BLE Beacon</string>
+    <string name="ble_status_on">BLE đang BẬT</string>
+    <string name="ble_status_off">BLE đang TẮT</string>
+    <string name="ble_description_on">Ứng dụng đang phát broadcast dữ liệu để beacon IoT có thể nhận và gửi lên server.</string>
+    <string name="ble_description_off">Bật BLE để ứng dụng phát broadcast thông tin khi bạn ở gần bãi đỗ xe.</string>
+    <string name="ble_device_not_support">Thiết bị không hỗ trợ Bluetooth</string>
+    <string name="ble_advertising_not_support">Thiết bị không hỗ trợ BLE Advertising</string>
+    <string name="ble_permission_required">Cần cấp quyền Bluetooth để tiếp tục</string>
+    <string name="ble_enabled_success">Đã bật BLE Broadcast</string>
+    <string name="ble_disabled_success">Đã tắt BLE Broadcast</string>
+    <string name="ble_permission_denied">Cần cấp quyền Bluetooth và Location để sử dụng BLE</string>
+    <string name="ble_bluetooth_required">Cần bật Bluetooth để sử dụng BLE</string>
 
 </resources>

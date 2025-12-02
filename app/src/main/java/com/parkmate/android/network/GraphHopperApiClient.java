@@ -9,24 +9,26 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Retrofit client cho OSRM API
+ * Retrofit client cho GraphHopper API
+ * FREE: 500 requests/day, không cần credit card
  */
-public class OsrmApiClient {
-    private static final String BASE_URL = "https://router.project-osrm.org/";
-    private static OsrmApiService apiService;
+public class GraphHopperApiClient {
+    private static final String BASE_URL = "https://graphhopper.com/api/1/";
+    private static GraphHopperApiService apiService;
 
-    public static OsrmApiService getApiService() {
+    public static GraphHopperApiService getApiService() {
         if (apiService == null) {
             // Logging interceptor
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-            // OkHttp client
+            // OkHttp client - GraphHopper server nhanh, timeout ngắn hơn
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
                     .addInterceptor(loggingInterceptor)
-                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .connectTimeout(15, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(15, TimeUnit.SECONDS)
+                    .retryOnConnectionFailure(true)
                     .build();
 
             // Retrofit
@@ -37,7 +39,7 @@ public class OsrmApiClient {
                     .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                     .build();
 
-            apiService = retrofit.create(OsrmApiService.class);
+            apiService = retrofit.create(GraphHopperApiService.class);
         }
 
         return apiService;

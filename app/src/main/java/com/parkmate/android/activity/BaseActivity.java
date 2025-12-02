@@ -38,9 +38,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected TextView tvSearchPlaceholder;
     protected FrameLayout btnFilter;
 
-    // Notification components (removed from toolbar, now in bottom nav)
-    // Bottom nav notification badge
-    protected TextView tvBottomNavNotificationBadge;
+    // Notification components trong toolbar
+    protected FrameLayout btnToolbarNotification;
+    protected TextView tvToolbarNotificationBadge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +56,16 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // Tùy chỉnh toolbar (nếu cần)
         customizeToolbar();
+
+        // Load notification badge
+        loadAndShowNotificationBadge();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Cập nhật notification badge mỗi khi activity được hiển thị
+        loadAndShowNotificationBadge();
     }
 
     private void initViews() {
@@ -73,8 +83,14 @@ public abstract class BaseActivity extends AppCompatActivity {
         tvSearchPlaceholder = findViewById(R.id.tvSearchPlaceholder);
         btnFilter = findViewById(R.id.btnFilter);
 
-        // Khởi tạo notification badge từ bottom nav
-        tvBottomNavNotificationBadge = findViewById(R.id.tvBottomNavNotificationBadge);
+        // Notification components từ toolbar
+        btnToolbarNotification = findViewById(R.id.btnToolbarNotification);
+        tvToolbarNotificationBadge = findViewById(R.id.tvToolbarNotificationBadge);
+
+        // Thiết lập click listener cho notification button
+        if (btnToolbarNotification != null) {
+            btnToolbarNotification.setOnClickListener(v -> openNotifications());
+        }
 
         if (toolbar != null) {
             setSupportActionBar(toolbar);
@@ -137,7 +153,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             } else {
                 // Hiển thị mũi tên quay lại cho các màn hình khác
                 ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                ivNavigation.setOnClickListener(v -> onBackPressed());
+                ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
             }
         }
     }
@@ -170,7 +186,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (showBackButton) {
                 ivNavigation.setVisibility(View.VISIBLE);
                 ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                ivNavigation.setOnClickListener(v -> onBackPressed());
+                ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
             } else {
                 // Ẩn nút navigation hoàn toàn
                 ivNavigation.setVisibility(View.GONE);
@@ -211,7 +227,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (showBackButton) {
                 ivNavigation.setVisibility(View.VISIBLE);
                 ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                ivNavigation.setOnClickListener(v -> onBackPressed());
+                ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
             } else {
                 // Ẩn nút navigation hoàn toàn
                 ivNavigation.setVisibility(View.GONE);
@@ -276,7 +292,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     ivNavigation.setOnClickListener(v -> openMenu());
                 } else {
                     ivNavigation.setImageResource(R.drawable.ic_arrow_back_24);
-                    ivNavigation.setOnClickListener(v -> onBackPressed());
+                    ivNavigation.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
                 }
             }
         }
@@ -290,47 +306,23 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     /**
-     * Thiết lập notification badge trên bottom navigation
+     * Thiết lập notification badge trên toolbar
      *
      * @param unreadCount số lượng notification chưa đọc (0 = ẩn badge)
      */
     protected void setupNotificationBadge(int unreadCount) {
-        if (tvBottomNavNotificationBadge == null || bottomNavigationView == null) {
-            android.util.Log.e("BaseActivity", "Badge views are null!");
+        if (tvToolbarNotificationBadge == null) {
+            android.util.Log.e("BaseActivity", "Toolbar notification badge is null!");
             return;
         }
 
-        android.util.Log.d("BaseActivity", "Setting up badge with count: " + unreadCount);
+        android.util.Log.d("BaseActivity", "Setting up notification badge with count: " + unreadCount);
 
         if (unreadCount > 0) {
-            tvBottomNavNotificationBadge.setVisibility(View.VISIBLE);
-            tvBottomNavNotificationBadge.setText(unreadCount > 99 ? "99+" : String.valueOf(unreadCount));
-
-            // Tính toán vị trí badge dựa trên số item trong bottom nav
-            // Notification là item thứ 4 (index 3) trong 5 items: Home, Parking, Wallet, Notification, Account
-            bottomNavigationView.post(() -> {
-                int itemCount = bottomNavigationView.getMenu().size();
-                int notificationIndex = 3; // nav_notification là item thứ 4 (index 3)
-                float navWidth = bottomNavigationView.getWidth();
-                float itemWidth = navWidth / (float) itemCount;
-
-                // Tính toán vị trí X của badge
-                // Từ giữa màn hình (vì layout_gravity="center_horizontal")
-                // Di chuyển đến vị trí icon notification
-                float centerX = navWidth / 2f;
-                float notificationCenterX = (notificationIndex * itemWidth) + (itemWidth / 2f);
-                float offsetX = notificationCenterX - centerX;
-
-                // Thêm offset nhỏ để badge nằm ở góc phải trên của icon
-                float badgeOffsetX = offsetX + (itemWidth * 0.15f);
-
-                tvBottomNavNotificationBadge.setTranslationX(badgeOffsetX);
-
-                android.util.Log.d("BaseActivity", "Badge position - navWidth: " + navWidth +
-                    ", itemWidth: " + itemWidth + ", offsetX: " + badgeOffsetX);
-            });
+            tvToolbarNotificationBadge.setVisibility(View.VISIBLE);
+            tvToolbarNotificationBadge.setText(unreadCount > 99 ? "99+" : String.valueOf(unreadCount));
         } else {
-            tvBottomNavNotificationBadge.setVisibility(View.GONE);
+            tvToolbarNotificationBadge.setVisibility(View.GONE);
             android.util.Log.d("BaseActivity", "Badge hidden (count = 0)");
         }
     }
@@ -355,6 +347,17 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void openNotifications() {
         Intent intent = new Intent(this, NotificationActivity.class);
         startActivity(intent);
+    }
+
+    /**
+     * Thiết lập hiển thị/ẩn notification button trên toolbar
+     *
+     * @param visible true để hiển thị, false để ẩn
+     */
+    protected void setNotificationButtonVisible(boolean visible) {
+        if (btnToolbarNotification != null) {
+            btnToolbarNotification.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
     }
 
     /**
@@ -436,9 +439,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
-        } else if (id == R.id.nav_notification) {
-            if (!currentClassName.equals("NotificationActivity")) {
-                Intent intent = new Intent(this, NotificationActivity.class);
+        } else if (id == R.id.nav_ble) {
+            // Navigate to BLE Toggle Activity
+            if (!currentClassName.equals("BLEToggleActivity")) {
+                Intent intent = new Intent(this, BLEToggleActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
@@ -459,6 +463,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
     }
+
 
     /**
      * @return ID của layout resource cho activity con

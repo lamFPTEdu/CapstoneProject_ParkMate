@@ -30,20 +30,11 @@ public class Reservation implements Serializable {
     @SerializedName("parkingLotName")
     private String parkingLotName;
 
-    @SerializedName("spotId")
-    private String spotId;
-
-    @SerializedName("spotName")
-    private String spotName;
-
     @SerializedName("initialFee")
-    private int initialFee;
+    private Integer initialFee;
 
     @SerializedName("totalFee")
-    private int totalFee;
-
-    @SerializedName("reservationFee")
-    private int reservationFee;
+    private Integer totalFee;
 
     @SerializedName("reservedFrom")
     private String reservedFrom; // "2024-07-01 10:00:00"
@@ -127,45 +118,22 @@ public class Reservation implements Serializable {
         this.parkingLotName = parkingLotName;
     }
 
-    public String getSpotId() {
-        return spotId;
-    }
-
-    public void setSpotId(String spotId) {
-        this.spotId = spotId;
-    }
-
-    public String getSpotName() {
-        return spotName;
-    }
-
-    public void setSpotName(String spotName) {
-        this.spotName = spotName;
-    }
-
-    public int getInitialFee() {
+    public Integer getInitialFee() {
         return initialFee;
     }
 
-    public void setInitialFee(int initialFee) {
+    public void setInitialFee(Integer initialFee) {
         this.initialFee = initialFee;
     }
 
-    public int getTotalFee() {
+    public Integer getTotalFee() {
         return totalFee;
     }
 
-    public void setTotalFee(int totalFee) {
+    public void setTotalFee(Integer totalFee) {
         this.totalFee = totalFee;
     }
 
-    public int getReservationFee() {
-        return reservationFee;
-    }
-
-    public void setReservationFee(int reservationFee) {
-        this.reservationFee = reservationFee;
-    }
 
     public String getReservedUntil() {
         return reservedUntil;
@@ -225,7 +193,13 @@ public class Reservation implements Serializable {
 
     // Helper methods
     public String getFormattedFee() {
-        return String.format("%,dđ", reservationFee);
+        int fee = 0;
+        if (totalFee != null && totalFee > 0) {
+            fee = totalFee;
+        } else if (initialFee != null) {
+            fee = initialFee;
+        }
+        return String.format("%,dđ", fee);
     }
 
     public String getStatusDisplayName() {

@@ -14,10 +14,11 @@ import java.util.List;
 
 /**
  * Adapter mới riêng cho việc chọn xe khi đặt chỗ
- * Check 2 điều kiện disable:
- * 1. hasSubscriptionInThisParkingLot = true
- * 2. inReservation = true
- * Chỉ cần 1 trong 2 là true thì sẽ disable xe đó
+ * Check 3 điều kiện disable:
+ * 1. hasSubscriptionInThisParkingLot = true (đã có vé tháng)
+ * 2. inReservation = true (đang trong phiên đặt chỗ)
+ * 3. supported = false (loại xe không được hỗ trợ)
+ * Chỉ cần 1 trong 3 là true/false thì sẽ disable xe đó
  */
 public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelectionAdapter.VehicleViewHolder> {
 
@@ -35,9 +36,30 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
 
     public void updateVehicles(List<Vehicle> vehicles) {
         this.vehicleList.clear();
+
         if (vehicles != null) {
-            this.vehicleList.addAll(vehicles);
+            // Sắp xếp: xe có thể chọn lên đầu, xe disable xuống dưới
+            List<Vehicle> availableVehicles = new ArrayList<>();
+            List<Vehicle> disabledVehicles = new ArrayList<>();
+
+            for (Vehicle vehicle : vehicles) {
+                // Check điều kiện disable: hasSubscriptionInThisParkingLot, inReservation, hoặc !supported
+                boolean isDisabled = vehicle.isHasSubscriptionInThisParkingLot()
+                        || vehicle.isInReservation()
+                        || !vehicle.isSupported();
+
+                if (isDisabled) {
+                    disabledVehicles.add(vehicle);
+                } else {
+                    availableVehicles.add(vehicle);
+                }
+            }
+
+            // Ghép: available trước, disabled sau
+            this.vehicleList.addAll(availableVehicles);
+            this.vehicleList.addAll(disabledVehicles);
         }
+
         this.selectedPosition = -1;
         notifyDataSetChanged();
     }
@@ -85,8 +107,10 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
         }
 
         public void bind(Vehicle vehicle, int position) {
-            // Check nếu xe bị disable (1 trong 2 điều kiện = true)
-            boolean isDisabled = vehicle.isHasSubscriptionInThisParkingLot() || vehicle.isInReservation();
+            // Check nếu xe bị disable: hasSubscriptionInThisParkingLot, inReservation, hoặc !supported
+            boolean isDisabled = vehicle.isHasSubscriptionInThisParkingLot()
+                    || vehicle.isInReservation()
+                    || !vehicle.isSupported();
 
             // Hiển thị thông tin xe
             tvVehiclePlate.setText(vehicle.getLicensePlate() != null ? vehicle.getLicensePlate() : "N/A");
@@ -106,7 +130,9 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
             // Hiển thị trạng thái disable
             if (isDisabled) {
                 tvVehicleStatus.setVisibility(View.VISIBLE);
-                if (vehicle.isHasSubscriptionInThisParkingLot()) {
+                if (!vehicle.isSupported()) {
+                    tvVehicleStatus.setText("Loại xe không được hỗ trợ");
+                } else if (vehicle.isHasSubscriptionInThisParkingLot()) {
                     tvVehicleStatus.setText(R.string.vehicle_selection_has_subscription);
                 } else if (vehicle.isInReservation()) {
                     tvVehicleStatus.setText(R.string.vehicle_selection_in_reservation);

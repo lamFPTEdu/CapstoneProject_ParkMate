@@ -135,6 +135,15 @@ public interface ApiService {
     @GET("/api/v1/parking-service/lots/{id}")
     Single<ParkingLotDetailResponse> getParkingLotDetail(@Path("id") Long id);
 
+    @GET("/api/v1/parking-service/ratings")
+    Single<com.parkmate.android.model.response.ParkingLotRatingsResponse> getParkingLotRatings(
+            @Query("lotId") Long lotId,
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("sortBy") String sortBy,
+            @Query("sortOrder") String sortOrder
+    );
+
     @GET("/api/v1/parking-service/floors/{id}")
     Single<ParkingFloorDetailResponse> getParkingFloorDetail(@Path("id") Long id);
 
@@ -238,4 +247,52 @@ public interface ApiService {
             @Query("durationMinuteGreaterThan") Integer durationMinuteGreaterThan,
             @Query("durationMinuteLessThan") Integer durationMinuteLessThan
     );
+
+    // Subscription APIs
+    @GET("/api/v1/user-service/user-subscriptions/floors/availability")
+    Single<ApiResponse<java.util.List<com.parkmate.android.model.ParkingFloor>>> getAvailableFloors(
+            @Query("parkingLotId") long parkingLotId,
+            @Query("vehicleId") long vehicleId,
+            @Query("subscriptionPackageId") long subscriptionPackageId,
+            @Query("startDate") String startDate
+    );
+
+    @GET("/api/v1/user-service/user-subscriptions/areas/availability")
+    Single<ApiResponse<java.util.List<com.parkmate.android.model.ParkingArea>>> getAvailableAreas(
+            @Query("floorId") long floorId,
+            @Query("vehicleId") long vehicleId,
+            @Query("subscriptionPackageId") long subscriptionPackageId,
+            @Query("startDate") String startDate
+    );
+
+    @GET("/api/v1/user-service/user-subscriptions/spots/availability")
+    Single<ApiResponse<java.util.List<com.parkmate.android.model.ParkingSpot>>> getAvailableSpots(
+            @Query("areaId") long areaId,
+            @Query("vehicleId") long vehicleId,
+            @Query("subscriptionPackageId") long subscriptionPackageId,
+            @Query("startDate") String startDate
+    );
+
+    @POST("/api/v1/user-service/user-subscriptions/hold-spot")
+    Single<ApiResponse<Boolean>> holdSpot(@Query("spotId") long spotId);
+
+    @DELETE("/api/v1/user-service/user-subscriptions/hold-spot")
+    Single<ApiResponse<com.parkmate.android.model.ParkingSpot>> releaseHoldSpot(@Query("spotId") long spotId);
+
+    @POST("/api/v1/user-service/user-subscriptions")
+    Single<ApiResponse<com.parkmate.android.model.UserSubscription>> createUserSubscription(
+            @Body Map<String, Object> request
+    );
+
+    @GET("/api/v1/user-service/user-subscriptions")
+    Single<ApiResponse<com.parkmate.android.model.response.UserSubscriptionResponse>> getUserSubscriptions(
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("sortBy") String sortBy,
+            @Query("sortOrder") String sortOrder,
+            @Query("ownedByMe") boolean ownedByMe
+    );
 }
+
+
+

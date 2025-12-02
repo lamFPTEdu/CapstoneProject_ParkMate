@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# API Keys - KHÔNG PUSH LÊN GIT
+gradle.properties
+app/google-services.json
+

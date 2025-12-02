@@ -91,11 +91,12 @@ public class VehicleSelectionActivity extends AppCompatActivity {
             onVehicleSelected(vehicle);
         });
 
+        // Set vertical layout manager for vehicles
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvVehicles.setLayoutManager(layoutManager);
         rvVehicles.setAdapter(vehicleAdapter);
 
-        // Add infinite scroll listener for vehicles
+        // Add infinite scroll listener for vehicles (vertical scroll)
         rvVehicles.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {

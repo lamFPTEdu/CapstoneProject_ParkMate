@@ -25,11 +25,10 @@ import com.parkmate.android.R;
 import com.parkmate.android.model.request.CreateMobileDeviceRequest;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
-import com.parkmate.android.network.OsrmApiClient;
-import com.parkmate.android.network.OsrmApiService;
+import com.parkmate.android.network.GraphHopperApiClient;
+import com.parkmate.android.network.GraphHopperApiService;
 import com.parkmate.android.model.response.ParkingLotResponse;
-import com.parkmate.android.model.RouteResponse;
-import com.parkmate.android.util.PolylineUtils;
+import com.parkmate.android.model.GraphHopperResponse;
 
 import org.maplibre.android.MapLibre;
 import org.maplibre.android.annotations.Icon;
@@ -77,7 +76,7 @@ public class HomeActivity extends BaseActivity {
     private boolean isFirstLocationUpdate = true;
     private LocationEngineCallback<LocationEngineResult> locationCallback;
     private ApiService apiService;
-    private OsrmApiService osrmApiService;
+    private GraphHopperApiService graphHopperApiService;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private final java.util.HashMap<Long, Long> markerToParkingLotMap = new java.util.HashMap<>();
 
@@ -109,8 +108,11 @@ public class HomeActivity extends BaseActivity {
 
         // Khởi tạo API service
         apiService = ApiClient.getApiService();
-        osrmApiService = OsrmApiClient.getApiService();
-        Log.d(TAG, "✓ API service initialized");
+
+        // Khởi tạo GraphHopper API Service (MIỄN PHÍ, nhanh, ổn định!)
+        graphHopperApiService = GraphHopperApiClient.getApiService();
+
+        Log.d(TAG, "✓ API services initialized (GraphHopper only)");
 
         // Setup toolbar with search (no navigation icon for Home screen)
         setupToolbarWithSearch(
@@ -497,61 +499,160 @@ public class HomeActivity extends BaseActivity {
         // Xóa route cũ nếu có
         clearRoute();
 
-        // Gọi OSRM API để lấy route
-        String coordinates = originLng + "," + originLat + ";" + destLng + "," + destLat;
+        // Gọi GraphHopper API trực tiếp (không dùng OSRM nữa)
+        // Format: 2 query params riêng: point=lat1,lng1&point=lat2,lng2
+        String originPoint = originLat + "," + originLng;
+        String destPoint = destLat + "," + destLng;
+
+        Log.d(TAG, "╔════════════════════════════════════════╗");
+        Log.d(TAG, "║   CALLING GRAPHHOPPER API             ║");
+        Log.d(TAG, "╚════════════════════════════════════════╝");
+        Log.d(TAG, "Origin: " + originPoint);
+        Log.d(TAG, "Destination: " + destPoint);
+
+        // GraphHopper API key từ BuildConfig (gradle.properties)
+        String apiKey = com.parkmate.android.BuildConfig.GRAPHHOPPER_API_KEY.replace("\"", "");
+
+        Log.d(TAG, "Using GraphHopper API key from BuildConfig");
+
+        Toast.makeText(this, "Đang tìm đường...", Toast.LENGTH_SHORT).show();
 
         compositeDisposable.add(
-            osrmApiService.getRoute(coordinates, "full", "polyline", true)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> handleRouteResponse(response, destLat, destLng, destName),
-                    error -> handleRouteError(error, destLat, destLng)
-                )
+            graphHopperApiService.getRoute(
+                originPoint,    // point 1: "lat,lng"
+                destPoint,      // point 2: "lat,lng"
+                "car",          // vehicle
+                "vi",           // locale
+                true,           // calc_points
+                true,           // points_encoded
+                apiKey
+            )
+            .subscribeOn(Schedulers.io())
+            .timeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                response -> {
+                    Log.d(TAG, "✓ GraphHopper API response received!");
+                    handleGraphHopperResponse(response, destLat, destLng, destName);
+                },
+                error -> {
+                    Log.e(TAG, "✗ GraphHopper API failed");
+                    handleGraphHopperError(error, destLat, destLng);
+                }
+            )
         );
     }
 
     /**
-     * Xử lý response từ OSRM API
+     * Xử lý response từ GraphHopper API
      */
-    private void handleRouteResponse(RouteResponse response, double destLat, double destLng, String destName) {
-        if (!"Ok".equals(response.getCode()) || response.getRoutes() == null || response.getRoutes().isEmpty()) {
-            Toast.makeText(this, "Không tìm thấy đường đi", Toast.LENGTH_SHORT).show();
-            animateCameraToLocation(destLat, destLng, 16);
+    private void handleGraphHopperResponse(GraphHopperResponse response, double destLat, double destLng, String destName) {
+        if (response == null || response.getPaths() == null || response.getPaths().isEmpty()) {
+            Log.e(TAG, "GraphHopper API returned empty result");
+            showFallbackMarker(destLat, destLng);
             return;
         }
 
-        RouteResponse.Route route = response.getRoutes().get(0);
-        String polylineEncoded = route.getGeometry();
+        Log.d(TAG, "✓ GraphHopper API success!");
 
-        if (polylineEncoded == null || polylineEncoded.isEmpty()) {
-            Toast.makeText(this, "Không có dữ liệu đường đi", Toast.LENGTH_SHORT).show();
+        GraphHopperResponse.Path path = response.getPaths().get(0);
+        String encodedPolyline = path.getPoints();
+
+        if (encodedPolyline == null || encodedPolyline.isEmpty()) {
+            Log.e(TAG, "Polyline is empty");
+            showFallbackMarker(destLat, destLng);
             return;
         }
 
-        // Decode polyline
-        List<LatLng> routePoints = PolylineUtils.decode(polylineEncoded);
+        // Decode polyline (GraphHopper dùng precision 5 giống Google)
+        List<org.maplibre.android.geometry.LatLng> routePoints =
+            decodePolyline(encodedPolyline);
 
-        Log.d(TAG, "Route decoded: " + routePoints.size() + " points");
+        Log.d(TAG, "Drawing GraphHopper route with " + routePoints.size() + " points");
+        Log.d(TAG, "Distance: " + (path.getDistance() / 1000) + " km");
+        Log.d(TAG, "Time: " + (path.getTime() / 60000) + " minutes");
 
-        // Vẽ route lên map
         drawRouteOnMap(routePoints);
-
-        // Thêm marker đích
         addDestinationMarker(destLat, destLng, destName);
-
-        // Zoom camera để thấy toàn bộ route
         fitCameraToRoute(routePoints);
+
+        Toast.makeText(this, "✓ Đã tìm thấy đường đi (" + String.format("%.1f km", path.getDistance()/1000) + ")", Toast.LENGTH_SHORT).show();
     }
 
     /**
-     * Xử lý lỗi khi call OSRM API
+     * Xử lý lỗi từ GraphHopper API
      */
-    private void handleRouteError(Throwable error, double destLat, double destLng) {
-        Log.e(TAG, "Error getting route", error);
-        Toast.makeText(this, "Lỗi khi tìm đường: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-        // Vẫn zoom đến đích
+    private void handleGraphHopperError(Throwable error, double destLat, double destLng) {
+        Log.e(TAG, "╔════════════════════════════════════════╗");
+        Log.e(TAG, "║   GRAPHHOPPER API ERROR               ║");
+        Log.e(TAG, "╚════════════════════════════════════════╝");
+        Log.e(TAG, "Error type: " + error.getClass().getSimpleName());
+        Log.e(TAG, "Error message: " + error.getMessage());
+        Log.e(TAG, "GraphHopper API failed", error);
+
+        String errorMessage = "Không thể tìm đường";
+
+        if (error.getMessage() != null) {
+            if (error.getMessage().contains("API key") || error.getMessage().contains("401")) {
+                errorMessage = "API key không hợp lệ";
+                Log.e(TAG, "→ Cần API key mới từ: https://www.graphhopper.com/dashboard/");
+            } else if (error.getMessage().contains("quota") || error.getMessage().contains("limit") || error.getMessage().contains("429")) {
+                errorMessage = "Đã vượt quá 500 requests/day";
+            } else if (error.getMessage().contains("400")) {
+                errorMessage = "Tham số API không đúng";
+            }
+        }
+
+        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+        showFallbackMarker(destLat, destLng);
+    }
+
+    /**
+     * Decode polyline (GraphHopper/Google format - precision 5)
+     */
+    private List<org.maplibre.android.geometry.LatLng> decodePolyline(String encoded) {
+        List<org.maplibre.android.geometry.LatLng> poly = new java.util.ArrayList<>();
+        int index = 0, len = encoded.length();
+        int lat = 0, lng = 0;
+
+        while (index < len) {
+            int b, shift = 0, result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+
+            org.maplibre.android.geometry.LatLng point = new org.maplibre.android.geometry.LatLng(
+                ((double) lat / 1E5),
+                ((double) lng / 1E5)
+            );
+            poly.add(point);
+        }
+
+        return poly;
+    }
+
+    /**
+     * Hiển thị marker đích khi không vẽ được route
+     */
+    private void showFallbackMarker(double destLat, double destLng) {
+        Log.d(TAG, "Showing fallback marker only");
+        addDestinationMarker(destLat, destLng, "Điểm đến");
         animateCameraToLocation(destLat, destLng, 16);
+        Toast.makeText(this, "Bạn có thể sử dụng Google Maps để chỉ đường", Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -597,21 +698,21 @@ public class HomeActivity extends BaseActivity {
     }
 
     /**
-     * Tạo icon chữ P màu đỏ cho marker đích đến
+     * Tạo icon chữ P màu đỏ cho marker đích đến với mũi tên chỉ xuống
      */
     private Icon createDestinationMarkerIcon() {
         int redColor = ContextCompat.getColor(this, android.R.color.holo_red_dark);
         int whiteColor = ContextCompat.getColor(this, R.color.white);
 
-        // Tạo bitmap với kích thước tương tự marker thường
+        // Tạo bitmap với kích thước cao hơn để chứa cả mũi tên
         int width = 120;
-        int height = 120; // Vuông để chứa chữ P
+        int height = 160; // Cao hơn để chứa mũi tên bên dưới
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
         float centerX = width / 2f;
-        float centerY = height / 2f;
-        float circleRadius = 50f; // Bán kính hình tròn
+        float circleCenterY = 50f; // Đưa hình tròn lên trên
+        float circleRadius = 45f; // Bán kính hình tròn
 
         // Paint cho hình tròn chính
         Paint circlePaint = new Paint();
@@ -624,23 +725,40 @@ public class HomeActivity extends BaseActivity {
         strokePaint.setAntiAlias(true);
         strokePaint.setColor(whiteColor);
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setStrokeWidth(8);
+        strokePaint.setStrokeWidth(6);
 
         // Vẽ hình tròn với viền trắng
-        canvas.drawCircle(centerX, centerY, circleRadius + 4, strokePaint);
-        canvas.drawCircle(centerX, centerY, circleRadius, circlePaint);
+        canvas.drawCircle(centerX, circleCenterY, circleRadius + 3, strokePaint);
+        canvas.drawCircle(centerX, circleCenterY, circleRadius, circlePaint);
 
         // Paint cho chữ P
         Paint textPaint = new Paint();
         textPaint.setAntiAlias(true);
         textPaint.setColor(whiteColor);
-        textPaint.setTextSize(70f); // Kích thước chữ lớn
+        textPaint.setTextSize(65f); // Kích thước chữ
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
 
-        // Vẽ chữ P ở giữa
-        float textY = centerY - ((textPaint.descent() + textPaint.ascent()) / 2);
+        // Vẽ chữ P ở giữa hình tròn
+        float textY = circleCenterY - ((textPaint.descent() + textPaint.ascent()) / 2);
         canvas.drawText("P", centerX, textY, textPaint);
+
+        // Vẽ mũi tên tam giác chỉ xuống
+        android.graphics.Path arrowPath = new android.graphics.Path();
+        float arrowTop = circleCenterY + circleRadius - 5; // Bắt đầu từ đáy hình tròn
+        float arrowBottom = height - 10; // Đỉnh mũi tên
+        float arrowWidth = 30f; // Độ rộng mũi tên
+
+        // Vẽ tam giác: đỉnh ở dưới, 2 góc ở trên
+        arrowPath.moveTo(centerX, arrowBottom); // Đỉnh (dưới)
+        arrowPath.lineTo(centerX - arrowWidth, arrowTop); // Góc trái
+        arrowPath.lineTo(centerX + arrowWidth, arrowTop); // Góc phải
+        arrowPath.close();
+
+        // Vẽ viền trắng cho mũi tên
+        canvas.drawPath(arrowPath, strokePaint);
+        // Vẽ mũi tên màu đỏ
+        canvas.drawPath(arrowPath, circlePaint);
 
         IconFactory iconFactory = IconFactory.getInstance(this);
         return iconFactory.fromBitmap(bitmap);
@@ -898,21 +1016,21 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    // Tạo icon marker chữ P màu xanh primary
+    // Tạo icon marker chữ P màu xanh primary với mũi tên chỉ xuống
     private Icon createPrimaryColorMarkerIcon() {
         // Lấy màu primary từ resources
         int primaryColor = ContextCompat.getColor(this, R.color.primary);
         int whiteColor = ContextCompat.getColor(this, R.color.white);
 
-        // Tạo bitmap với kích thước tương tự pin cũ
+        // Tạo bitmap với kích thước cao hơn để chứa cả mũi tên
         int width = 120;
-        int height = 120; // Vuông để chứa chữ P
+        int height = 160; // Cao hơn để chứa mũi tên bên dưới
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
         float centerX = width / 2f;
-        float centerY = height / 2f;
-        float circleRadius = 50f; // Bán kính hình tròn
+        float circleCenterY = 50f; // Đưa hình tròn lên trên
+        float circleRadius = 45f; // Bán kính hình tròn
 
         // Paint cho hình tròn chính
         Paint circlePaint = new Paint();
@@ -925,23 +1043,40 @@ public class HomeActivity extends BaseActivity {
         strokePaint.setAntiAlias(true);
         strokePaint.setColor(whiteColor);
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setStrokeWidth(8);
+        strokePaint.setStrokeWidth(6);
 
         // Vẽ hình tròn với viền trắng
-        canvas.drawCircle(centerX, centerY, circleRadius + 4, strokePaint);
-        canvas.drawCircle(centerX, centerY, circleRadius, circlePaint);
+        canvas.drawCircle(centerX, circleCenterY, circleRadius + 3, strokePaint);
+        canvas.drawCircle(centerX, circleCenterY, circleRadius, circlePaint);
 
         // Paint cho chữ P
         Paint textPaint = new Paint();
         textPaint.setAntiAlias(true);
         textPaint.setColor(whiteColor);
-        textPaint.setTextSize(70f); // Kích thước chữ lớn
+        textPaint.setTextSize(65f); // Kích thước chữ
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
 
-        // Vẽ chữ P ở giữa
-        float textY = centerY - ((textPaint.descent() + textPaint.ascent()) / 2);
+        // Vẽ chữ P ở giữa hình tròn
+        float textY = circleCenterY - ((textPaint.descent() + textPaint.ascent()) / 2);
         canvas.drawText("P", centerX, textY, textPaint);
+
+        // Vẽ mũi tên tam giác chỉ xuống
+        android.graphics.Path arrowPath = new android.graphics.Path();
+        float arrowTop = circleCenterY + circleRadius - 5; // Bắt đầu từ đáy hình tròn
+        float arrowBottom = height - 10; // Đỉnh mũi tên
+        float arrowWidth = 30f; // Độ rộng mũi tên
+
+        // Vẽ tam giác: đỉnh ở dưới, 2 góc ở trên
+        arrowPath.moveTo(centerX, arrowBottom); // Đỉnh (dưới)
+        arrowPath.lineTo(centerX - arrowWidth, arrowTop); // Góc trái
+        arrowPath.lineTo(centerX + arrowWidth, arrowTop); // Góc phải
+        arrowPath.close();
+
+        // Vẽ viền trắng cho mũi tên
+        canvas.drawPath(arrowPath, strokePaint);
+        // Vẽ mũi tên màu primary
+        canvas.drawPath(arrowPath, circlePaint);
 
         // Tạo icon từ bitmap
         IconFactory iconFactory = IconFactory.getInstance(this);

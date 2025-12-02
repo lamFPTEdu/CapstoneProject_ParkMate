@@ -83,9 +83,10 @@ public class FloorAdapter extends RecyclerView.Adapter<FloorAdapter.FloorViewHol
             // Calculate available spots (this would need to be calculated from spots data)
             // For now, show total capacity
             if (floor.getParkingFloorCapacity() != null && !floor.getParkingFloorCapacity().isEmpty()) {
-                int totalCapacity = floor.getParkingFloorCapacity().stream()
-                    .mapToInt(ParkingLotDetailResponse.Capacity::getCapacity)
-                    .sum();
+                int totalCapacity = 0;
+                for (ParkingLotDetailResponse.Capacity capacity : floor.getParkingFloorCapacity()) {
+                    totalCapacity += capacity.getCapacity();
+                }
                 tvAvailableSpots.setText(totalCapacity + " spots");
 
                 // Build capacity info

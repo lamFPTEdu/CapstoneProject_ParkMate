@@ -109,6 +109,21 @@ public class ParkingLotDetailResponse {
         @SerializedName("defaultPricingRules")
         private List<DefaultPricingRule> defaultPricingRules;
 
+        @SerializedName("subscriptions")
+        private java.util.List<com.parkmate.android.model.SubscriptionPackage> subscriptions;
+
+        @SerializedName("availableSpots")
+        private List<AvailableSpot> availableSpots;
+
+        @SerializedName("totalRatings")
+        private Integer totalRatings;
+
+        @SerializedName("averageRating")
+        private Double averageRating;
+
+        @SerializedName("ratings")
+        private List<com.parkmate.android.model.ParkingLotRating> ratings;
+
         // Getters and Setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -158,6 +173,21 @@ public class ParkingLotDetailResponse {
         public void setImages(List<ImageData> images) { this.images = images; }
         public List<DefaultPricingRule> getDefaultPricingRules() { return defaultPricingRules; }
         public void setDefaultPricingRules(List<DefaultPricingRule> defaultPricingRules) { this.defaultPricingRules = defaultPricingRules; }
+
+        public java.util.List<com.parkmate.android.model.SubscriptionPackage> getSubscriptions() { return subscriptions; }
+        public void setSubscriptions(java.util.List<com.parkmate.android.model.SubscriptionPackage> subscriptions) { this.subscriptions = subscriptions; }
+
+        public List<AvailableSpot> getAvailableSpots() { return availableSpots; }
+        public void setAvailableSpots(List<AvailableSpot> availableSpots) { this.availableSpots = availableSpots; }
+
+        public Integer getTotalRatings() { return totalRatings; }
+        public void setTotalRatings(Integer totalRatings) { this.totalRatings = totalRatings; }
+
+        public Double getAverageRating() { return averageRating; }
+        public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+
+        public List<com.parkmate.android.model.ParkingLotRating> getRatings() { return ratings; }
+        public void setRatings(List<com.parkmate.android.model.ParkingLotRating> ratings) { this.ratings = ratings; }
 
         // Helper methods
         public String getFullAddress() {
@@ -227,6 +257,7 @@ public class ParkingLotDetailResponse {
         public void setSupportElectricVehicle(Boolean supportElectricVehicle) { this.supportElectricVehicle = supportElectricVehicle; }
         public Boolean getIsActive() { return isActive; }
         public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+        public boolean isActive() { return isActive != null && isActive; }
     }
 
     public static class PricingRule {
@@ -266,6 +297,9 @@ public class ParkingLotDetailResponse {
         @SerializedName("updatedAt")
         private String updatedAt;
 
+        @SerializedName("overridePricingRule")
+        private OverridePricingRule overridePricingRule;
+
         // Getters and Setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -283,6 +317,7 @@ public class ParkingLotDetailResponse {
         public void setInitialDurationMinute(Integer initialDurationMinute) { this.initialDurationMinute = initialDurationMinute; }
         public Boolean getIsActive() { return isActive; }
         public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+        public boolean isActive() { return isActive != null && isActive; }
         public String getValidFrom() { return validFrom; }
         public void setValidFrom(String validFrom) { this.validFrom = validFrom; }
         public String getValidUntil() { return validUntil; }
@@ -291,6 +326,8 @@ public class ParkingLotDetailResponse {
         public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
         public String getUpdatedAt() { return updatedAt; }
         public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+        public OverridePricingRule getOverridePricingRule() { return overridePricingRule; }
+        public void setOverridePricingRule(OverridePricingRule overridePricingRule) { this.overridePricingRule = overridePricingRule; }
     }
 
     public static class ImageData {
@@ -354,5 +391,88 @@ public class ParkingLotDetailResponse {
         public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
         public String getUpdatedAt() { return updatedAt; }
         public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    }
+
+    public static class OverridePricingRule {
+        @SerializedName("id")
+        private Long id;
+
+        @SerializedName("ruleName")
+        private String ruleName;
+
+        @SerializedName("stepRate")
+        private Integer stepRate;
+
+        @SerializedName("stepMinute")
+        private Integer stepMinute;
+
+        @SerializedName("initialCharge")
+        private Integer initialCharge;
+
+        @SerializedName("initialDurationMinute")
+        private Integer initialDurationMinute;
+
+        @SerializedName("isActive")
+        private Boolean isActive;
+
+        @SerializedName("validFrom")
+        private String validFrom;
+
+        @SerializedName("validUntil")
+        private String validUntil;
+
+        @SerializedName("createdAt")
+        private String createdAt;
+
+        @SerializedName("updatedAt")
+        private String updatedAt;
+
+        // Getters and Setters
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getRuleName() { return ruleName; }
+        public void setRuleName(String ruleName) { this.ruleName = ruleName; }
+        public Integer getStepRate() { return stepRate; }
+        public void setStepRate(Integer stepRate) { this.stepRate = stepRate; }
+        public Integer getStepMinute() { return stepMinute; }
+        public void setStepMinute(Integer stepMinute) { this.stepMinute = stepMinute; }
+        public Integer getInitialCharge() { return initialCharge; }
+        public void setInitialCharge(Integer initialCharge) { this.initialCharge = initialCharge; }
+        public Integer getInitialDurationMinute() { return initialDurationMinute; }
+        public void setInitialDurationMinute(Integer initialDurationMinute) { this.initialDurationMinute = initialDurationMinute; }
+        public Boolean getIsActive() { return isActive; }
+        public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+        public boolean isActive() { return isActive != null && isActive; }
+        public String getValidFrom() { return validFrom; }
+        public void setValidFrom(String validFrom) { this.validFrom = validFrom; }
+        public String getValidUntil() { return validUntil; }
+        public void setValidUntil(String validUntil) { this.validUntil = validUntil; }
+        public String getCreatedAt() { return createdAt; }
+        public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+        public String getUpdatedAt() { return updatedAt; }
+        public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    }
+
+    public static class AvailableSpot {
+        @SerializedName("totalCapacity")
+        private Integer totalCapacity;
+
+        @SerializedName("availableCapacity")
+        private Integer availableCapacity;
+
+        @SerializedName("vehicleType")
+        private String vehicleType;
+
+        // Getters and Setters
+        public Integer getTotalCapacity() { return totalCapacity; }
+        public void setTotalCapacity(Integer totalCapacity) { this.totalCapacity = totalCapacity; }
+        public Integer getAvailableCapacity() { return availableCapacity; }
+        public void setAvailableCapacity(Integer availableCapacity) { this.availableCapacity = availableCapacity; }
+        public String getVehicleType() { return vehicleType; }
+        public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
+    }
+
+    // Alias for ImageData to match ParkingImageAdapter
+    public static class ParkingImage extends ImageData {
     }
 }

@@ -3,6 +3,10 @@
     <dimen name="bottom_nav_icon_size">24dp</dimen>
     <dimen name="bottom_nav_height">72dp</dimen>
     <dimen name="bottom_nav_vertical_padding">8dp</dimen>
+
+    <!-- Rating item spacing -->
+    <dimen name="rating_item_spacing">16dp</dimen>
+
     <!-- Search destination component dimensions -->
     <dimen name="search_container_height">56dp</dimen>
     <dimen name="search_container_radius">16dp</dimen>

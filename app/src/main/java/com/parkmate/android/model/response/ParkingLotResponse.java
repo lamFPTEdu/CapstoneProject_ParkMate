@@ -163,7 +163,7 @@ public class ParkingLotResponse {
         public void setAscending(boolean ascending) { this.ascending = ascending; }
     }
 
-    public static class ParkingLot {
+    public static class ParkingLot implements java.io.Serializable {
         @SerializedName("id")
         private Long id;
 
@@ -221,6 +221,9 @@ public class ParkingLotResponse {
         @SerializedName("updatedAt")
         private String updatedAt;
 
+        @SerializedName("subscriptions")
+        private java.util.List<com.parkmate.android.model.SubscriptionPackage> subscriptions;
+
         // Getters and Setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -260,6 +263,9 @@ public class ParkingLotResponse {
         public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
         public String getUpdatedAt() { return updatedAt; }
         public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+
+        public java.util.List<com.parkmate.android.model.SubscriptionPackage> getSubscriptions() { return subscriptions; }
+        public void setSubscriptions(java.util.List<com.parkmate.android.model.SubscriptionPackage> subscriptions) { this.subscriptions = subscriptions; }
 
         // Helper method để lấy địa chỉ đầy đủ
         public String getFullAddress() {

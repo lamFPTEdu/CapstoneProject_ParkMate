@@ -30,8 +30,7 @@ public class ProfileActivity extends BaseActivity {
     private ConstraintLayout menuPaymentMethods;
     private ConstraintLayout menuVerifyCccd; // NEW
     private ConstraintLayout menuParkingHistory;
-    private ConstraintLayout menuSettings;
-    private ConstraintLayout menuHelpSupport;
+    private ConstraintLayout menuMySubscriptions;
     private ConstraintLayout menuLogout;
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -70,8 +69,7 @@ public class ProfileActivity extends BaseActivity {
         menuPaymentMethods = findViewById(R.id.menuPaymentMethods);
         menuVerifyCccd = findViewById(R.id.menuVerifyCccd); // NEW
         menuParkingHistory = findViewById(R.id.menuParkingHistory);
-        menuSettings = findViewById(R.id.menuSettings);
-        menuHelpSupport = findViewById(R.id.menuHelpSupport);
+        menuMySubscriptions = findViewById(R.id.menuMySubscriptions);
         menuLogout = findViewById(R.id.menuLogout);
 
         // Hide the btnBack since we're using toolbar navigation
@@ -231,17 +229,12 @@ public class ProfileActivity extends BaseActivity {
             });
         }
 
-        if (menuSettings != null) {
-            menuSettings.setOnClickListener(v -> {
-                // TODO: Navigate to settings screen
-                Toast.makeText(this, "Cài đặt", Toast.LENGTH_SHORT).show();
-            });
-        }
 
-        if (menuHelpSupport != null) {
-            menuHelpSupport.setOnClickListener(v -> {
-                // TODO: Navigate to help & support screen
-                Toast.makeText(this, "Trợ giúp & hỗ trợ", Toast.LENGTH_SHORT).show();
+        if (menuMySubscriptions != null) {
+            menuMySubscriptions.setOnClickListener(v -> {
+                // Navigate to user subscriptions list screen
+                android.content.Intent intent = new android.content.Intent(this, UserSubscriptionListActivity.class);
+                startActivity(intent);
             });
         }
 

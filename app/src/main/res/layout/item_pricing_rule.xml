@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Rule Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Vehicle Icon + Type -->
+        <ImageView
+            android:id="@+id/ivVehicleIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_directions_car_24"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/tvRuleName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Ô tô - Giá chuẩn"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            tools:ignore="HardcodedText" />
+
+        <!-- Active Badge -->
+        <TextView
+            android:id="@+id/tvActiveBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ACTIVE"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_status_active"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:visibility="gone"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
+
+    <!-- Pricing Details -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <!-- Initial Charge -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Giá đầu"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvInitialCharge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="20.000₫"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvInitialDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="(60 phút)"
+                android:textSize="11sp"
+                android:textColor="#757575"
+                tools:ignore="HardcodedText" />
+
+        </LinearLayout>
+
+        <!-- Step Rate -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Giá bước"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvStepRate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15.000₫"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FF9800"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvStepMinute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="(60 phút)"
+                android:textSize="11sp"
+                android:textColor="#757575"
+                tools:ignore="HardcodedText" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Override Pricing (Promotion) -->
+    <LinearLayout
+        android:id="@+id/layoutOverride"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:background="#FFF3E0"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎉 Khuyến mãi đặc biệt"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#F57C00"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/tvOverrideDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VIP Holiday Promotion: 0₫ đầu (120 phút)"
+            android:textSize="11sp"
+            android:textColor="#757575"
+            android:layout_marginTop="2dp"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/tvOverrideValidity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Có hiệu lực đến: 06/12/2025"
+            android:textSize="10sp"
+            android:textColor="#9E9E9E"
+            android:layout_marginTop="2dp"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginTop="12dp" />
+
+</LinearLayout>
+

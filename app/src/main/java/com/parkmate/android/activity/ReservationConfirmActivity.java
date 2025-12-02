@@ -17,6 +17,7 @@ import com.parkmate.android.model.request.HoldReservationRequest;
 import com.parkmate.android.model.response.AvailableSpotResponse;
 import com.parkmate.android.model.response.HoldReservationResponse;
 import com.parkmate.android.network.ApiClient;
+import com.parkmate.android.utils.ReservationHoldManager;
 
 import java.text.DecimalFormat;
 
@@ -38,6 +39,7 @@ public class ReservationConfirmActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private ReservationHoldManager holdManager;
     private DecimalFormat formatter = new DecimalFormat("#,###");
 
     // Data from intent
@@ -56,10 +58,37 @@ public class ReservationConfirmActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reservation_confirm);
 
+        holdManager = new ReservationHoldManager(this);
+
+        // Release any previous hold before starting new reservation
+        releasePreviousHold();
+
         getIntentData();
         initializeViews();
         displaySpotInfo();
         holdReservation();
+    }
+
+    private void releasePreviousHold() {
+        if (holdManager.hasHold()) {
+            String previousHoldId = holdManager.getHoldId();
+            compositeDisposable.add(
+                    ApiClient.getApiService()
+                            .releaseHold(previousHoldId)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    response -> {
+                                        android.util.Log.d("ReservationConfirm", "Previous hold released");
+                                        holdManager.clearHoldId();
+                                    },
+                                    throwable -> {
+                                        android.util.Log.e("ReservationConfirm", "Error releasing previous hold", throwable);
+                                        holdManager.clearHoldId();
+                                    }
+                            )
+            );
+        }
     }
 
     private void getIntentData() {
@@ -144,6 +173,9 @@ public class ReservationConfirmActivity extends AppCompatActivity {
         this.holdId = holdResponse.getHoldId();
         this.isHoldActive = true;
 
+        // Save to manager for global tracking
+        holdManager.setHoldId(this.holdId);
+
         tvExpiresAt.setText("Giữ chỗ đến: " + holdResponse.getExpiresAt());
         cardExpiresAt.setVisibility(View.VISIBLE);
 
@@ -208,6 +240,7 @@ public class ReservationConfirmActivity extends AppCompatActivity {
     private void handleReservationSuccess(com.parkmate.android.model.Reservation reservation) {
         // Đặt chỗ thành công, không cần release hold nữa
         isHoldActive = false;
+        holdManager.clearHoldId(); // Clear from manager
 
         Toast.makeText(this, "Đặt chỗ thành công!", Toast.LENGTH_SHORT).show();
 
@@ -234,9 +267,12 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                                 response -> {
                                     android.util.Log.d("ReservationConfirm", "Hold released successfully");
                                     isHoldActive = false;
+                                    holdManager.clearHoldId(); // Clear from manager
                                 },
                                 throwable -> {
                                     android.util.Log.e("ReservationConfirm", "Error releasing hold", throwable);
+                                    // Clear anyway to avoid stuck state
+                                    holdManager.clearHoldId();
                                 }
                         )
         );
@@ -266,11 +302,36 @@ public class ReservationConfirmActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Release hold if user leaves without confirming
-        if (isHoldActive) {
+        compositeDisposable.clear();
+
+        // Release hold if activity is destroyed without completing reservation
+        // This handles cases like app crash, task removal, etc.
+        if (isHoldActive && holdId != null && !isFinishing()) {
+            // Activity is being destroyed but not by normal finish()
+            // Release the hold asynchronously without blocking
+            new Thread(() -> {
+                try {
+                    ApiClient.getApiService()
+                            .releaseHold(holdId)
+                            .blockingSubscribe(
+                                    response -> {
+                                        android.util.Log.d("ReservationConfirm", "Hold released on destroy");
+                                        holdManager.clearHoldId();
+                                    },
+                                    throwable -> {
+                                        android.util.Log.e("ReservationConfirm", "Error releasing hold on destroy", throwable);
+                                        holdManager.clearHoldId();
+                                    }
+                            );
+                } catch (Exception e) {
+                    // Ignore errors, will be cleaned up on next app start
+                    holdManager.clearHoldId();
+                }
+            }).start();
+        } else if (isHoldActive) {
+            // Normal finish with hold active, release normally
             releaseHold();
         }
-        compositeDisposable.clear();
     }
 }
 

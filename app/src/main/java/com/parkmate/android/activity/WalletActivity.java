@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.parkmate.android.R;
 import com.parkmate.android.adapter.TransactionAdapter;
@@ -35,6 +36,7 @@ public class WalletActivity extends BaseActivity {
     private RecyclerView rvTransactions;
     private LinearLayout llEmptyState;
     private android.widget.ImageView ivToggleBalance;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     // Adapters
     private TransactionAdapter transactionAdapter;
@@ -83,11 +85,22 @@ public class WalletActivity extends BaseActivity {
         rvTransactions = findViewById(R.id.rvTransactions);
         llEmptyState = findViewById(R.id.llEmptyState);
         ivToggleBalance = findViewById(R.id.ivToggleBalance);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
+        // Setup RecyclerView
         rvTransactions.setLayoutManager(new LinearLayoutManager(this));
         transactionAdapter = new TransactionAdapter(transactionList);
         rvTransactions.setAdapter(transactionAdapter);
         showEmptyState();
+
+        // Setup SwipeRefreshLayout
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setColorSchemeResources(
+                    R.color.colorPrimary,
+                    R.color.primary
+            );
+            swipeRefreshLayout.setOnRefreshListener(this::refreshWalletData);
+        }
     }
 
     private void setupClickListeners() {
@@ -111,6 +124,24 @@ public class WalletActivity extends BaseActivity {
     private void openTransactionHistory() {
         Intent intent = new Intent(WalletActivity.this, TransactionHistoryActivity.class);
         startActivity(intent);
+    }
+
+    /**
+     * Refresh wallet data khi người dùng pull-to-refresh
+     */
+    private void refreshWalletData() {
+        Log.d(TAG, "Refreshing wallet data...");
+        loadWalletData();
+        loadTransactions();
+
+        // Dừng animation refresh sau khi load xong
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.postDelayed(() -> {
+                if (swipeRefreshLayout != null) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }, 1000);
+        }
     }
 
     private void loadWalletData() {
