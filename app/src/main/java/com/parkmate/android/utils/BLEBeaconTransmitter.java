@@ -1,5 +1,6 @@
 package com.parkmate.android.utils;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
@@ -7,8 +8,12 @@ import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.ParcelUuid;
 import android.util.Log;
+
+import androidx.core.content.ContextCompat;
 
 import java.nio.charset.StandardCharsets;
 
@@ -38,9 +43,22 @@ public class BLEBeaconTransmitter {
     }
 
     private void initializeAdvertiser() {
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-            advertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+        // Check Bluetooth permissions for Android 12+ (API 31+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "BLUETOOTH_CONNECT permission not granted");
+                return;
+            }
+        }
+
+        try {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+                advertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+            }
+        } catch (SecurityException e) {
+            Log.e(TAG, "SecurityException when initializing advertiser", e);
         }
     }
 
@@ -178,8 +196,21 @@ public class BLEBeaconTransmitter {
         };
 
         // Bắt đầu advertising
+        // Check for Bluetooth ADVERTISE permission on Android 12+ (API 31+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADVERTISE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "BLUETOOTH_ADVERTISE permission not granted");
+                isTransmitting = false;
+                return;
+            }
+        }
+
         try {
             advertiser.startAdvertising(settings, data, advertiseCallback);
+        } catch (SecurityException se) {
+            Log.e(TAG, "SecurityException: Missing Bluetooth permissions", se);
+            isTransmitting = false;
         } catch (Exception e) {
             Log.e(TAG, "Error starting BLE advertising", e);
             isTransmitting = false;
@@ -191,10 +222,21 @@ public class BLEBeaconTransmitter {
      */
     private void stopAdvertising() {
         if (advertiser != null && advertiseCallback != null) {
+            // Check for Bluetooth ADVERTISE permission on Android 12+ (API 31+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADVERTISE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    Log.e(TAG, "BLUETOOTH_ADVERTISE permission not granted");
+                    return;
+                }
+            }
+
             try {
                 advertiser.stopAdvertising(advertiseCallback);
                 isTransmitting = false;
                 Log.d(TAG, "BLE advertising stopped");
+            } catch (SecurityException se) {
+                Log.e(TAG, "SecurityException: Missing Bluetooth permissions", se);
             } catch (Exception e) {
                 Log.e(TAG, "Error stopping BLE advertising", e);
             }
