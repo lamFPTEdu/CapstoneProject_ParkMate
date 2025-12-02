@@ -10,18 +10,24 @@
 
 
 
-    <!-- ScrollView chứa nội dung (KHÔNG chứa nút nạp tiền) -->
-    <ScrollView
+    <!-- SwipeRefreshLayout wrap ScrollView để hỗ trợ pull-to-refresh -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/cvTopUp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- ScrollView chứa nội dung (KHÔNG chứa nút nạp tiền) -->
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="24dp">
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="24dp">
 
             <!-- Card hiển thị số dư -->
             <androidx.cardview.widget.CardView
@@ -176,6 +182,8 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- Nút Nạp tiền ở dưới cùng, ngoài ScrollView -->
     <androidx.cardview.widget.CardView

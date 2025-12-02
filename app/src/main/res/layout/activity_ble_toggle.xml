@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- Main Content Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <!-- BLE Toggle Button Container with Wave Animation - Full Screen -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:layout_gravity="center"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <!-- Wave animation rings (3 layers) - Larger size để lan ra toàn màn hình -->
+            <View
+                android:id="@+id/bleWaveRing1"
+                android:layout_width="500dp"
+                android:layout_height="500dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_ble_wave_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/bleWaveRing2"
+                android:layout_width="500dp"
+                android:layout_height="500dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_ble_wave_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/bleWaveRing3"
+                android:layout_width="500dp"
+                android:layout_height="500dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_ble_wave_ring"
+                android:visibility="gone" />
+
+            <!-- Main BLE Toggle Button -->
+            <FrameLayout
+                android:id="@+id/btnBLEToggle"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_gravity="center"
+                android:background="@drawable/ble_button_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="12dp">
+
+                <ImageView
+                    android:id="@+id/ivBLEIcon"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_bluetooth_24"
+                    app:tint="@color/white"
+                    android:contentDescription="@string/ble_beacon_desc" />
+            </FrameLayout>
+
+        </FrameLayout>
+
+        <!-- Status Text -->
+        <TextView
+            android:id="@+id/tvBLEStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/ble_status_off"
+            android:textColor="@color/gray"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Description Text -->
+        <TextView
+            android:id="@+id/tvBLEDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="@string/ble_description_off"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp" />
+
+    </LinearLayout>
+
+    <!-- Info Card at Bottom -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💡 Thông tin"
+                android:textColor="@color/colorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="BLE Beacon giúp bãi đỗ xe tự động nhận diện khi bạn đến gần. Bật chức năng này để trải nghiệm tốt nhất!"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:lineSpacingExtra="2dp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>
+

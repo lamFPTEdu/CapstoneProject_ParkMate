@@ -157,6 +157,53 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <!-- My Subscriptions (Vé tháng) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/menuMySubscriptions"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/profile_menu_item_height"
+                android:layout_marginBottom="@dimen/profile_menu_item_margin"
+                android:background="@drawable/bg_profile_menu_item"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/profile_menu_item_padding">
+
+                <ImageView
+                    android:id="@+id/iconMySubscriptions"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Vé tháng của tôi"
+                    android:src="@drawable/ic_card_membership_24"
+                    app:tint="@color/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvMySubscriptions"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Vé tháng của tôi"
+                    android:textColor="@color/bottom_nav_text_active"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/iconMySubscriptionsChevron"
+                    app:layout_constraintStart_toEndOf="@id/iconMySubscriptions"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/iconMySubscriptionsChevron"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Vé tháng của tôi"
+                    android:src="@drawable/ic_chevron_right_24"
+                    app:tint="@color/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <!-- My Vehicles -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/menuMyVehicles"
@@ -345,99 +392,6 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Settings -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuSettings"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
-
-                <ImageView
-                    android:id="@+id/iconSettings"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_settings"
-                    android:src="@drawable/ic_settings_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvSettings"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/profile_menu_settings"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconSettingsChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconSettings"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:id="@+id/iconSettingsChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/profile_menu_settings"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Help & Support -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuHelpSupport"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
-
-                <ImageView
-                    android:id="@+id/iconHelp"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_help_support"
-                    android:src="@drawable/ic_help_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvHelpSupport"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/profile_menu_help_support"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconHelpChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconHelp"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:id="@+id/iconHelpChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/profile_menu_help_support"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Logout Button -->
             <androidx.constraintlayout.widget.ConstraintLayout

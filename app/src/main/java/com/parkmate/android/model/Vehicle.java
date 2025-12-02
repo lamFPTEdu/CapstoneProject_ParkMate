@@ -42,6 +42,9 @@ public class Vehicle implements Serializable {
     @SerializedName("inReservation")
     private boolean inReservation;
 
+    @SerializedName("supported")
+    private boolean supported;
+
     public Vehicle() {
     }
 
@@ -149,5 +152,13 @@ public class Vehicle implements Serializable {
 
     public void setInReservation(boolean inReservation) {
         this.inReservation = inReservation;
+    }
+
+    public boolean isSupported() {
+        return supported;
+    }
+
+    public void setSupported(boolean supported) {
+        this.supported = supported;
     }
 }

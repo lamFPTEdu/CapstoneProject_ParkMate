@@ -63,25 +63,22 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         holder.tvStatus.setText(reservation.getStatusDisplayName());
 
         // Hiển thị tổng phí (totalFee hoặc initialFee)
-        int displayFee = reservation.getTotalFee() > 0 ? reservation.getTotalFee() : reservation.getInitialFee();
+        int displayFee = 0;
+        if (reservation.getTotalFee() != null && reservation.getTotalFee() > 0) {
+            displayFee = reservation.getTotalFee();
+        } else if (reservation.getInitialFee() != null) {
+            displayFee = reservation.getInitialFee();
+        }
         holder.tvReservationFee.setText(String.format(Locale.getDefault(), "%,dđ", displayFee));
 
         // Hiển thị thời gian với format mới từ BE: "yyyy-MM-dd HH:mm:ss"
         holder.tvReservedFrom.setText(formatDateTime(reservation.getReservedFrom()));
 
-        // Hiển thị tên bãi đỗ và vị trí từ API response (không phải ID)
-        String spotInfo;
-        if (reservation.getParkingLotName() != null && reservation.getSpotName() != null) {
-            spotInfo = String.format("%s - Chỗ %s",
-                reservation.getParkingLotName(),
-                reservation.getSpotName());
-        } else {
-            // Fallback nếu không có tên
-            spotInfo = String.format("Bãi: %s - Chỗ: %s",
-                reservation.getParkingLotId(),
-                reservation.getSpotId());
-        }
-        holder.tvSpotInfo.setText(spotInfo);
+        // Hiển thị tên bãi đỗ (không còn thông tin spot từ API)
+        String parkingLotInfo = reservation.getParkingLotName() != null
+            ? reservation.getParkingLotName()
+            : "Bãi đỗ xe";
+        holder.tvSpotInfo.setText(parkingLotInfo);
 
         // Màu status background giống ReservationDetailActivity
         setStatusBackground(holder.tvStatus, reservation.getStatus());

@@ -16,10 +16,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Lấy api key từ gradle.properties (project.findProperty trả Any?)
+        // Lấy api key từ gradle.properties
         val openmapApiKey: String = (project.findProperty("openmapApiKey") ?: "") as String
-        // BuildConfig field trong Kotlin DSL
+        val graphhopperApiKey: String = (project.findProperty("graphhopperApiKey") ?: "") as String
+
+        // BuildConfig field
         buildConfigField("String", "OPENMAP_API_KEY", openmapApiKey)
+        buildConfigField("String", "GRAPHHOPPER_API_KEY", graphhopperApiKey)
 
         // Tối ưu hóa cho mọi thiết bị
         vectorDrawables.useSupportLibrary = true
@@ -96,5 +99,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
+
+    // AltBeacon library for BLE support
+    implementation("org.altbeacon:android-beacon-library:2.20.6")
 
 }

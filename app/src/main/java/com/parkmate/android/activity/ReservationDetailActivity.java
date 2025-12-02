@@ -1,17 +1,28 @@
 package com.parkmate.android.activity;
 
+import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -22,6 +33,10 @@ import com.parkmate.android.R;
 import com.parkmate.android.model.Reservation;
 import com.parkmate.android.utils.ImageUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,10 +50,12 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 public class ReservationDetailActivity extends AppCompatActivity {
 
     private static final String TAG = "ReservationDetail";
+    private static final int REQUEST_STORAGE_PERMISSION = 100;
 
     // Views
     private MaterialToolbar toolbar;
     private ImageView ivQrCode;
+    private ImageButton btnSaveQr;
     private TextView tvReservationId;
     private TextView tvStatus;
     private TextView tvReservationFee;
@@ -50,6 +67,7 @@ public class ReservationDetailActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private Reservation reservation;
+    private Bitmap qrCodeBitmap;
 
     // API Service (not needed anymore since API returns complete data)
     private CompositeDisposable compositeDisposable;
@@ -93,6 +111,7 @@ public class ReservationDetailActivity extends AppCompatActivity {
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         ivQrCode = findViewById(R.id.ivQrCode);
+        btnSaveQr = findViewById(R.id.btnSaveQr);
         tvReservationId = findViewById(R.id.tvReservationId);
         tvStatus = findViewById(R.id.tvStatus);
         tvReservationFee = findViewById(R.id.tvReservationFee);
@@ -102,6 +121,9 @@ public class ReservationDetailActivity extends AppCompatActivity {
         tvVehicleType = findViewById(R.id.tvVehicleType);
         btnDone = findViewById(R.id.btnDone);
         progressBar = findViewById(R.id.progressBar);
+
+        // Setup save button click listener
+        btnSaveQr.setOnClickListener(v -> saveQrCodeToGallery());
     }
 
     private void setupToolbar() {
@@ -124,7 +146,12 @@ public class ReservationDetailActivity extends AppCompatActivity {
         setStatusBackground(reservation.getStatus());
 
         // Hiển thị phí (sử dụng totalFee hoặc initialFee)
-        int displayFee = reservation.getTotalFee() > 0 ? reservation.getTotalFee() : reservation.getInitialFee();
+        int displayFee = 0;
+        if (reservation.getTotalFee() != null && reservation.getTotalFee() > 0) {
+            displayFee = reservation.getTotalFee();
+        } else if (reservation.getInitialFee() != null) {
+            displayFee = reservation.getInitialFee();
+        }
         tvReservationFee.setText(String.format("%,dđ", displayFee));
 
         // Hiển thị thời gian (từ - đến)
@@ -194,7 +221,7 @@ public class ReservationDetailActivity extends AppCompatActivity {
         // Decode Base64 thành Bitmap trên background thread
         new Thread(() -> {
             String qrCodeBase64 = reservation.getQrCode();
-            Bitmap qrCodeBitmap = ImageUtils.decodeBase64ToBitmap(qrCodeBase64);
+            qrCodeBitmap = ImageUtils.decodeBase64ToBitmap(qrCodeBase64);
 
             // Update UI trên main thread
             runOnUiThread(() -> {
@@ -279,6 +306,89 @@ public class ReservationDetailActivity extends AppCompatActivity {
         }
 
         return fromDateTime;
+    }
+
+    private void saveQrCodeToGallery() {
+        if (qrCodeBitmap == null) {
+            Toast.makeText(this, "Không có mã QR để lưu", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check permission for Android 10 and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        REQUEST_STORAGE_PERMISSION);
+                return;
+            }
+        }
+
+        saveImageToGallery();
+    }
+
+    private void saveImageToGallery() {
+        try {
+            String fileName = "ParkMate_Reservation_QR_" + reservation.getId() + "_" + System.currentTimeMillis() + ".png";
+            OutputStream outputStream;
+            Uri imageUri;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10 and above
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/ParkMate");
+
+                imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                if (imageUri != null) {
+                    outputStream = getContentResolver().openOutputStream(imageUri);
+                } else {
+                    Toast.makeText(this, "Không thể tạo file", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            } else {
+                // Android 9 and below
+                File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                File parkMateDir = new File(picturesDir, "ParkMate");
+                if (!parkMateDir.exists()) {
+                    parkMateDir.mkdirs();
+                }
+
+                File imageFile = new File(parkMateDir, fileName);
+                outputStream = new FileOutputStream(imageFile);
+                imageUri = Uri.fromFile(imageFile);
+
+                // Notify gallery
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                mediaScanIntent.setData(imageUri);
+                sendBroadcast(mediaScanIntent);
+            }
+
+            // Save bitmap to output stream
+            if (outputStream != null) {
+                qrCodeBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                outputStream.close();
+                Toast.makeText(this, "Đã lưu mã QR vào thư viện", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error saving QR code", e);
+            Toast.makeText(this, "Lỗi lưu mã QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_STORAGE_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                saveImageToGallery();
+            } else {
+                Toast.makeText(this, "Cần quyền truy cập bộ nhớ để lưu ảnh", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override

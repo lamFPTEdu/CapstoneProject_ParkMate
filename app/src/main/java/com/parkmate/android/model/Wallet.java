@@ -1,7 +1,6 @@
 package com.parkmate.android.model;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.List;
 
 public class Wallet {
     @SerializedName("userId")
@@ -17,10 +16,10 @@ public class Wallet {
     private boolean isActive;
 
     @SerializedName("createdAt")
-    private List<Integer> createdAt;
+    private String createdAt;
 
     @SerializedName("updatedAt")
-    private List<Integer> updatedAt;
+    private String updatedAt;
 
     public Wallet() {
     }
@@ -57,19 +56,19 @@ public class Wallet {
         isActive = active;
     }
 
-    public List<Integer> getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(List<Integer> createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 
-    public List<Integer> getUpdatedAt() {
+    public String getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(List<Integer> updatedAt) {
+    public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
 

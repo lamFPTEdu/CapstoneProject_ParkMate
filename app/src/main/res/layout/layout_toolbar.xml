@@ -70,7 +70,7 @@
             android:paddingEnd="8dp"
             android:visibility="gone"
             app:layout_constraintStart_toEndOf="@id/ivNavigation"
-            app:layout_constraintEnd_toStartOf="@id/btnFilter"
+            app:layout_constraintEnd_toStartOf="@id/btnToolbarNotification"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
@@ -101,6 +101,46 @@
                 app:layout_constraintBottom_toBottomOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Notification Button with Badge -->
+        <FrameLayout
+            android:id="@+id/btnToolbarNotification"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="visible"
+            app:layout_constraintEnd_toStartOf="@id/btnFilter"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_notifications_24"
+                app:tint="@color/colorPrimary"
+                android:contentDescription="Notifications" />
+
+            <!-- Notification Badge -->
+            <TextView
+                android:id="@+id/tvToolbarNotificationBadge"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_notification_badge"
+                android:gravity="center"
+                android:text="5"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:visibility="gone"
+                android:elevation="2dp" />
+
+        </FrameLayout>
 
         <!-- Filter Button (for search bar) -->
         <FrameLayout

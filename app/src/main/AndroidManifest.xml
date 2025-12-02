@@ -7,6 +7,19 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Bluetooth permissions for BLE -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+
     <!-- Permissions for Camera and Storage -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -48,6 +61,9 @@
         android:largeHeap="true">
         <activity
             android:name=".activity.WalletActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.BLEToggleActivity"
             android:exported="false" />
         <activity
             android:name=".activity.TopUpActivity"
@@ -118,6 +134,9 @@
             android:name=".activity.ParkingLotDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.AllRatingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.FloorDetailActivity"
             android:exported="false" />
         <activity
@@ -139,6 +158,23 @@
         <activity
             android:name=".activity.ParkingHistoryActivity"
             android:exported="false" />
+        <!-- Subscription Activities -->
+        <activity
+            android:name=".activity.SubscriptionSelectionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SubscriptionLocationSelectionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SubscriptionSummaryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SubscriptionSuccessActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.UserSubscriptionListActivity"
+            android:exported="false"
+            android:parentActivityName=".activity.ProfileActivity" />
         <activity
             android:name=".activity.SplashActivity"
             android:exported="true">

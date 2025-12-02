@@ -4,10 +4,16 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -26,16 +32,20 @@ import java.util.List;
  * Activity hiển thị danh sách notifications từ Local Storage (SharedPreferences)
  * Notifications được lưu khi nhận FCM message
  */
-public class NotificationActivity extends BaseActivity {
+public class NotificationActivity extends AppCompatActivity {
 
     private static final String TAG = "NotificationActivity";
     private static final String PREFS_NAME = "parkmate_notifications";
     private static final String KEY_NOTIFICATIONS = "notifications";
     private static final int PAGE_SIZE = 20; // Load 20 notifications mỗi lần
 
+    // Views
+    private ImageButton btnBack;
+    private ImageButton btnMarkAllRead;
     private RecyclerView rvNotifications;
     private LinearLayout llEmptyState;
     private SwipeRefreshLayout swipeRefreshLayout;
+
     private NotificationAdapter adapter;
     private SharedPreferences sharedPreferences;
     private Gson gson;
@@ -46,15 +56,17 @@ public class NotificationActivity extends BaseActivity {
     private boolean isLoading;
 
     @Override
-    protected int getLayoutResourceId() {
-        return R.layout.activity_notification;
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate started");
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "super.onCreate completed");
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_notification);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         try {
             // Initialize SharedPreferences and Gson
@@ -62,38 +74,39 @@ public class NotificationActivity extends BaseActivity {
             gson = new Gson();
             Log.d(TAG, "SharedPreferences and Gson initialized");
 
-            // Setup toolbar with title and "Mark all as read" action icon
-            setupToolbarWithTitleAndAction(
-                    getString(R.string.notifications_title),
-                    false, // no back button
-                    R.drawable.ic_done_all_24, // icon thay vì text
-                    v -> markAllAsRead()
-            );
-            Log.d(TAG, "Toolbar setup completed");
-
-            // Setup bottom navigation with Notification selected
-            setupBottomNavigation(true, R.id.nav_notification);
-            Log.d(TAG, "Bottom navigation setup completed");
-
-            // Update notification badge
+            // Initialize views
             initViews();
             Log.d(TAG, "Views initialized");
 
-            // Load notifications from SharedPreferences (TRƯỚC KHI update badge)
+            // Setup click listeners
+            setupClickListeners();
+
+            // Load notifications from SharedPreferences
             loadNotifications();
             Log.d(TAG, "Loading notifications");
 
-            // Update notification badge SAU KHI đã load notifications
-            updateNotificationBadge();
-            Log.d(TAG, "Notification badge setup completed");
         } catch (Exception e) {
             Log.e(TAG, "Error in onCreate: " + e.getMessage(), e);
             Toast.makeText(this, "Lỗi khởi tạo: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
+    private void setupClickListeners() {
+        // Back button
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
+
+        // Mark all as read button
+        if (btnMarkAllRead != null) {
+            btnMarkAllRead.setOnClickListener(v -> markAllAsRead());
+        }
+    }
+
     private void initViews() {
         try {
+            btnBack = findViewById(R.id.btnBack);
+            btnMarkAllRead = findViewById(R.id.btnMarkAllRead);
             rvNotifications = findViewById(R.id.rvNotifications);
             llEmptyState = findViewById(R.id.llEmptyState);
             swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
@@ -303,9 +316,6 @@ public class NotificationActivity extends BaseActivity {
             // Refresh adapter
             adapter.notifyDataSetChanged();
 
-            // Update badge
-            updateNotificationBadge();
-
             Log.d(TAG, "Notification marked as read: " + notification.getId());
 
         } catch (Exception e) {
@@ -382,9 +392,6 @@ public class NotificationActivity extends BaseActivity {
 
         hideEmptyState();
         adapter.setNotifications(demoNotifications);
-
-        // Update badge với số lượng chưa đọc
-        updateNotificationBadge();
     }
 
     private void showEmptyState() {
@@ -447,9 +454,6 @@ public class NotificationActivity extends BaseActivity {
             // Refresh adapter
             adapter.notifyDataSetChanged();
 
-            // Update badge
-            updateNotificationBadge();
-
             Toast.makeText(this, "Đã đánh dấu tất cả là đã đọc", Toast.LENGTH_SHORT).show();
 
             Log.d(TAG, "All notifications marked as read");
@@ -460,38 +464,10 @@ public class NotificationActivity extends BaseActivity {
         }
     }
 
-    /**
-     * Cập nhật badge thông báo trên bottom navigation
-     */
-    private void updateNotificationBadge() {
-        try {
-            int unreadCount = 0;
-
-            // Đếm số notification chưa đọc
-            if (allNotifications != null) {
-                for (Notification notification : allNotifications) {
-                    if (!notification.isRead()) {
-                        unreadCount++;
-                    }
-                }
-            }
-
-            // Hiển thị badge với số unread (cả khi đang ở NotificationActivity)
-            setupNotificationBadge(unreadCount);
-
-            Log.d(TAG, "Notification badge updated: " + unreadCount + " unread");
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error updating notification badge: " + e.getMessage(), e);
-        }
-    }
-
     @Override
-    protected void onResume() {
-        super.onResume();
-        // Refresh badge khi quay lại activity
-        updateNotificationBadge();
-        Log.d(TAG, "Badge refreshed in onResume()");
+    protected void onDestroy() {
+        super.onDestroy();
+        // Cleanup if needed
     }
 }
 
