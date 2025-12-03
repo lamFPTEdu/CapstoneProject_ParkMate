@@ -165,45 +165,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tilConfirmPassword" />
 
-    <TextView
-        android:id="@+id/tvOrSignUpWith"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Hoặc đăng ký với"
-        android:textColor="#8F9BB3"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnNext" />
-
-    <!-- Social Sign Up Options -->
-    <LinearLayout
-        android:id="@+id/llSocialSignUp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvOrSignUpWith">
-
-        <ImageView
-            android:id="@+id/ivGoogleSignUp"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="24dp"
-            android:contentDescription="Sign up with Google"
-            android:src="@drawable/ic_google" />
-
-        <ImageView
-            android:id="@+id/ivFacebookSignUp"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="Sign up with Facebook"
-            android:src="@drawable/ic_facebook" />
-    </LinearLayout>
-
     <!-- Login Link -->
     <TextView
         android:id="@+id/tvLoginLink"
@@ -217,7 +178,7 @@
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/llSocialSignUp" />
+        app:layout_constraintTop_toBottomOf="@id/btnNext" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

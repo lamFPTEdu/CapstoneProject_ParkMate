@@ -170,10 +170,14 @@ public class LoginResponse {
         @SerializedName("role")
         private String role;
 
+        @SerializedName("isIdVerified")
+        private Boolean isIdVerified;
+
         public Long getId() { return id; }
         public String getEmail() { return email; }
         public String getStatus() { return status; }
         public String getRole() { return role; }
+        public Boolean getIsIdVerified() { return isIdVerified; }
     }
 }
 

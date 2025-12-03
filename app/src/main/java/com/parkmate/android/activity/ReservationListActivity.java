@@ -19,13 +19,19 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.parkmate.android.R;
 import com.parkmate.android.adapter.ReservationAdapter;
+import com.parkmate.android.dialog.RatingDialog;
 import com.parkmate.android.model.Reservation;
+import com.parkmate.android.model.request.CreateRatingRequest;
+import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.repository.ReservationRepository;
+import com.parkmate.android.utils.UserManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * Activity hiển thị danh sách reservation của user
@@ -93,11 +99,26 @@ public class ReservationListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        adapter = new ReservationAdapter(this, reservationList, reservation -> {
-            // Click vào item -> xem chi tiết
-            Intent intent = new Intent(this, ReservationDetailActivity.class);
-            intent.putExtra("reservation", reservation);
-            startActivity(intent);
+        adapter = new ReservationAdapter(this, reservationList, new ReservationAdapter.OnReservationClickListener() {
+            @Override
+            public void onReservationClick(Reservation reservation) {
+                // Click vào item -> xem chi tiết
+                Intent intent = new Intent(ReservationListActivity.this, ReservationDetailActivity.class);
+                intent.putExtra("reservation", reservation);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onRateClick(Reservation reservation) {
+                // Click vào button rating -> show rating dialog
+                showRatingDialog(reservation);
+            }
+
+            @Override
+            public void onCancelClick(Reservation reservation) {
+                // Click vào button cancel -> show confirmation dialog
+                showCancelConfirmDialog(reservation);
+            }
         });
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -197,6 +218,170 @@ public class ReservationListActivity extends AppCompatActivity {
 
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    private void showCancelConfirmDialog(Reservation reservation) {
+        com.parkmate.android.model.RefundPolicy policy = reservation.getRefundPolicy();
+        int refundMinutes = policy != null ? policy.getRefundWindowMinutes() : 30;
+
+        String parkingLotName = reservation.getParkingLotName() != null
+            ? reservation.getParkingLotName()
+            : "Bãi đỗ xe";
+
+        String timeInfo = reservation.getReservedFrom() != null
+            ? reservation.getReservedFrom()
+            : "";
+
+        int fee = reservation.getInitialFee() != null ? reservation.getInitialFee() : 0;
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("⚠️ Xác nhận hủy đặt chỗ")
+            .setMessage(String.format(
+                "Bạn có chắc muốn hủy đặt chỗ này?\n\n" +
+                "📍 Bãi: %s\n" +
+                "⏰ Thời gian: %s\n" +
+                "💰 Phí cọc: %,dđ\n\n" +
+                "💡 Hủy trước %d phút để được hoàn tiền cọc.",
+                parkingLotName,
+                timeInfo,
+                fee,
+                refundMinutes
+            ))
+            .setPositiveButton("Xác nhận hủy", (dialog, which) -> {
+                cancelReservation(reservation);
+            })
+            .setNegativeButton("Đóng", null)
+            .show();
+    }
+
+    private void cancelReservation(Reservation reservation) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        compositeDisposable.add(
+            reservationRepository.cancelReservation(reservation.getId())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    response -> {
+                        progressBar.setVisibility(View.GONE);
+                        if (response.isSuccess()) {
+                            Toast.makeText(this, "✅ Đã hủy đặt chỗ thành công!", Toast.LENGTH_SHORT).show();
+                            // Reload danh sách
+                            currentPage = 0;
+                            isLastPage = false;
+                            reservationList.clear();
+                            loadReservations();
+                        } else {
+                            String errorMsg = response.getMessage() != null
+                                ? response.getMessage()
+                                : "Không thể hủy đặt chỗ";
+                            Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                        }
+                    },
+                    error -> {
+                        progressBar.setVisibility(View.GONE);
+                        Log.e(TAG, "Error cancelling reservation", error);
+
+                        String errorMsg = "Không thể hủy đặt chỗ";
+                        if (error.getMessage() != null) {
+                            if (error.getMessage().contains("404")) {
+                                errorMsg = "Không tìm thấy đặt chỗ này";
+                            } else if (error.getMessage().contains("403")) {
+                                errorMsg = "Bạn không có quyền hủy đặt chỗ này";
+                            } else if (error.getMessage().contains("400")) {
+                                errorMsg = "Không thể hủy đặt chỗ đã hoàn thành hoặc đã hủy";
+                            } else if (error.getMessage().contains("409")) {
+                                errorMsg = "Đặt chỗ đã quá hạn để hủy hoặc đang được xử lý";
+                            }
+                        }
+                        Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                    }
+                )
+        );
+    }
+
+    private void showRatingDialog(Reservation reservation) {
+        String parkingLotName = reservation.getParkingLotName() != null
+            ? reservation.getParkingLotName()
+            : "Bãi đỗ xe";
+
+        RatingDialog dialog = new RatingDialog(this, parkingLotName, (rating, title, comment) -> {
+            // Submit rating to API
+            submitRating(reservation, rating, title, comment);
+        });
+        dialog.show();
+    }
+
+    private void submitRating(Reservation reservation, int rating, String title, String comment) {
+        // Get user ID from UserManager
+        String userIdStr = UserManager.getInstance().getUserId();
+        if (userIdStr == null || userIdStr.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Long userId;
+        try {
+            userId = Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "ID người dùng không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Get parking lot ID
+        String parkingLotIdStr = reservation.getParkingLotId();
+        if (parkingLotIdStr == null || parkingLotIdStr.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy thông tin bãi đỗ xe", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        long parkingLotId;
+        try {
+            parkingLotId = Long.parseLong(parkingLotIdStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "ID bãi đỗ xe không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create rating request
+        CreateRatingRequest request = new CreateRatingRequest(userId, rating, title, comment);
+
+        // Show loading
+        progressBar.setVisibility(View.VISIBLE);
+
+        // Call API
+        compositeDisposable.add(
+            ApiClient.getApiService().createRating(parkingLotId, request)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    response -> {
+                        progressBar.setVisibility(View.GONE);
+                        if (response.isSuccess()) {
+                            Toast.makeText(this, "Cảm ơn bạn đã đánh giá!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            String errorMsg = response.getMessage() != null
+                                ? response.getMessage()
+                                : "Không thể gửi đánh giá";
+                            Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                        }
+                    },
+                    error -> {
+                        progressBar.setVisibility(View.GONE);
+                        Log.e(TAG, "Error submitting rating: " + error.getMessage());
+
+                        String errorMsg = "Không thể gửi đánh giá";
+                        if (error.getMessage() != null) {
+                            if (error.getMessage().contains("409")) {
+                                errorMsg = "Bạn đã đánh giá bãi đỗ xe này rồi";
+                            } else if (error.getMessage().contains("404")) {
+                                errorMsg = "Không tìm thấy bãi đỗ xe";
+                            }
+                        }
+                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                    }
+                )
+        );
     }
 
     @Override

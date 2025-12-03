@@ -9,6 +9,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -128,6 +130,9 @@ public class HomeActivity extends BaseActivity {
 
         // Load notification badge count from API
         loadNotificationBadgeCount();
+
+        // GUEST MODE: Show welcome message for guest users (only once per session)
+        showGuestWelcomeMessageIfNeeded();
 
         // Khởi tạo MapView
         initMapView(savedInstanceState);
@@ -826,6 +831,71 @@ public class HomeActivity extends BaseActivity {
 
     // ============= END ROUTING METHODS =============
 
+    // ============= GUEST MODE METHODS =============
+
+    /**
+     * Show welcome message for guest users (only once per session)
+     */
+    private void showGuestWelcomeMessageIfNeeded() {
+        // Check if user is guest
+        if (!com.parkmate.android.utils.AuthHelper.isUserLoggedIn()) {
+            // Check if message was shown this session
+            SharedPreferences prefs = getSharedPreferences("guest_mode", Context.MODE_PRIVATE);
+            boolean messageShown = prefs.getBoolean("welcome_shown_this_session", false);
+
+            if (!messageShown) {
+                // Show welcome message after a short delay (let map load first)
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (!isFinishing()) {
+                        showGuestWelcomeSnackbar();
+                        // Mark as shown for this session
+                        prefs.edit().putBoolean("welcome_shown_this_session", true).apply();
+                    }
+                }, 2000); // 2 seconds delay
+            }
+        }
+    }
+
+    /**
+     * Show Snackbar with guest mode welcome message
+     * Custom colors cho đẹp hơn default Material Design
+     */
+    private void showGuestWelcomeSnackbar() {
+        com.google.android.material.snackbar.Snackbar snackbar =
+            com.google.android.material.snackbar.Snackbar.make(
+                findViewById(android.R.id.content),
+                "👋 Bạn đang ở chế độ khách. Đăng nhập để đặt chỗ và nhiều tính năng khác!",
+                com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+            );
+
+        // Add action button to login
+        snackbar.setAction("Đăng nhập", v -> {
+            com.parkmate.android.utils.AuthHelper.navigateToLogin(this);
+        });
+
+        // Customize colors cho đẹp hơn
+        android.view.View snackbarView = snackbar.getView();
+
+        // Background: Màu xanh dương primary (đẹp hơn màu đen/xám mặc định)
+        snackbarView.setBackgroundColor(getResources().getColor(R.color.primary, null));
+
+        // Text message: Trắng để contrast tốt với background xanh
+        android.widget.TextView textView = snackbarView.findViewById(
+            com.google.android.material.R.id.snackbar_text
+        );
+        if (textView != null) {
+            textView.setTextColor(getResources().getColor(android.R.color.white, null));
+            textView.setMaxLines(3); // Allow multiple lines cho message dài
+        }
+
+        // Action button: Vàng warning để nổi bật trên nền xanh
+        snackbar.setActionTextColor(getResources().getColor(R.color.warning_yellow, null));
+
+        snackbar.show();
+    }
+
+    // ============= END GUEST MODE METHODS =============
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -1117,6 +1187,12 @@ public class HomeActivity extends BaseActivity {
      * Đăng ký FCM token với server
      */
     private void registerFcmToken() {
+        // GUEST MODE: Only register FCM token if user is logged in
+        if (!com.parkmate.android.utils.AuthHelper.isUserLoggedIn()) {
+            Log.d(TAG, "⚠ Guest user - skipping FCM token registration");
+            return;
+        }
+
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(task -> {
                     if (!task.isSuccessful()) {

@@ -4,9 +4,6 @@
     <dimen name="bottom_nav_height">72dp</dimen>
     <dimen name="bottom_nav_vertical_padding">8dp</dimen>
 
-    <!-- Rating item spacing -->
-    <dimen name="rating_item_spacing">16dp</dimen>
-
     <!-- Search destination component dimensions -->
     <dimen name="search_container_height">56dp</dimen>
     <dimen name="search_container_radius">16dp</dimen>
@@ -25,4 +22,7 @@
     <dimen name="profile_menu_item_padding">16dp</dimen>
     <dimen name="profile_menu_item_margin">12dp</dimen>
     <dimen name="profile_section_margin_top">24dp</dimen>
+
+    <!-- Rating item spacing -->
+    <dimen name="rating_item_spacing">16dp</dimen>
 </resources>

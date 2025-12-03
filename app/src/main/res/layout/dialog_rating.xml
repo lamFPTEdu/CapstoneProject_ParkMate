@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/dialog_background">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Đánh giá bãi đỗ xe"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Parking Lot Name -->
+    <TextView
+        android:id="@+id/tvParkingLotName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Vincom Center Parking"
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Star Rating -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đánh giá tổng quan"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/star1"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_star_outline"
+                android:padding="4dp"
+                android:contentDescription="1 sao"
+                app:tint="@color/text_tertiary" />
+
+            <ImageView
+                android:id="@+id/star2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_star_outline"
+                android:padding="4dp"
+                android:contentDescription="2 sao"
+                app:tint="@color/text_tertiary" />
+
+            <ImageView
+                android:id="@+id/star3"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_star_outline"
+                android:padding="4dp"
+                android:contentDescription="3 sao"
+                app:tint="@color/text_tertiary" />
+
+            <ImageView
+                android:id="@+id/star4"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_star_outline"
+                android:padding="4dp"
+                android:contentDescription="4 sao"
+                app:tint="@color/text_tertiary" />
+
+            <ImageView
+                android:id="@+id/star5"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_star_outline"
+                android:padding="4dp"
+                android:contentDescription="5 sao"
+                app:tint="@color/text_tertiary" />
+
+        </LinearLayout>
+
+        <!-- Rating Description -->
+        <TextView
+            android:id="@+id/tvRatingDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chọn số sao"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+    <!-- Title Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/primary"
+        app:hintTextColor="@color/primary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tiêu đề (tùy chọn)"
+            android:maxLength="200"
+            android:maxLines="1"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Comment Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/primary"
+        app:hintTextColor="@color/primary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nhận xét của bạn (tùy chọn)"
+            android:minHeight="100dp"
+            android:gravity="top|start"
+            android:maxLines="5"
+            android:inputType="textMultiLine"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hủy"
+            android:textColor="@color/text_primary"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSubmit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gửi đánh giá"
+            android:enabled="false"
+            app:backgroundTint="@color/primary" />
+
+    </LinearLayout>
+
+</LinearLayout>
+

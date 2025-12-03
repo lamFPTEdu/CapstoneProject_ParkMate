@@ -45,8 +45,8 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etEmail, etPassword;
     private CheckBox cbRememberMe;
     private MaterialButton btnLogin;
+    private com.google.android.material.floatingactionbutton.FloatingActionButton fabBiometricLogin;
     private TextView tvRegisterLink, tvForgotPassword;
-    private ImageView ivGoogleLogin, ivFacebookLogin;
 
     private AuthRepository authRepository;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -81,6 +81,64 @@ public class LoginActivity extends AppCompatActivity {
 
         // Kiểm tra xem có bị redirect do token hết hạn không
         checkSessionExpired();
+
+        // KHÔNG auto-show biometric nữa, chỉ show khi user bấm nút
+        // checkBiometricLogin();
+    }
+
+    /**
+     * Kiểm tra và hiển thị biometric login nếu user đã bật
+     */
+    private void checkBiometricLogin() {
+        com.parkmate.android.utils.BiometricManager biometricManager =
+            com.parkmate.android.utils.BiometricManager.getInstance(this);
+
+        if (biometricManager.isBiometricEnabled()) {
+            // Delay một chút để UI render xong
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                showBiometricLogin();
+            }, 500);
+        }
+    }
+
+    /**
+     * Hiển thị prompt biometric login
+     */
+    private void showBiometricLogin() {
+        com.parkmate.android.utils.BiometricManager.getInstance(this).authenticate(this,
+            new com.parkmate.android.utils.BiometricManager.BiometricCallback() {
+                @Override
+                public void onSuccess(String email, String password) {
+                    // Auto login với credentials đã lưu
+                    android.util.Log.d(TAG, "Biometric success - Email: " + email);
+
+                    // Show debug toast
+                    Toast.makeText(LoginActivity.this,
+                        "✅ Biometric OK\nEmail: " + (email != null ? email : "NULL") + "\nPass: " + (password != null ? "***" : "NULL"),
+                        Toast.LENGTH_LONG).show();
+
+                    if (etEmail != null) {
+                        etEmail.setText(email); // Truyền email vào field email
+                    }
+                    if (etPassword != null) {
+                        etPassword.setText(password);
+                    }
+
+                    if (email == null || email.isEmpty()) {
+                        Toast.makeText(LoginActivity.this, "❌ Email NULL! Không thể login", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    performLogin(email, password, false); // Đăng nhập với email và password
+                }
+
+                @Override
+                public void onError(String error) {
+                    // User có thể chọn đăng nhập thủ công
+                    android.util.Log.d(TAG, "Biometric login error: " + error);
+                    Toast.makeText(LoginActivity.this, "❌ Biometric: " + error, Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     /**
@@ -132,12 +190,43 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         cbRememberMe = findViewById(R.id.cbRememberMe);
         btnLogin = findViewById(R.id.btnLogin);
+        fabBiometricLogin = findViewById(R.id.fabBiometricLogin);
         tvRegisterLink = findViewById(R.id.tvRegisterLink);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        ivGoogleLogin = findViewById(R.id.ivGoogleLogin);
-        ivFacebookLogin = findViewById(R.id.ivFacebookLogin);
 
         loadingButton = new LoadingButton(btnLogin);
+
+        // Setup biometric button visibility
+        setupBiometricButton();
+    }
+
+    /**
+     * Setup biometric button - chỉ hiện khi có biometric enabled
+     */
+    private void setupBiometricButton() {
+        try {
+            com.parkmate.android.utils.BiometricManager biometricManager =
+                com.parkmate.android.utils.BiometricManager.getInstance(this);
+
+            if (fabBiometricLogin != null) {
+                // Chỉ hiện nút nếu:
+                // 1. Device có biometric
+                // 2. User đã bật biometric trong Profile
+                boolean shouldShow = biometricManager.isBiometricAvailable() &&
+                                   biometricManager.isBiometricEnabled();
+
+                fabBiometricLogin.setVisibility(shouldShow ? android.view.View.VISIBLE : android.view.View.GONE);
+
+                android.util.Log.d(TAG, "Biometric button visibility: " + (shouldShow ? "VISIBLE" : "GONE"));
+                android.util.Log.d(TAG, "Biometric available: " + biometricManager.isBiometricAvailable());
+                android.util.Log.d(TAG, "Biometric enabled: " + biometricManager.isBiometricEnabled());
+            }
+        } catch (Exception e) {
+            android.util.Log.e(TAG, "Error setting up biometric button", e);
+            if (fabBiometricLogin != null) {
+                fabBiometricLogin.setVisibility(android.view.View.GONE);
+            }
+        }
     }
 
     private void restoreRememberedEmail() {
@@ -159,13 +248,18 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        // Biometric login button
+        if (fabBiometricLogin != null) {
+            fabBiometricLogin.setOnClickListener(v -> {
+                android.util.Log.d(TAG, "Biometric button clicked");
+                showBiometricLogin();
+            });
+        }
+
         tvForgotPassword.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
             startActivity(intent);
         });
-
-        ivGoogleLogin.setOnClickListener(v -> Toast.makeText(LoginActivity.this, "Chức năng đăng nhập Google đang phát triển", Toast.LENGTH_SHORT).show());
-        ivFacebookLogin.setOnClickListener(v -> Toast.makeText(LoginActivity.this, "Chức năng đăng nhập Facebook đang phát triển", Toast.LENGTH_SHORT).show());
     }
 
     private void setupColoredRegisterText() {
@@ -319,6 +413,33 @@ public class LoginActivity extends AppCompatActivity {
             Log.e(TAG, "❌ Error saving user info", e);
         }
 
+        // Lưu trạng thái xác thực căn cước (isIdVerified)
+        try {
+            boolean isIdVerified = false;
+            if (resp.getData() != null &&
+                resp.getData().getUserResponse() != null &&
+                resp.getData().getUserResponse().getAccount() != null) {
+
+                Boolean verified = resp.getData().getUserResponse().getAccount().getIsIdVerified();
+                isIdVerified = verified != null && verified;
+
+                // Lưu vào UserManager
+                com.parkmate.android.utils.UserManager.getInstance().setIdVerified(isIdVerified);
+
+                Log.d(TAG, "ID Verification status saved: " + isIdVerified);
+
+                // Hiển thị cảnh báo nếu chưa xác thực
+                if (!isIdVerified) {
+                    // Delay một chút để cho màn hình Home load xong
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        showIdVerificationWarning();
+                    }, 1000);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving ID verification status", e);
+        }
+
         applyRememberMe(email, rememberMe);
         Toast.makeText(this, resp.getMessage() != null ? resp.getMessage() : "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
         // Chuyển sang màn hình chính (HomeActivity) và clear back stack để tránh quay lại màn hình đăng nhập
@@ -408,6 +529,25 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private String safeText(TextInputEditText et) { return et == null || et.getText() == null ? "" : et.getText().toString().trim(); }
+
+    /**
+     * Hiển thị dialog yêu cầu xác thực căn cước công dân
+     */
+    private void showIdVerificationWarning() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Cần xác thực danh tính")
+            .setMessage("Tài khoản của bạn chưa được xác thực.\n\n" +
+                       "Vui lòng cập nhật thông tin căn cước công dân để sử dụng đầy đủ tính năng (tạo đặt chỗ, đăng ký gói).")
+            .setPositiveButton("Xác thực ngay", (dialog, which) -> {
+                // TODO: Navigate to ID verification screen khi có màn hình
+                Toast.makeText(this, "Chức năng xác thực căn cước đang được phát triển", Toast.LENGTH_SHORT).show();
+                // Intent intent = new Intent(this, IdVerificationActivity.class);
+                // startActivity(intent);
+            })
+            .setNegativeButton("Để sau", null)
+            .setCancelable(true)
+            .show();
+    }
 
     @Override
     protected void onDestroy() {

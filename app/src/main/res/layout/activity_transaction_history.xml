@@ -91,11 +91,44 @@
                 app:chipStrokeWidth="1dp"/>
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipPayment"
+                android:id="@+id/chipDeduction"
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thanh toán"
+                android:text="Trừ tiền"
+                android:layout_marginEnd="8dp"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="#D1D5DB"
+                app:chipStrokeWidth="1dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipRefund"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hoàn tiền"
+                android:layout_marginEnd="8dp"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="#D1D5DB"
+                app:chipStrokeWidth="1dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipSubscription"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gói đăng ký"
+                android:layout_marginEnd="8dp"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="#D1D5DB"
+                app:chipStrokeWidth="1dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipReservation"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đặt chỗ"
                 app:chipBackgroundColor="@color/chip_background_selector"
                 app:chipStrokeColor="#D1D5DB"
                 app:chipStrokeWidth="1dp"/>

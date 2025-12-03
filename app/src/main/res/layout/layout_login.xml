@@ -95,59 +95,45 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tilPassword" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogin"
+    <!-- Login Button Container with Biometric -->
+    <LinearLayout
+        android:id="@+id/llLoginContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
-        android:backgroundTint="#1947ff"
-        android:text="Đăng nhập"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:cornerRadius="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cbRememberMe" />
-
-    <TextView
-        android:id="@+id/tvOrLoginWith"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Hoặc đăng nhập với"
-        android:textColor="#8F9BB3"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnLogin" />
-
-    <!-- Social Login Options -->
-    <LinearLayout
-        android:id="@+id/llSocialLogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvOrLoginWith">
+        app:layout_constraintTop_toBottomOf="@id/cbRememberMe">
 
-        <ImageView
-            android:id="@+id/ivGoogleLogin"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="24dp"
-            android:contentDescription="Sign in with Google"
-            android:src="@drawable/ic_google" />
+        <!-- Login Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogin"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:backgroundTint="#1947ff"
+            android:text="Đăng nhập"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            app:cornerRadius="24dp" />
 
-        <ImageView
-            android:id="@+id/ivFacebookLogin"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="Sign in with Facebook"
-            android:src="@drawable/ic_facebook" />
+        <!-- Biometric Login Button -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabBiometricLogin"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="12dp"
+            android:contentDescription="Đăng nhập bằng sinh trắc học"
+            android:src="@drawable/ic_face_id_24"
+            app:backgroundTint="#1947ff"
+            app:tint="@color/white"
+            app:fabSize="normal"
+            app:elevation="4dp"
+            app:borderWidth="0dp" />
     </LinearLayout>
 
     <!-- Register Link -->
@@ -163,7 +149,7 @@
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/llSocialLogin" />
+        app:layout_constraintTop_toBottomOf="@id/llLoginContainer" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

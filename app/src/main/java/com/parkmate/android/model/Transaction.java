@@ -188,8 +188,26 @@ public class Transaction {
         return "TOP_UP".equals(transactionType);
     }
 
+    public boolean isDeduction() {
+        return "DEDUCTION".equals(transactionType);
+    }
+
+    public boolean isRefund() {
+        return "REFUND".equals(transactionType);
+    }
+
+    public boolean isSubscriptionPayment() {
+        return "SUBSCRIPTION_PAYMENT".equals(transactionType);
+    }
+
+    public boolean isReservationPayment() {
+        return "RESERVATION_PAYMENT".equals(transactionType);
+    }
+
+    // For backward compatibility - deprecated
+    @Deprecated
     public boolean isPayment() {
-        return "PAYMENT".equals(transactionType);
+        return isDeduction() || isSubscriptionPayment() || isReservationPayment();
     }
 
     public boolean isCompleted() {

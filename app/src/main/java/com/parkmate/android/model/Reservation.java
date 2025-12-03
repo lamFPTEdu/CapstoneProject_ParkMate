@@ -36,6 +36,9 @@ public class Reservation implements Serializable {
     @SerializedName("totalFee")
     private Integer totalFee;
 
+    @SerializedName("refundPolicy")
+    private RefundPolicy refundPolicy;
+
     @SerializedName("reservedFrom")
     private String reservedFrom; // "2024-07-01 10:00:00"
 
@@ -134,6 +137,13 @@ public class Reservation implements Serializable {
         this.totalFee = totalFee;
     }
 
+    public RefundPolicy getRefundPolicy() {
+        return refundPolicy;
+    }
+
+    public void setRefundPolicy(RefundPolicy refundPolicy) {
+        this.refundPolicy = refundPolicy;
+    }
 
     public String getReservedUntil() {
         return reservedUntil;

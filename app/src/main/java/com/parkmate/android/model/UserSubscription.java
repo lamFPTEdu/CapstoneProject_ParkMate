@@ -76,6 +76,9 @@ public class UserSubscription implements Serializable {
     @SerializedName("daysRemaining")
     private int daysRemaining;
 
+    @SerializedName("needRenewalDecision")
+    private boolean needRenewalDecision;
+
     // Getters and Setters
     public long getId() {
         return id;
@@ -267,6 +270,14 @@ public class UserSubscription implements Serializable {
 
     public void setDaysRemaining(int daysRemaining) {
         this.daysRemaining = daysRemaining;
+    }
+
+    public boolean isNeedRenewalDecision() {
+        return needRenewalDecision;
+    }
+
+    public void setNeedRenewalDecision(boolean needRenewalDecision) {
+        this.needRenewalDecision = needRenewalDecision;
     }
 }
 

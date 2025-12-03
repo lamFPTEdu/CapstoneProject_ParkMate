@@ -4,11 +4,13 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.parkmate.android.R;
 import com.parkmate.android.model.UserSubscription;
 
@@ -24,6 +26,8 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
 
     public interface OnSubscriptionClickListener {
         void onSubscriptionClick(UserSubscription subscription);
+        void onRateClick(UserSubscription subscription);
+        void onRenewClick(UserSubscription subscription);
     }
 
     private List<UserSubscription> subscriptions = new ArrayList<>();
@@ -75,6 +79,10 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
         private final TextView tvDateRange;
         private final TextView tvPrice;
         private final TextView tvDaysRemaining;
+        private final LinearLayout layoutRatingButton;
+        private final MaterialButton btnRate;
+        private final LinearLayout layoutRenewalButton;
+        private final MaterialButton btnRenew;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -86,6 +94,10 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
             tvDateRange = itemView.findViewById(R.id.tvDateRange);
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvDaysRemaining = itemView.findViewById(R.id.tvDaysRemaining);
+            layoutRatingButton = itemView.findViewById(R.id.layoutRatingButton);
+            btnRate = itemView.findViewById(R.id.btnRate);
+            layoutRenewalButton = itemView.findViewById(R.id.layoutRenewalButton);
+            btnRenew = itemView.findViewById(R.id.btnRenew);
         }
 
         void bind(UserSubscription subscription) {
@@ -136,6 +148,30 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
                 tvDaysRemaining.setText(String.format("Còn %d ngày", subscription.getDaysRemaining()));
             } else {
                 tvDaysRemaining.setVisibility(View.GONE);
+            }
+
+            // Show rating button only for EXPIRED status
+            if ("EXPIRED".equals(status)) {
+                layoutRatingButton.setVisibility(View.VISIBLE);
+                btnRate.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onRateClick(subscription);
+                    }
+                });
+            } else {
+                layoutRatingButton.setVisibility(View.GONE);
+            }
+
+            // Show renewal button if needRenewalDecision is true
+            if (subscription.isNeedRenewalDecision()) {
+                layoutRenewalButton.setVisibility(View.VISIBLE);
+                btnRenew.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onRenewClick(subscription);
+                    }
+                });
+            } else {
+                layoutRenewalButton.setVisibility(View.GONE);
             }
 
             // Click listener

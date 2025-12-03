@@ -291,29 +291,40 @@ public class EnhancedParkingMapView extends View {
         // Area name - mờ, nhỏ, ở giữa
         canvas.drawText(area.getName(), centerX, centerY - 15, areaTextPaint);
 
-        // Available spots info - rất mờ, ở dưới tên (dùng for loop thay vì stream)
-        int availableCount = 0;
+        // Đếm spots thuộc area này (dựa vào areaId)
+        int totalSpots = 0;
+        int availableSpots = 0;
         for (ParkingSpot s : spots) {
-            if (s.isAvailableForSubscription()) {
-                availableCount++;
+            if (s.getAreaId() != null && s.getAreaId() == area.getId()) {
+                totalSpots++;
+                if (s.isAvailableForSubscription()) {
+                    availableSpots++;
+                }
             }
         }
 
-        String info = availableCount + "/" + spots.size() + " chỗ";
+        // Available spots info - rất mờ, ở dưới tên
+        String info = availableSpots + "/" + totalSpots + " chỗ";
         canvas.drawText(info, centerX, centerY + 15, areaSubtextPaint);
     }
 
     private void drawSpot(Canvas canvas, ParkingSpot spot) {
         // Spot coordinates là RELATIVE to Area
-        // Area coordinates là ABSOLUTE (không phải relative to Floor!)
+        // Area coordinates là ABSOLUTE
         // Nên: Spot absolute = Area absolute + Spot relative
 
+        // Tìm area mà spot này thuộc về (dựa vào areaId)
         float areaOffsetX = 0;
         float areaOffsetY = 0;
-        if (!areas.isEmpty()) {
-            ParkingArea firstArea = areas.get(0);
-            areaOffsetX = (float) firstArea.getAreaTopLeftX();  // Area ABSOLUTE position
-            areaOffsetY = (float) firstArea.getAreaTopLeftY();
+
+        if (spot.getAreaId() != null) {
+            for (ParkingArea area : areas) {
+                if (area.getId() == spot.getAreaId()) {
+                    areaOffsetX = (float) area.getAreaTopLeftX();  // Area ABSOLUTE position
+                    areaOffsetY = (float) area.getAreaTopLeftY();
+                    break;
+                }
+            }
         }
 
         float x = areaOffsetX + (float) spot.getSpotTopLeftX();
