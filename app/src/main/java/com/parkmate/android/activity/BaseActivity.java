@@ -330,8 +330,19 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * Load và hiển thị badge số lượng notifications chưa đọc
      * Helper method để các activity dễ dàng cập nhật badge
+     *
+     * GUEST MODE: Ẩn notification button nếu user chưa đăng nhập
      */
     protected void loadAndShowNotificationBadge() {
+        // Check if user is logged in
+        if (!com.parkmate.android.utils.AuthHelper.isUserLoggedIn()) {
+            // Guest user - hide notification button
+            setNotificationButtonVisible(false);
+            return;
+        }
+
+        // Logged in user - show notification button with badge count
+        setNotificationButtonVisible(true);
         try {
             android.content.SharedPreferences prefs = getSharedPreferences("parkmate_notifications", MODE_PRIVATE);
             int unreadCount = prefs.getInt("unread_count", 0);
@@ -382,11 +393,12 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         final int currentSelected = selectedItemId;
         // Xử lý sự kiện khi chọn item trên bottom navigation
+        // GUEST MODE FIX: Return false nếu navigation bị block để không highlight tab
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == currentSelected) return true; // already here
-            handleBottomNavSelection(item);
-            return true;
+            boolean navigationSuccess = handleBottomNavSelection(item);
+            return navigationSuccess; // Only highlight if navigation succeeds
         });
     }
 
@@ -421,7 +433,16 @@ public abstract class BaseActivity extends AppCompatActivity {
         });
     }
 
-    private void handleBottomNavSelection(MenuItem item) {
+    /**
+     * Handle bottom navigation selection
+     *
+     * GUEST MODE: Return false nếu navigation bị block (guest không có quyền)
+     * để bottom nav KHÔNG highlight tab đó, giữ highlight ở tab hiện tại
+     *
+     * @param item MenuItem được click
+     * @return true nếu navigation thành công, false nếu bị block
+     */
+    private boolean handleBottomNavSelection(MenuItem item) {
         int id = item.getItemId();
         String currentClassName = this.getClass().getSimpleName();
 
@@ -432,6 +453,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
+            return true; // Navigation success
+
         } else if (id == R.id.nav_parking) {
             if (!currentClassName.equals("ParkingLotsActivity")) {
                 Intent intent = new Intent(this, ParkingLotsActivity.class);
@@ -439,7 +462,14 @@ public abstract class BaseActivity extends AppCompatActivity {
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
+            return true; // Navigation success
+
         } else if (id == R.id.nav_ble) {
+            // BLE toggle requires login
+            if (!com.parkmate.android.utils.AuthHelper.isUserLoggedIn()) {
+                com.parkmate.android.utils.AuthHelper.showLoginRequiredDialog(this, "sử dụng BLE toggle");
+                return false; // Navigation blocked - don't highlight tab
+            }
             // Navigate to BLE Toggle Activity
             if (!currentClassName.equals("BLEToggleActivity")) {
                 Intent intent = new Intent(this, BLEToggleActivity.class);
@@ -447,21 +477,38 @@ public abstract class BaseActivity extends AppCompatActivity {
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
+            return true; // Navigation success
+
         } else if (id == R.id.nav_wallet) {
+            // Wallet requires login
+            if (!com.parkmate.android.utils.AuthHelper.isUserLoggedIn()) {
+                com.parkmate.android.utils.AuthHelper.showLoginRequiredDialog(this, "xem ví tiền");
+                return false; // Navigation blocked - don't highlight tab
+            }
             if (!currentClassName.equals("WalletActivity")) {
                 Intent intent = new Intent(this, WalletActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
+            return true; // Navigation success
+
         } else if (id == R.id.nav_account) {
+            // Account requires login
+            if (!com.parkmate.android.utils.AuthHelper.isUserLoggedIn()) {
+                com.parkmate.android.utils.AuthHelper.showLoginRequiredDialog(this, "xem tài khoản");
+                return false; // Navigation blocked - don't highlight tab
+            }
             if (!currentClassName.equals("ProfileActivity")) {
                 Intent intent = new Intent(this, ProfileActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
+            return true; // Navigation success
         }
+
+        return false; // Unknown item
     }
 
 

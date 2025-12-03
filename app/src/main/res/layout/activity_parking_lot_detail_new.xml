@@ -315,6 +315,24 @@
 
                 </LinearLayout>
 
+                <!-- View Parking Map Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnViewParkingMapCard"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Xem bản đồ bãi xe"
+                    android:textSize="15sp"
+                    android:textColor="@color/primary"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/primary"
+                    app:strokeWidth="2dp"
+                    app:icon="@drawable/ic_map_24"
+                    app:iconTint="@color/primary"
+                    app:iconGravity="textStart"
+                    android:layout_marginBottom="16dp"
+                    tools:ignore="HardcodedText" />
+
                 <!-- Ratings Section (Moved Up) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardRatingsSection"

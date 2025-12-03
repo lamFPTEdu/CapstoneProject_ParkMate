@@ -7,6 +7,7 @@
     <color name="primary">#1947FF</color>
     <color name="primary_light">#E8EEFF</color>
     <color name="background">#F9FAFB</color>
+    <color name="background_light">#F5F7FA</color>
     <color name="border_color">#E4E7EC</color>
     <color name="text_primary">#0F1A2E</color>
     <color name="text_secondary">#667085</color>

@@ -5,12 +5,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.parkmate.android.R;
 import com.parkmate.android.model.Reservation;
 
@@ -33,6 +35,8 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     public interface OnReservationClickListener {
         void onReservationClick(Reservation reservation);
+        void onRateClick(Reservation reservation);
+        void onCancelClick(Reservation reservation);
     }
 
     public ReservationAdapter(Context context, List<Reservation> reservationList, OnReservationClickListener listener) {
@@ -82,6 +86,40 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
         // Màu status background giống ReservationDetailActivity
         setStatusBackground(holder.tvStatus, reservation.getStatus());
+
+        // Hiển thị refund policy và button cancel chỉ cho status PENDING
+        if ("PENDING".equals(reservation.getStatus())) {
+            // Hiển thị refund policy
+            com.parkmate.android.model.RefundPolicy policy = reservation.getRefundPolicy();
+            int refundMinutes = policy != null ? policy.getRefundWindowMinutes() : 30;
+
+            holder.tvRefundPolicy.setVisibility(View.VISIBLE);
+            holder.tvRefundPolicy.setText(String.format(Locale.getDefault(),
+                "💡 Hủy trước %d phút để được hoàn tiền", refundMinutes));
+
+            // Hiển thị button cancel
+            holder.btnCancelReservation.setVisibility(View.VISIBLE);
+            holder.btnCancelReservation.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onCancelClick(reservation);
+                }
+            });
+        } else {
+            holder.tvRefundPolicy.setVisibility(View.GONE);
+            holder.btnCancelReservation.setVisibility(View.GONE);
+        }
+
+        // Show rating button only for COMPLETED status
+        if ("COMPLETED".equals(reservation.getStatus())) {
+            holder.layoutRatingButton.setVisibility(View.VISIBLE);
+            holder.btnRate.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onRateClick(reservation);
+                }
+            });
+        } else {
+            holder.layoutRatingButton.setVisibility(View.GONE);
+        }
 
         // Click listener
         holder.cardView.setOnClickListener(v -> {
@@ -152,6 +190,10 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         TextView tvReservationFee;
         TextView tvReservedFrom;
         TextView tvSpotInfo;
+        TextView tvRefundPolicy;
+        LinearLayout layoutRatingButton;
+        MaterialButton btnRate;
+        MaterialButton btnCancelReservation;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -161,6 +203,10 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
             tvReservationFee = itemView.findViewById(R.id.tvReservationFee);
             tvReservedFrom = itemView.findViewById(R.id.tvReservedFrom);
             tvSpotInfo = itemView.findViewById(R.id.tvSpotInfo);
+            tvRefundPolicy = itemView.findViewById(R.id.tvRefundPolicy);
+            layoutRatingButton = itemView.findViewById(R.id.layoutRatingButton);
+            btnRate = itemView.findViewById(R.id.btnRate);
+            btnCancelReservation = itemView.findViewById(R.id.btnCancelReservation);
         }
     }
 }

@@ -17,6 +17,7 @@ public final class UserManager {
     private static final String KEY_FIRST_NAME = "first_name";
     private static final String KEY_LAST_NAME = "last_name";
     private static final String KEY_PHONE = "phone";
+    private static final String KEY_IS_ID_VERIFIED = "is_id_verified"; // Trạng thái xác thực căn cước
 
     private static UserManager instance;
     private final SharedPreferences prefs;
@@ -106,6 +107,22 @@ public final class UserManager {
     }
 
     /**
+     * Lưu trạng thái xác thực căn cước công dân
+     */
+    public void setIdVerified(boolean isVerified) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(KEY_IS_ID_VERIFIED, isVerified);
+        editor.apply();
+    }
+
+    /**
+     * Kiểm tra user đã xác thực căn cước chưa
+     */
+    public boolean isIdVerified() {
+        return prefs.getBoolean(KEY_IS_ID_VERIFIED, false);
+    }
+
+    /**
      * Xóa toàn bộ thông tin user (khi logout)
      */
     public void clearUserInfo() {
@@ -117,6 +134,7 @@ public final class UserManager {
                 .remove(KEY_USER_EMAIL)
                 .remove(KEY_USER_NAME)
                 .remove(KEY_USERNAME) // Xóa username khi logout
+                .remove(KEY_IS_ID_VERIFIED) // Xóa trạng thái xác thực khi logout
                 .apply();
     }
 

@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -59,7 +58,6 @@ public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText etEmail, etPassword, etConfirmPassword, etPhoneNumber;
     private TextInputEditText etFirstName, etLastName;
     private MaterialButton btnNext;
-    private ImageView ivGoogleSignUp, ivFacebookSignUp;
     private TextView tvLoginLink;
 
     // Views cho Check Email & OTP
@@ -110,8 +108,6 @@ public class RegisterActivity extends AppCompatActivity {
         etFirstName = findViewById(R.id.etFirstName);
         etLastName = findViewById(R.id.etLastName);
         btnNext = findViewById(R.id.btnNext);
-        ivGoogleSignUp = findViewById(R.id.ivGoogleSignUp);
-        ivFacebookSignUp = findViewById(R.id.ivFacebookSignUp);
         tvLoginLink = findViewById(R.id.tvLoginLink);
     }
 

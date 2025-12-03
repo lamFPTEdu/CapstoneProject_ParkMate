@@ -43,6 +43,18 @@ public class ParkingFloorDetailResponse {
         @SerializedName("floorNumber")
         private Integer floorNumber;
 
+        @SerializedName("floorTopLeftX")
+        private Double floorTopLeftX;
+
+        @SerializedName("floorTopLeftY")
+        private Double floorTopLeftY;
+
+        @SerializedName("floorWidth")
+        private Double floorWidth;
+
+        @SerializedName("floorHeight")
+        private Double floorHeight;
+
         @SerializedName("floorName")
         private String floorName;
 
@@ -60,6 +72,14 @@ public class ParkingFloorDetailResponse {
         public void setId(Long id) { this.id = id; }
         public Integer getFloorNumber() { return floorNumber; }
         public void setFloorNumber(Integer floorNumber) { this.floorNumber = floorNumber; }
+        public Double getFloorTopLeftX() { return floorTopLeftX; }
+        public void setFloorTopLeftX(Double floorTopLeftX) { this.floorTopLeftX = floorTopLeftX; }
+        public Double getFloorTopLeftY() { return floorTopLeftY; }
+        public void setFloorTopLeftY(Double floorTopLeftY) { this.floorTopLeftY = floorTopLeftY; }
+        public Double getFloorWidth() { return floorWidth; }
+        public void setFloorWidth(Double floorWidth) { this.floorWidth = floorWidth; }
+        public Double getFloorHeight() { return floorHeight; }
+        public void setFloorHeight(Double floorHeight) { this.floorHeight = floorHeight; }
         public String getFloorName() { return floorName; }
         public void setFloorName(String floorName) { this.floorName = floorName; }
         public Boolean getIsActive() { return isActive; }

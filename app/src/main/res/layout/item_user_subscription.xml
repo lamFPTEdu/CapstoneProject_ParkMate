@@ -210,6 +210,62 @@
 
         </LinearLayout>
 
+        <!-- Rating Button (only for EXPIRED status) -->
+        <LinearLayout
+            android:id="@+id/layoutRatingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRate"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="Đánh giá bãi đỗ xe"
+                android:textSize="13sp"
+                android:textColor="@color/primary"
+                android:textStyle="bold"
+                app:icon="@drawable/ic_rate"
+                app:iconTint="@color/primary"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:backgroundTint="@color/primary_light"
+                app:strokeWidth="0dp"
+                app:cornerRadius="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        </LinearLayout>
+
+        <!-- Renewal Button (only when needRenewalDecision is true) -->
+        <LinearLayout
+            android:id="@+id/layoutRenewalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRenew"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="Gia hạn gói đăng ký"
+                android:textSize="13sp"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:icon="@drawable/ic_refresh"
+                app:iconTint="@color/white"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:backgroundTint="@color/primary"
+                app:strokeWidth="0dp"
+                app:cornerRadius="8dp"
+                style="@style/Widget.Material3.Button" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

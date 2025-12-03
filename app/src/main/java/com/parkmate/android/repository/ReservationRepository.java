@@ -116,9 +116,9 @@ public class ReservationRepository {
     /**
      * Hủy reservation
      * @param id ID của reservation cần hủy
-     * @return Single<ReservationResponse>
+     * @return Single<ApiResponse<Void>>
      */
-    public Single<ReservationResponse> cancelReservation(Long id) {
+    public Single<com.parkmate.android.model.response.ApiResponse<Void>> cancelReservation(Long id) {
         return apiService.cancelReservation(id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

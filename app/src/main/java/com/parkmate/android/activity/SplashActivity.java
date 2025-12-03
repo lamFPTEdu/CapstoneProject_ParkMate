@@ -109,23 +109,25 @@ public class SplashActivity extends AppCompatActivity {
 
     /**
      * Kiểm tra trạng thái đăng nhập và điều hướng đến màn hình phù hợp
+     *
+     * GUEST MODE ENABLED:
+     * - Luôn chuyển đến HomeActivity (cho cả logged in và guest)
+     * - Guest có thể browse app mà không cần đăng nhập
+     * - Các chức năng quan trọng sẽ yêu cầu đăng nhập khi sử dụng
      */
     private void navigateToNextScreen() {
         // Kiểm tra xem user đã đăng nhập chưa
         String token = TokenManager.getInstance().getToken();
         boolean isLoggedIn = token != null && !token.isEmpty();
 
-        Intent intent;
         if (isLoggedIn) {
-            // Có token hợp lệ → Auto-login, chuyển đến Home
-            Log.d(TAG, "Valid token found, navigating to HomeActivity");
-            intent = new Intent(SplashActivity.this, HomeActivity.class);
+            Log.d(TAG, "✓ Valid token found - User is logged in");
         } else {
-            // Chưa đăng nhập → Chuyển đến Login
-            Log.d(TAG, "No valid token, navigating to LoginActivity");
-            intent = new Intent(SplashActivity.this, LoginActivity.class);
+            Log.d(TAG, "⚠ No token found - User will browse as GUEST");
         }
 
+        // Luôn chuyển đến HomeActivity (GUEST MODE ENABLED)
+        Intent intent = new Intent(SplashActivity.this, HomeActivity.class);
         startActivity(intent);
         finish(); // Không cho phép back về splash screen
     }

@@ -64,6 +64,7 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
     private MaterialButton btnReserveSpot;
     private MaterialButton btnSubscribe;
     private MaterialButton btnGetDirections;
+    private MaterialButton btnViewParkingMap;
     private View progressBar;
 
     // Rating views
@@ -148,6 +149,7 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         btnReserveSpot = findViewById(R.id.btnReserveSpot);
         btnSubscribe = findViewById(R.id.btnSubscribe);
         btnGetDirections = findViewById(R.id.btnGetDirections);
+        btnViewParkingMap = findViewById(R.id.btnViewParkingMapCard);
         progressBar = findViewById(R.id.progressBar);
 
         // Rating views
@@ -192,11 +194,59 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         btnReserveSpot.setOnClickListener(v -> openVehicleSelection());
         btnSubscribe.setOnClickListener(v -> openSubscriptionSelection());
         btnGetDirections.setOnClickListener(v -> openDirections());
+        btnViewParkingMap.setOnClickListener(v -> openParkingMapView());
     }
 
     private void openVehicleSelection() {
+        // GUEST MODE: Check login first
+        if (!com.parkmate.android.utils.AuthHelper.checkLoginOrShowDialog(this, "đặt chỗ đỗ xe")) {
+            return; // User is not logged in, dialog shown
+        }
+
+        // Kiểm tra xác thực căn cước trước khi cho phép đặt chỗ
+        if (!com.parkmate.android.utils.IdVerificationHelper.checkIdVerification(this)) {
+            return; // Dừng lại nếu chưa xác thực, dialog đã được hiển thị tự động
+        }
+
         Intent intent = new Intent(this, VehicleSelectionActivity.class);
         intent.putExtra("PARKING_LOT_ID", parkingLotId);
+        startActivity(intent);
+    }
+
+    private void openSubscriptionSelection() {
+        // GUEST MODE: Check login first
+        if (!com.parkmate.android.utils.AuthHelper.checkLoginOrShowDialog(this, "mua vé tháng")) {
+            return; // User is not logged in, dialog shown
+        }
+
+        // Kiểm tra xác thực căn cước trước khi cho phép mua vé tháng
+        if (!com.parkmate.android.utils.IdVerificationHelper.checkIdVerification(this)) {
+            return; // Dừng lại nếu chưa xác thực, dialog đã được hiển thị tự động
+        }
+
+        Intent intent = new Intent(this, SubscriptionSelectionActivity.class);
+        intent.putExtra("PARKING_LOT_ID", parkingLotId);
+        intent.putExtra("PARKING_LOT_NAME", parkingLotName);
+        startActivity(intent);
+    }
+
+    /**
+     * Mở trang xem bản đồ bãi xe đầy đủ
+     */
+    private void openParkingMapView() {
+        Intent intent = new Intent(this, ParkingMapViewActivity.class);
+        intent.putExtra("PARKING_LOT_ID", parkingLotId);
+        intent.putExtra("PARKING_LOT_NAME", parkingLotName);
+
+        // Tạo địa chỉ đầy đủ
+        String fullAddress = "";
+        if (fullParkingLotDetail != null) {
+            fullAddress = (fullParkingLotDetail.getStreetAddress() != null ? fullParkingLotDetail.getStreetAddress() : "") + ", " +
+                    (fullParkingLotDetail.getWard() != null ? fullParkingLotDetail.getWard() : "") + ", " +
+                    (fullParkingLotDetail.getCity() != null ? fullParkingLotDetail.getCity() : "");
+        }
+        intent.putExtra("PARKING_LOT_ADDRESS", fullAddress);
+
         startActivity(intent);
     }
 
@@ -543,16 +593,6 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void openSubscriptionSelection() {
-        if (parkingLot == null) {
-            showError("Vui lòng chờ tải thông tin bãi xe");
-            return;
-        }
-
-        Intent intent = new Intent(this, SubscriptionSelectionActivity.class);
-        intent.putExtra("PARKING_LOT", parkingLot);
-        startActivity(intent);
-    }
 
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);

@@ -204,6 +204,53 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <!-- My Ratings -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/menuMyRatings"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/profile_menu_item_height"
+                android:layout_marginBottom="@dimen/profile_menu_item_margin"
+                android:background="@drawable/bg_profile_menu_item"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/profile_menu_item_padding">
+
+                <ImageView
+                    android:id="@+id/iconMyRatings"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Đánh giá của tôi"
+                    android:src="@drawable/ic_star_24"
+                    app:tint="@color/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvMyRatings"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Đánh giá của tôi"
+                    android:textColor="@color/bottom_nav_text_active"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/iconMyRatingsChevron"
+                    app:layout_constraintStart_toEndOf="@id/iconMyRatings"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/iconMyRatingsChevron"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Đánh giá của tôi"
+                    android:src="@drawable/ic_chevron_right_24"
+                    app:tint="@color/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <!-- My Vehicles -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/menuMyVehicles"
@@ -392,6 +439,47 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <!-- Biometric Authentication -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/menuBiometric"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/profile_menu_item_height"
+                android:layout_marginBottom="@dimen/profile_menu_item_margin"
+                android:background="@drawable/bg_profile_menu_item"
+                android:padding="@dimen/profile_menu_item_padding">
+
+                <ImageView
+                    android:id="@+id/iconBiometric"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Xác thực sinh trắc học"
+                    android:src="@drawable/ic_fingerprint_24"
+                    app:tint="@color/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvBiometric"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Xác thực sinh trắc học"
+                    android:textColor="@color/bottom_nav_text_active"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/switchBiometric"
+                    app:layout_constraintStart_toEndOf="@id/iconBiometric"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchBiometric"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Logout Button -->
             <androidx.constraintlayout.widget.ConstraintLayout

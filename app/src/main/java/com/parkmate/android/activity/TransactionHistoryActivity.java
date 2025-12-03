@@ -35,7 +35,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
 
     // Views
     private ImageButton btnBack;
-    private Chip chipAll, chipTopUp, chipPayment;
+    private Chip chipAll, chipTopUp, chipDeduction, chipRefund, chipSubscription, chipReservation;
     private RecyclerView rvTransactions;
     private ProgressBar progressBar;
     private ProgressBar progressBarLoadMore;
@@ -54,7 +54,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
     private int currentPage = 0;
     private boolean isLoading = false;
     private boolean isLastPage = false;
-    private String currentFilter = "ALL"; // ALL, TOP_UP, PAYMENT
+    private String currentFilter = "ALL"; // ALL, TOP_UP, DEDUCTION, REFUND, SUBSCRIPTION_PAYMENT, RESERVATION_PAYMENT
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +81,10 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         chipAll = findViewById(R.id.chipAll);
         chipTopUp = findViewById(R.id.chipTopUp);
-        chipPayment = findViewById(R.id.chipPayment);
+        chipDeduction = findViewById(R.id.chipDeduction);
+        chipRefund = findViewById(R.id.chipRefund);
+        chipSubscription = findViewById(R.id.chipSubscription);
+        chipReservation = findViewById(R.id.chipReservation);
         rvTransactions = findViewById(R.id.rvTransactions);
         progressBar = findViewById(R.id.progressBar);
         progressBarLoadMore = findViewById(R.id.progressBarLoadMore);
@@ -140,13 +143,46 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             loadTransactions(true);
         });
 
-        chipPayment.setOnClickListener(v -> {
-            if (!chipPayment.isChecked()) {
-                chipPayment.setChecked(true);
+        chipDeduction.setOnClickListener(v -> {
+            if (!chipDeduction.isChecked()) {
+                chipDeduction.setChecked(true);
                 return;
             }
-            uncheckOtherChips(chipPayment);
-            currentFilter = "PAYMENT";
+            uncheckOtherChips(chipDeduction);
+            currentFilter = "DEDUCTION";
+            resetPagination();
+            loadTransactions(true);
+        });
+
+        chipRefund.setOnClickListener(v -> {
+            if (!chipRefund.isChecked()) {
+                chipRefund.setChecked(true);
+                return;
+            }
+            uncheckOtherChips(chipRefund);
+            currentFilter = "REFUND";
+            resetPagination();
+            loadTransactions(true);
+        });
+
+        chipSubscription.setOnClickListener(v -> {
+            if (!chipSubscription.isChecked()) {
+                chipSubscription.setChecked(true);
+                return;
+            }
+            uncheckOtherChips(chipSubscription);
+            currentFilter = "SUBSCRIPTION_PAYMENT";
+            resetPagination();
+            loadTransactions(true);
+        });
+
+        chipReservation.setOnClickListener(v -> {
+            if (!chipReservation.isChecked()) {
+                chipReservation.setChecked(true);
+                return;
+            }
+            uncheckOtherChips(chipReservation);
+            currentFilter = "RESERVATION_PAYMENT";
             resetPagination();
             loadTransactions(true);
         });
@@ -155,7 +191,10 @@ public class TransactionHistoryActivity extends AppCompatActivity {
     private void uncheckOtherChips(Chip selectedChip) {
         if (selectedChip != chipAll) chipAll.setChecked(false);
         if (selectedChip != chipTopUp) chipTopUp.setChecked(false);
-        if (selectedChip != chipPayment) chipPayment.setChecked(false);
+        if (selectedChip != chipDeduction) chipDeduction.setChecked(false);
+        if (selectedChip != chipRefund) chipRefund.setChecked(false);
+        if (selectedChip != chipSubscription) chipSubscription.setChecked(false);
+        if (selectedChip != chipReservation) chipReservation.setChecked(false);
     }
 
     private void loadTransactions(boolean isFirstPage) {

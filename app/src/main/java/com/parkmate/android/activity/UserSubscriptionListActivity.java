@@ -17,11 +17,17 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.parkmate.android.R;
 import com.parkmate.android.adapter.UserSubscriptionAdapter;
+import com.parkmate.android.dialog.RatingDialog;
+import com.parkmate.android.dialog.RenewalConfirmDialog;
 import com.parkmate.android.model.UserSubscription;
+import com.parkmate.android.model.request.CreateRatingRequest;
 import com.parkmate.android.model.response.UserSubscriptionResponse;
 import com.parkmate.android.network.ApiClient;
+import com.parkmate.android.utils.UserManager;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -82,11 +88,26 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        adapter = new UserSubscriptionAdapter(subscription -> {
-            // Navigate to subscription detail/success screen to show QR code
-            Intent intent = new Intent(this, SubscriptionSuccessActivity.class);
-            intent.putExtra("SUBSCRIPTION", subscription);
-            startActivity(intent);
+        adapter = new UserSubscriptionAdapter(new UserSubscriptionAdapter.OnSubscriptionClickListener() {
+            @Override
+            public void onSubscriptionClick(UserSubscription subscription) {
+                // Navigate to subscription detail/success screen to show QR code
+                Intent intent = new Intent(UserSubscriptionListActivity.this, SubscriptionSuccessActivity.class);
+                intent.putExtra("SUBSCRIPTION", subscription);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onRateClick(UserSubscription subscription) {
+                // Click vào button rating -> show rating dialog
+                showRatingDialog(subscription);
+            }
+
+            @Override
+            public void onRenewClick(UserSubscription subscription) {
+                // Click vào button gia hạn -> show renewal confirmation dialog
+                showRenewalConfirmDialog(subscription);
+            }
         });
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -196,6 +217,147 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
 
     private void showError(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showRatingDialog(UserSubscription subscription) {
+        String parkingLotName = subscription.getParkingLotName() != null
+            ? subscription.getParkingLotName()
+            : "Bãi đỗ xe";
+
+        RatingDialog dialog = new RatingDialog(this, parkingLotName, (rating, title, comment) -> {
+            // Submit rating to API
+            submitRating(subscription, rating, title, comment);
+        });
+        dialog.show();
+    }
+
+    private void showRenewalConfirmDialog(UserSubscription subscription) {
+        RenewalConfirmDialog dialog = new RenewalConfirmDialog(this, subscription,
+            new RenewalConfirmDialog.OnRenewalConfirmListener() {
+                @Override
+                public void onConfirm() {
+                    // User confirmed renewal
+                    renewSubscription(subscription);
+                }
+
+                @Override
+                public void onCancel() {
+                    // User cancelled - do nothing
+                    Log.d(TAG, "User cancelled renewal");
+                }
+            });
+        dialog.show();
+    }
+
+    private void renewSubscription(UserSubscription subscription) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        // Create request body with autoRenew=true
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("autoRenew", true);
+
+        Log.d(TAG, "Renewing subscription ID: " + subscription.getId());
+
+        compositeDisposable.add(
+            ApiClient.getApiService()
+                .renewUserSubscription(subscription.getId(), requestBody)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    response -> {
+                        progressBar.setVisibility(View.GONE);
+                        if (response.isSuccess()) {
+                            Toast.makeText(this, "✅ Gia hạn thành công!", Toast.LENGTH_SHORT).show();
+                            // Reload list to get updated data
+                            currentPage = 0;
+                            isLastPage = false;
+                            adapter.clearSubscriptions();
+                            loadSubscriptions(currentPage);
+                        } else {
+                            String errorMsg = response.getMessage() != null
+                                ? response.getMessage()
+                                : "Không thể gia hạn gói đăng ký";
+                            Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                        }
+                    },
+                    error -> {
+                        progressBar.setVisibility(View.GONE);
+                        Log.e(TAG, "Error renewing subscription", error);
+
+                        String errorMsg = "Không thể gia hạn";
+                        if (error.getMessage() != null) {
+                            if (error.getMessage().contains("401")) {
+                                errorMsg = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại";
+                            } else if (error.getMessage().contains("404")) {
+                                errorMsg = "Không tìm thấy gói đăng ký";
+                            } else if (error.getMessage().contains("403")) {
+                                errorMsg = "Bạn không có quyền gia hạn gói này";
+                            }
+                        }
+                        Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                    }
+                )
+        );
+    }
+
+    private void submitRating(UserSubscription subscription, int rating, String title, String comment) {
+        // Get user ID from UserManager
+        String userIdStr = UserManager.getInstance().getUserId();
+        if (userIdStr == null || userIdStr.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Long userId;
+        try {
+            userId = Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "ID người dùng không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Get parking lot ID
+        long parkingLotId = subscription.getParkingLotId();
+
+        // Create rating request
+        CreateRatingRequest request = new CreateRatingRequest(userId, rating, title, comment);
+
+        // Show loading
+        progressBar.setVisibility(View.VISIBLE);
+
+        // Call API
+        compositeDisposable.add(
+            ApiClient.getApiService().createRating(parkingLotId, request)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    response -> {
+                        progressBar.setVisibility(View.GONE);
+                        if (response.isSuccess()) {
+                            Toast.makeText(this, "Cảm ơn bạn đã đánh giá!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            String errorMsg = response.getMessage() != null
+                                ? response.getMessage()
+                                : "Không thể gửi đánh giá";
+                            Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                        }
+                    },
+                    error -> {
+                        progressBar.setVisibility(View.GONE);
+                        Log.e(TAG, "Error submitting rating: " + error.getMessage());
+
+                        String errorMsg = "Không thể gửi đánh giá";
+                        if (error.getMessage() != null) {
+                            if (error.getMessage().contains("409")) {
+                                errorMsg = "Bạn đã đánh giá bãi đỗ xe này rồi";
+                            } else if (error.getMessage().contains("404")) {
+                                errorMsg = "Không tìm thấy bãi đỗ xe";
+                            }
+                        }
+                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                    }
+                )
+        );
     }
 
     @Override

@@ -32,7 +32,7 @@ android {
     buildTypes {
         debug {
             // BASE_URL dùng cho môi trường debug
-            buildConfigField("String", "BASE_URL", "\"http://parkmate-alb-942390189.ap-southeast-1.elb.amazonaws.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://avokadu.com/\"")
         }
         release {
             isMinifyEnabled = false
@@ -41,7 +41,7 @@ android {
                 "proguard-rules.pro"
             )
             // BASE_URL cho release (có thể thay đổi khi deploy production)
-            buildConfigField("String", "BASE_URL", "\"http://parkmate-alb-942390189.ap-southeast-1.elb.amazonaws.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://avokadu.com/\"")
         }
     }
 
@@ -102,5 +102,11 @@ dependencies {
 
     // AltBeacon library for BLE support
     implementation("org.altbeacon:android-beacon-library:2.20.6")
+
+    // Biometric authentication
+    implementation("androidx.biometric:biometric:1.1.0")
+    
+    // Security crypto for encrypted SharedPreferences
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
 }

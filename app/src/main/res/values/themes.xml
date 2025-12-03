@@ -14,4 +14,10 @@
     </style>
 
     <style name="Theme.CapstoneProject_ParkMate" parent="Base.Theme.CapstoneProject_ParkMate" />
+
+    <!-- Tab Text Style -->
+    <style name="TabTextStyle" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
 </resources>

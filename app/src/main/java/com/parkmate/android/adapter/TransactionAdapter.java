@@ -78,10 +78,22 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 ivTransactionIcon.setImageResource(R.drawable.ic_arrow_downward_24);
                 ivTransactionIcon.setBackgroundResource(R.drawable.bg_image_placeholder);
                 tvTransactionTitle.setText("Nạp tiền vào ví");
-            } else if (transaction.isPayment()) {
+            } else if (transaction.isDeduction()) {
                 ivTransactionIcon.setImageResource(R.drawable.ic_arrow_upward_24);
                 ivTransactionIcon.setBackgroundResource(R.drawable.bg_image_placeholder);
-                tvTransactionTitle.setText("Thanh toán đỗ xe");
+                tvTransactionTitle.setText("Trừ tiền");
+            } else if (transaction.isRefund()) {
+                ivTransactionIcon.setImageResource(R.drawable.ic_arrow_downward_24);
+                ivTransactionIcon.setBackgroundResource(R.drawable.bg_image_placeholder);
+                tvTransactionTitle.setText("Hoàn tiền");
+            } else if (transaction.isSubscriptionPayment()) {
+                ivTransactionIcon.setImageResource(R.drawable.ic_arrow_upward_24);
+                ivTransactionIcon.setBackgroundResource(R.drawable.bg_image_placeholder);
+                tvTransactionTitle.setText("Thanh toán gói đăng ký");
+            } else if (transaction.isReservationPayment()) {
+                ivTransactionIcon.setImageResource(R.drawable.ic_arrow_upward_24);
+                ivTransactionIcon.setBackgroundResource(R.drawable.bg_image_placeholder);
+                tvTransactionTitle.setText("Thanh toán đặt chỗ");
             } else {
                 ivTransactionIcon.setImageResource(R.drawable.ic_account_balance_wallet_24);
                 tvTransactionTitle.setText(transaction.getDescription());
@@ -92,10 +104,12 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
             // Format amount with color
             String formattedAmount = formatCurrency(transaction.getAmount());
-            if (transaction.isTopUp()) {
+            // Nạp tiền và hoàn tiền là tiền vào (màu xanh, dấu +)
+            if (transaction.isTopUp() || transaction.isRefund()) {
                 tvTransactionAmount.setText("+" + formattedAmount);
                 tvTransactionAmount.setTextColor(itemView.getContext().getColor(R.color.success_green));
             } else {
+                // Trừ tiền, thanh toán subscription, thanh toán reservation là tiền ra (màu đỏ, dấu -)
                 tvTransactionAmount.setText("-" + formattedAmount);
                 tvTransactionAmount.setTextColor(itemView.getContext().getColor(R.color.error_red));
             }

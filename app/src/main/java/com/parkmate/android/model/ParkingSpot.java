@@ -37,6 +37,9 @@ public class ParkingSpot implements Serializable {
     @SerializedName("subscriptionUnavailabilityReason")
     private String subscriptionUnavailabilityReason;
 
+    // Transient field - không serialize, chỉ dùng để filter
+    private transient Long areaId;
+
     // Getters and Setters
     public long getId() {
         return id;
@@ -124,6 +127,14 @@ public class ParkingSpot implements Serializable {
 
     public void setSubscriptionUnavailabilityReason(String subscriptionUnavailabilityReason) {
         this.subscriptionUnavailabilityReason = subscriptionUnavailabilityReason;
+    }
+
+    public Long getAreaId() {
+        return areaId;
+    }
+
+    public void setAreaId(Long areaId) {
+        this.areaId = areaId;
     }
 }
 

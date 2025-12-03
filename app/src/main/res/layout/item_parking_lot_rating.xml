@@ -157,6 +157,41 @@
             android:ellipsize="end"
             tools:text="Data thì giả, giá thì đắt" />
 
+        <!-- Action Buttons: Edit & Delete -->
+        <LinearLayout
+            android:id="@+id/layoutActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="12dp"
+            android:visibility="gone">
+
+            <!-- Edit Button -->
+            <ImageView
+                android:id="@+id/btnEditRating"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_edit_24"
+                android:padding="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Chỉnh sửa đánh giá"
+                app:tint="@color/colorPrimary" />
+
+            <!-- Delete Button -->
+            <ImageView
+                android:id="@+id/btnDeleteRating"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_delete_24"
+                android:padding="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Xóa đánh giá"
+                app:tint="#DC2626" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
