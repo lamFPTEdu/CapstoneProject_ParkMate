@@ -406,10 +406,10 @@
                                 android:id="@+id/tvDescription"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#101828"
+                                android:textColor="@color/text_primary"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
-                                android:background="#FFFFFF"
+                                android:background="@color/white"
                                 android:padding="8dp"
                                 tools:text="CSNA1G2W8H3 TOP UP WALLET"/>
 

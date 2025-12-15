@@ -129,7 +129,7 @@
             android:layout_marginStart="12dp"
             android:contentDescription="Đăng nhập bằng sinh trắc học"
             android:src="@drawable/ic_face_id_24"
-            app:backgroundTint="#1947ff"
+            app:backgroundTint="@color/primary"
             app:tint="@color/white"
             app:fabSize="normal"
             app:elevation="4dp"

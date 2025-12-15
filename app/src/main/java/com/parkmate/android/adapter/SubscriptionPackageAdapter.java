@@ -130,13 +130,31 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
 
             switch (durationType) {
                 case "MONTHLY":
-                    return durationValue + " tháng";
+                    // durationValue is number of DAYS (30 days = 1 month)
+                    int months = durationValue / 30;
+                    if (months == 1) {
+                        return "1 tháng";
+                    } else {
+                        return months + " tháng";
+                    }
                 case "QUARTERLY":
-                    return durationValue + " tháng";
+                    // durationValue is number of DAYS (90 days = 1 quarter = 3 months)
+                    int quarters = durationValue / 90;
+                    if (quarters == 1) {
+                        return "1 quý (3 tháng)";
+                    } else {
+                        return quarters + " quý (" + (quarters * 3) + " tháng)";
+                    }
                 case "YEARLY":
-                    return durationValue + " tháng";
+                    // durationValue is number of DAYS (365 days = 1 year)
+                    int years = durationValue / 365;
+                    if (years == 1) {
+                        return "1 năm";
+                    } else {
+                        return years + " năm";
+                    }
                 default:
-                    return durationValue + " " + durationType;
+                    return durationValue + " ngày";
             }
         }
     }

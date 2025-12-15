@@ -75,19 +75,19 @@
                     <View
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:background="#F44336"
+                        android:background="#FF9800"
                         android:elevation="2dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Đã đặt"
+                        android:text="Đang giữ"
                         android:textSize="14sp"
                         android:textColor="#424242"
                         android:layout_marginStart="10dp" />
                 </LinearLayout>
 
-                <!-- Held -->
+                <!-- Occupied -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -97,13 +97,13 @@
                     <View
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:background="#FF9800"
+                        android:background="#F44336"
                         android:elevation="2dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Đang giữ"
+                        android:text="Đã đặt"
                         android:textSize="14sp"
                         android:textColor="#424242"
                         android:layout_marginStart="10dp" />

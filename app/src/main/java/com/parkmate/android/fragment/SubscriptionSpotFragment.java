@@ -144,7 +144,7 @@ public class SubscriptionSpotFragment extends Fragment {
                                     currentAreas = mapData.areas;
 
                                     // DEBUG: Log chi tiết để kiểm tra coordinates
-                                    Log.d(TAG, "=== MAP DATA DEBUG ===");
+                                    Log.d(TAG, "=== SUBSCRIPTION MAP DATA DEBUG ===");
                                     Log.d(TAG, "Floor: " + mapData.floor.getFloorName() +
                                             " at (" + mapData.floor.getFloorTopLeftX() + ", " +
                                             mapData.floor.getFloorTopLeftY() + ")" +
@@ -154,6 +154,7 @@ public class SubscriptionSpotFragment extends Fragment {
                                     for (int i = 0; i < mapData.areas.size(); i++) {
                                         ParkingArea area = mapData.areas.get(i);
                                         Log.d(TAG, "Area " + i + ": " + area.getName() +
+                                                " ID=" + area.getId() +
                                                 " at (" + area.getAreaTopLeftX() + ", " +
                                                 area.getAreaTopLeftY() + ")" +
                                                 " size: " + area.getAreaWidth() + "x" +
@@ -164,9 +165,11 @@ public class SubscriptionSpotFragment extends Fragment {
                                         ParkingSpot firstSpot = mapData.spots.get(0);
                                         ParkingSpot lastSpot = mapData.spots.get(mapData.spots.size() - 1);
                                         Log.d(TAG, "First Spot: " + firstSpot.getName() +
+                                                " areaId=" + firstSpot.getAreaId() +
                                                 " at (" + firstSpot.getSpotTopLeftX() + ", " +
                                                 firstSpot.getSpotTopLeftY() + ")");
                                         Log.d(TAG, "Last Spot: " + lastSpot.getName() +
+                                                " areaId=" + lastSpot.getAreaId() +
                                                 " at (" + lastSpot.getSpotTopLeftX() + ", " +
                                                 lastSpot.getSpotTopLeftY() + ")");
                                     }
@@ -220,7 +223,22 @@ public class SubscriptionSpotFragment extends Fragment {
                 )
                 .map(response -> {
                     if (response.isSuccess() && response.getData() != null) {
-                        return response.getData();
+                        List<ParkingArea> areas = response.getData();
+
+                        // LỌC CHỈ LẤY AREA ĐƯỢC CHỌN
+                        Long selectedAreaId = activity.getSelectedAreaId();
+                        for (ParkingArea area : areas) {
+                            if (area.getId() == selectedAreaId) {
+                                // Trả về list chỉ có 1 area duy nhất
+                                List<ParkingArea> filteredAreas = new java.util.ArrayList<>();
+                                filteredAreas.add(area);
+                                Log.d(TAG, "Filtered area: " + area.getName() +
+                                      " at (" + area.getAreaTopLeftX() + ", " + area.getAreaTopLeftY() + ")" +
+                                      " size: " + area.getAreaWidth() + "x" + area.getAreaHeight());
+                                return filteredAreas;
+                            }
+                        }
+                        throw new Exception("Không tìm thấy area đã chọn");
                     }
                     throw new Exception("Không thể tải danh sách khu vực");
                 });
@@ -236,7 +254,13 @@ public class SubscriptionSpotFragment extends Fragment {
                 )
                 .map(response -> {
                     if (response.isSuccess() && response.getData() != null) {
-                        return response.getData();
+                        List<ParkingSpot> spots = response.getData();
+                        // GÁN AREA ID cho mỗi spot để biết spot thuộc area nào
+                        Long areaId = activity.getSelectedAreaId();
+                        for (ParkingSpot spot : spots) {
+                            spot.setAreaId(areaId);
+                        }
+                        return spots;
                     }
                     throw new Exception("Không thể tải danh sách chỗ đỗ");
                 });
