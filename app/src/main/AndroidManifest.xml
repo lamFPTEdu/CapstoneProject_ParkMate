@@ -146,12 +146,6 @@
             android:name=".activity.MyRatingsActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.FloorDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.SpotSelectionActivity"
-            android:exported="false" />
-        <activity
             android:name=".activity.VehicleSelectionActivity"
             android:exported="false" />
         <!-- Reservation Activities -->

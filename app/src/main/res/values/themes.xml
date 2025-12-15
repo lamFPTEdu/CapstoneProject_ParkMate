@@ -11,7 +11,7 @@
 
         <!-- RadioButton colors -->
         <item name="colorControlActivated">@color/primary</item>
-    </style>
+            </style>
 
     <style name="Theme.CapstoneProject_ParkMate" parent="Base.Theme.CapstoneProject_ParkMate" />
 

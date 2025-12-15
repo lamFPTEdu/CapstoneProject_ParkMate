@@ -51,4 +51,15 @@
 
     <!-- Rating colors -->
     <color name="rating_star">#FFD700</color>
+
+    <!-- Spot status colors -->
+    <color name="spot_available">#4CAF50</color>
+    <color name="spot_occupied">#F44336</color>
+    <color name="spot_held">#FF9800</color>
+    <color name="legend_title">#212121</color>
+    <color name="legend_text">#424242</color>
+    <color name="legend_disabled">#BDBDBD</color>
+
+    <!-- Semi-transparent overlay for loading/dialogs -->
+    <color name="overlay_dark">#80000000</color>
 </resources>

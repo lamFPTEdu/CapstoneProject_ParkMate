@@ -224,9 +224,14 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
             return; // Dừng lại nếu chưa xác thực, dialog đã được hiển thị tự động
         }
 
+        // Check if parkingLot object is available
+        if (parkingLot == null) {
+            showError("Không có thông tin bãi xe");
+            return;
+        }
+
         Intent intent = new Intent(this, SubscriptionSelectionActivity.class);
-        intent.putExtra("PARKING_LOT_ID", parkingLotId);
-        intent.putExtra("PARKING_LOT_NAME", parkingLotName);
+        intent.putExtra("PARKING_LOT", parkingLot);
         startActivity(intent);
     }
 
@@ -303,6 +308,8 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
             // Basic Info
             if (parkingLotDetail.getName() != null) {
                 tvParkingName.setText(parkingLotDetail.getName());
+                // Update parking lot name variable
+                parkingLotName = parkingLotDetail.getName();
             }
 
             String fullAddress = (parkingLotDetail.getStreetAddress() != null ? parkingLotDetail.getStreetAddress() : "") + ", " +
