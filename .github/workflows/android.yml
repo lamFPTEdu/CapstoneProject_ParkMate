@@ -1,7 +1,7 @@
 name: Android CI
 
 on:
-  push: 
+  push:
     branches: [ "main" ]
   pull_request: 
     branches: [ "main" ]
@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: '17'
-        distribution:  'temurin'
+        distribution: 'temurin'
         cache: gradle
         
     # Decode Base64 và tạo file
@@ -30,7 +30,7 @@ jobs:
         cat <<EOF > gradle.properties
         android.useAndroidX=true
         android.enableJetifier=true
-        org.gradle.jvmargs=-Xmx2048m -Dfile. encoding=UTF-8
+        org. gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
         android.nonTransitiveRClass=true
         MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}
         DIRECTIONS_API_KEY=${{ secrets. DIRECTIONS_API_KEY }}
