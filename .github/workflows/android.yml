@@ -23,6 +23,14 @@ jobs:
     # Decode Base64 và tạo file
     - name: Create google-services.json
       run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/google-services.json
+      
+    # Tạo gradle.properties
+    - name: Create gradle.properties
+      run: |
+        cat <<EOF > gradle.properties
+        MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}
+        DIRECTIONS_API_KEY=${{ secrets.DIRECTIONS_API_KEY }}
+        EOF
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
