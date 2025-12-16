@@ -16,13 +16,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Lấy api key từ gradle.properties
-        val openmapApiKey: String = (project.findProperty("openmapApiKey") ?: "") as String
-        val graphhopperApiKey: String = (project.findProperty("graphhopperApiKey") ?: "") as String
+        // Lấy api key từ gradle. properties
+        val openmapApiKey: String = project.findProperty("openmapApiKey") as? String ?: ""
+        val graphhopperApiKey: String = project.findProperty("graphhopperApiKey") as? String ?: ""
 
-        // BuildConfig field
-        buildConfigField("String", "OPENMAP_API_KEY", openmapApiKey)
-        buildConfigField("String", "GRAPHHOPPER_API_KEY", graphhopperApiKey)
+        // BuildConfig field - luôn wrap trong dấu ngoặc kép
+        buildConfigField("String", "OPENMAP_API_KEY", "\"${openmapApiKey}\"")
+        buildConfigField("String", "GRAPHHOPPER_API_KEY", "\"${graphhopperApiKey}\"")
 
         // Tối ưu hóa cho mọi thiết bị
         vectorDrawables.useSupportLibrary = true
