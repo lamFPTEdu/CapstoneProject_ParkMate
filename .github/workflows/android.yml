@@ -32,8 +32,8 @@ jobs:
         android.enableJetifier=true
         org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
         android.nonTransitiveRClass=true
-        MAPS_API_KEY=${{ secrets. MAPS_API_KEY }}
-        DIRECTIONS_API_KEY=${{ secrets.DIRECTIONS_API_KEY }}
+        GRAPHHOPPER_API_KEY=${{ secrets.GRAPHHOPPER_API_KEY }}
+        OPENMAP_API_KEY=${{ secrets.OPENMAP_API_KEY }}
         EOF
 
     - name: Grant execute permission for gradlew
