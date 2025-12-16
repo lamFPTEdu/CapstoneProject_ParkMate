@@ -136,6 +136,9 @@ public final class UserManager {
                 .remove(KEY_USERNAME) // Xóa username khi logout
                 .remove(KEY_IS_ID_VERIFIED) // Xóa trạng thái xác thực khi logout
                 .apply();
+
+        // Xóa cả tokens
+        TokenManager.getInstance().clearAllTokens();
     }
 
     /**

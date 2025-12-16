@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- White circle background for logo -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="@color/white" />
+    <solid android:color="#98A2B3" />
+    <size android:width="4dp" android:height="4dp" />
 </shape>

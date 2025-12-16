@@ -103,7 +103,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                 // Thêm padding top = status bar height + 12dp margin
                 int extraMargin = (int) (12 * getResources().getDisplayMetrics().density);
-                v.setPadding(v.getPaddingLeft(), systemBars.top + extraMargin, v.getPaddingRight(), v.getPaddingBottom());
+                v.setPadding(v.getPaddingLeft(), systemBars.top + extraMargin, v.getPaddingRight(),
+                        v.getPaddingBottom());
                 return insets;
             });
         }
@@ -117,8 +118,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 // Sử dụng margin bottom thay vì padding để tránh đẩy nội dung (icon + text) lên
                 // Margin sẽ đẩy toàn bộ Bottom Nav lên, giữ nguyên layout bên trong
                 if (v.getLayoutParams() instanceof android.view.ViewGroup.MarginLayoutParams) {
-                    android.view.ViewGroup.MarginLayoutParams params =
-                        (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                    android.view.ViewGroup.MarginLayoutParams params = (android.view.ViewGroup.MarginLayoutParams) v
+                            .getLayoutParams();
                     params.bottomMargin = systemBars.bottom;
                     v.setLayoutParams(params);
                 }
@@ -137,7 +138,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * Thiết lập toolbar với nút điều hướng (không có title)
      *
-     * @param isMainScreen true nếu đây là màn hình chính (hiển thị icon menu), false nếu là màn hình con (hiển thị nút back)
+     * @param isMainScreen true nếu đây là màn hình chính (hiển thị icon menu),
+     *                     false nếu là màn hình con (hiển thị nút back)
      */
     protected void setupToolbar(boolean isMainScreen) {
         // Ẩn search container mặc định
@@ -161,7 +163,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * Thiết lập toolbar với title (không có search, chỉ có title text)
      *
-     * @param title Text hiển thị trên toolbar
+     * @param title          Text hiển thị trên toolbar
      * @param showBackButton true để hiển thị nút back, false để ẩn nút navigation
      */
     protected void setupToolbarWithTitle(String title, boolean showBackButton) {
@@ -197,13 +199,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * Thiết lập toolbar với title và action button icon (vd: icon "Đọc tất cả")
      *
-     * @param title Text hiển thị trên toolbar
-     * @param showBackButton true để hiển thị nút back, false để ẩn nút navigation
-     * @param actionIconRes Resource ID của icon action button
+     * @param title               Text hiển thị trên toolbar
+     * @param showBackButton      true để hiển thị nút back, false để ẩn nút
+     *                            navigation
+     * @param actionIconRes       Resource ID của icon action button
      * @param actionClickListener Listener khi click action button
      */
     protected void setupToolbarWithTitleAndAction(String title, boolean showBackButton,
-                                                  int actionIconRes, View.OnClickListener actionClickListener) {
+            int actionIconRes, View.OnClickListener actionClickListener) {
         // Ẩn search container
         if (searchContainer != null) {
             searchContainer.setVisibility(View.GONE);
@@ -238,30 +241,36 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * Thiết lập toolbar với chế độ search
      *
-     * @param isMainScreen true nếu đây là màn hình chính (hiển thị icon menu), false nếu là màn hình con (hiển thị nút back)
+     * @param isMainScreen      true nếu đây là màn hình chính (hiển thị icon menu),
+     *                          false nếu là màn hình con (hiển thị nút back)
      * @param searchPlaceholder Text placeholder cho ô search
-     * @param onSearchClick Callback khi click vào search bar
-     * @param onFilterClick Callback khi click vào nút filter (có thể null nếu không dùng)
+     * @param onSearchClick     Callback khi click vào search bar
+     * @param onFilterClick     Callback khi click vào nút filter (có thể null nếu
+     *                          không dùng)
      */
     protected void setupToolbarWithSearch(boolean isMainScreen, String searchPlaceholder,
-                                         View.OnClickListener onSearchClick,
-                                         View.OnClickListener onFilterClick) {
+            View.OnClickListener onSearchClick,
+            View.OnClickListener onFilterClick) {
         setupToolbarWithSearch(isMainScreen, searchPlaceholder, onSearchClick, onFilterClick, true);
     }
 
     /**
      * Thiết lập toolbar với chế độ search (có tùy chọn ẩn navigation icon)
      *
-     * @param isMainScreen true nếu đây là màn hình chính (hiển thị icon menu), false nếu là màn hình con (hiển thị nút back)
-     * @param searchPlaceholder Text placeholder cho ô search
-     * @param onSearchClick Callback khi click vào search bar
-     * @param onFilterClick Callback khi click vào nút filter (có thể null nếu không dùng)
-     * @param showNavigationIcon true để hiển thị icon navigation, false để ẩn hoàn toàn
+     * @param isMainScreen       true nếu đây là màn hình chính (hiển thị icon
+     *                           menu), false nếu là màn hình con (hiển thị nút
+     *                           back)
+     * @param searchPlaceholder  Text placeholder cho ô search
+     * @param onSearchClick      Callback khi click vào search bar
+     * @param onFilterClick      Callback khi click vào nút filter (có thể null nếu
+     *                           không dùng)
+     * @param showNavigationIcon true để hiển thị icon navigation, false để ẩn hoàn
+     *                           toàn
      */
     protected void setupToolbarWithSearch(boolean isMainScreen, String searchPlaceholder,
-                                         View.OnClickListener onSearchClick,
-                                         View.OnClickListener onFilterClick,
-                                         boolean showNavigationIcon) {
+            View.OnClickListener onSearchClick,
+            View.OnClickListener onFilterClick,
+            boolean showNavigationIcon) {
         // Hiển thị search container
         if (searchContainer != null) {
             searchContainer.setVisibility(View.VISIBLE);
@@ -374,11 +383,13 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * Thiết lập BottomNavigationView
      *
-     * @param showBottomNav true nếu muốn hiển thị bottom navigation, false nếu muốn ẩn
+     * @param showBottomNav  true nếu muốn hiển thị bottom navigation, false nếu
+     *                       muốn ẩn
      * @param selectedItemId ID của menu item được chọn (nếu có)
      */
     protected void setupBottomNavigation(boolean showBottomNav, int selectedItemId) {
-        if (bottomNavigationView == null) return;
+        if (bottomNavigationView == null)
+            return;
         if (!showBottomNav) {
             bottomNavigationView.setVisibility(android.view.View.GONE);
             return;
@@ -386,7 +397,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         bottomNavigationView.setVisibility(android.view.View.VISIBLE);
 
         // Disable ripple effect completely
-        try { bottomNavigationView.setItemRippleColor(null); } catch (Exception ignored) {}
+        try {
+            bottomNavigationView.setItemRippleColor(null);
+        } catch (Exception ignored) {
+        }
 
         if (selectedItemId > 0) {
             bottomNavigationView.setSelectedItemId(selectedItemId);
@@ -396,7 +410,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         // GUEST MODE FIX: Return false nếu navigation bị block để không highlight tab
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            if (itemId == currentSelected) return true; // already here
+            if (itemId == currentSelected)
+                return true; // already here
             boolean navigationSuccess = handleBottomNavSelection(item);
             return navigationSuccess; // Only highlight if navigation succeeds
         });
@@ -404,12 +419,15 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     /**
      * Thiết lập BottomNavigationView nhưng KHÔNG highlight item nào
-     * Dùng cho các trang không nằm trong bottom nav menu (VD: ParkingLotDetailActivity)
+     * Dùng cho các trang không nằm trong bottom nav menu (VD:
+     * ParkingLotDetailActivity)
      *
-     * @param showBottomNav true nếu muốn hiển thị bottom navigation, false nếu muốn ẩn
+     * @param showBottomNav true nếu muốn hiển thị bottom navigation, false nếu muốn
+     *                      ẩn
      */
     protected void setupBottomNavigationWithoutSelection(boolean showBottomNav) {
-        if (bottomNavigationView == null) return;
+        if (bottomNavigationView == null)
+            return;
         if (!showBottomNav) {
             bottomNavigationView.setVisibility(android.view.View.GONE);
             return;
@@ -417,7 +435,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         bottomNavigationView.setVisibility(android.view.View.VISIBLE);
 
         // Disable ripple effect completely
-        try { bottomNavigationView.setItemRippleColor(null); } catch (Exception ignored) {}
+        try {
+            bottomNavigationView.setItemRippleColor(null);
+        } catch (Exception ignored) {
+        }
 
         // CLEAR selected item - không highlight item nào
         bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
@@ -510,7 +531,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         return false; // Unknown item
     }
-
 
     /**
      * @return ID của layout resource cho activity con

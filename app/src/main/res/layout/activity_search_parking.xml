@@ -14,7 +14,6 @@
         android:paddingEnd="16dp"
         android:paddingTop="16dp"
         android:paddingBottom="12dp"
-        android:elevation="4dp"
         android:background="@color/white">
 
         <!-- Back Button -->
@@ -69,59 +68,86 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Filter Chips -->
+    <!-- Filter Chips - Same style as parking lots page -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="8dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:singleSelection="false"
-            app:selectionRequired="false">
+            app:selectionRequired="false"
+            app:chipSpacingHorizontal="8dp">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAll"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tất cả" />
+                android:text="Tất cả"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="@color/chip_stroke_selector"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"
+                app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipActive"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Đang hoạt động" />
+                android:text="Đang hoạt động"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="@color/chip_stroke_selector"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"
+                app:chipIcon="@drawable/ic_check_circle_24"
+                app:chipIconTint="@color/chip_icon_selector"
+                app:chipIconVisible="true"
+                app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip24Hour"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="24/7" />
+                android:text="24/7"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="@color/chip_stroke_selector"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"
+                app:chipIcon="@drawable/ic_schedule_24"
+                app:chipIconTint="@color/chip_icon_selector"
+                app:chipIconVisible="true"
+                app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipNearby"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gần tôi" />
+                android:text="Gần tôi"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="@color/chip_stroke_selector"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"
+                app:chipIcon="@drawable/ic_near_me_24"
+                app:chipIconTint="@color/chip_icon_selector"
+                app:chipIconVisible="true"
+                app:checkedIconVisible="false" />
 
         </com.google.android.material.chip.ChipGroup>
 
     </HorizontalScrollView>
-
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#E5E5E5" />
 
     <!-- Results -->
     <FrameLayout

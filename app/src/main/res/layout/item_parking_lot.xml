@@ -1,106 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Clean Parking Lot Item - No icon, card style with status badge highlight -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginTop="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
-    app:strokeColor="#E4E7EC"
-    app:strokeWidth="1dp">
+    android:layout_marginTop="10dp"
+    android:background="@drawable/bg_rounded_white"
+    android:elevation="2dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="?attr/selectableItemBackground">
 
-        <!-- Icon bãi xe -->
+        <!-- Keep ivParkingIcon hidden for adapter compatibility -->
         <ImageView
             android:id="@+id/ivParkingIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:background="@drawable/bg_image_placeholder"
-            android:src="@drawable/ic_local_parking_24"
-            android:contentDescription="Parking lot icon"
-            app:tint="@color/colorPrimary"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/tvParkingName" />
-
-        <!-- Tên bãi xe -->
-        <TextView
-            android:id="@+id/tvParkingName"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="#101828"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/tvStatusBadge"
-            app:layout_constraintStart_toEndOf="@+id/ivParkingIcon"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Diamond Plaza Parking" />
+            android:layout_height="0dp"
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
 
-        <!-- Badge trạng thái -->
-        <TextView
-            android:id="@+id/tvStatusBadge"
-            android:layout_width="wrap_content"
+        <!-- Name + Status Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:background="@drawable/bg_status_active"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/tvParkingName"
-            tools:text="ACTIVE" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <!-- Địa chỉ -->
+            <TextView
+                android:id="@+id/tvParkingName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="12dp"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="VinCom Lê Văn Việt" />
+
+            <TextView
+                android:id="@+id/tvStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_status_active"
+                tools:text="ACTIVE" />
+        </LinearLayout>
+
+        <!-- Address -->
         <TextView
             android:id="@+id/tvAddress"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="#667085"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tvParkingName"
-            app:layout_constraintTop_toBottomOf="@+id/tvParkingName"
-            tools:text="34 Le Duan Street, Ben Nghe, Ho Chi Minh City" />
-
-        <!-- Thông tin giờ mở cửa và số tầng -->
-        <TextView
-            android:id="@+id/tvOperatingInfo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="#667085"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tvParkingName"
-            app:layout_constraintTop_toBottomOf="@+id/tvAddress"
-            tools:text="06:00 - 22:00 • 3 floors" />
-
-        <!-- Khoảng cách (nếu có) -->
-        <TextView
-            android:id="@+id/tvDistance"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/tvParkingName"
-            app:layout_constraintTop_toBottomOf="@+id/tvOperatingInfo"
-            tools:text="2.5 km" />
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:drawableStart="@drawable/ic_location_on_16"
+            android:drawablePadding="6dp"
+            app:drawableTint="@color/text_secondary"
+            tools:text="Lê Văn Việt, Hiệp Phú, TP. Hồ Chí Minh" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Operating Info Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-</androidx.cardview.widget.CardView>
+            <!-- Operating Hours -->
+            <TextView
+                android:id="@+id/tvOperatingInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:drawableStart="@drawable/ic_schedule_16"
+                android:drawablePadding="4dp"
+                app:drawableTint="@color/primary"
+                tools:text="24/7" />
+
+            <!-- Separator -->
+            <View
+                android:layout_width="4dp"
+                android:layout_height="4dp"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/bg_circle_gray" />
+
+            <!-- Floors -->
+            <TextView
+                android:id="@+id/tvFloors"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:drawableStart="@drawable/ic_layers_16"
+                android:drawablePadding="4dp"
+                app:drawableTint="@color/primary"
+                tools:text="3 tầng" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Distance (if available) -->
+            <TextView
+                android:id="@+id/tvDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="2.5 km" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

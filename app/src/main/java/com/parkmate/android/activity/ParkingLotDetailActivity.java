@@ -73,7 +73,7 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
     private TextView tvTotalRatings;
     private RecyclerView rvRatings;
     private TextView tvNoRatings;
-    private com.google.android.material.button.MaterialButton btnViewAllRatings;
+    private TextView btnViewAllRatings;
 
     // Adapters
     private ParkingImageAdapter imageAdapter;
@@ -127,10 +127,18 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        // Toolbar
+        // Toolbar (hidden in new UI)
         toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            toolbar.setNavigationOnClickListener(v -> finish());
+        }
+
+        // Floating back button
+        View btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
         // Views
         viewPagerImages = findViewById(R.id.viewPagerImages);
@@ -246,7 +254,8 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         // Tạo địa chỉ đầy đủ
         String fullAddress = "";
         if (fullParkingLotDetail != null) {
-            fullAddress = (fullParkingLotDetail.getStreetAddress() != null ? fullParkingLotDetail.getStreetAddress() : "") + ", " +
+            fullAddress = (fullParkingLotDetail.getStreetAddress() != null ? fullParkingLotDetail.getStreetAddress()
+                    : "") + ", " +
                     (fullParkingLotDetail.getWard() != null ? fullParkingLotDetail.getWard() : "") + ", " +
                     (fullParkingLotDetail.getCity() != null ? fullParkingLotDetail.getCity() : "");
         }
@@ -259,45 +268,46 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         showLoading(true);
 
         compositeDisposable.add(
-            parkingRepository.getParkingLotDetail(parkingLotId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> {
-                        showLoading(false);
-                        if (response.isSuccess() && response.getData() != null) {
-                            displayParkingLotDetail(response.getData());
-                        } else {
-                            String errorMsg = response.getError() != null ? response.getError() : "Failed to load parking lot details";
-                            showError(errorMsg);
-                        }
-                    },
-                    throwable -> {
-                        showLoading(false);
-                        android.util.Log.e("ParkingLotDetail", "Error loading parking lot detail", throwable);
+                parkingRepository.getParkingLotDetail(parkingLotId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    showLoading(false);
+                                    if (response.isSuccess() && response.getData() != null) {
+                                        displayParkingLotDetail(response.getData());
+                                    } else {
+                                        String errorMsg = response.getError() != null ? response.getError()
+                                                : "Failed to load parking lot details";
+                                        showError(errorMsg);
+                                    }
+                                },
+                                throwable -> {
+                                    showLoading(false);
+                                    android.util.Log.e("ParkingLotDetail", "Error loading parking lot detail",
+                                            throwable);
 
-                        // Hiển thị thông báo lỗi chi tiết hơn
-                        String errorMessage = "Network error";
-                        if (throwable instanceof com.google.gson.JsonSyntaxException) {
-                            errorMessage = "Data format error. Please contact support.";
-                            android.util.Log.e("ParkingLotDetail", "JSON parsing error: " + throwable.getMessage());
-                        } else if (throwable instanceof java.io.IOException) {
-                            errorMessage = "Connection error. Please check your internet.";
-                        } else if (throwable instanceof retrofit2.HttpException) {
-                            retrofit2.HttpException httpException = (retrofit2.HttpException) throwable;
-                            errorMessage = "Server error: " + httpException.code();
-                            try {
-                                String errorBody = httpException.response().errorBody().string();
-                                android.util.Log.e("ParkingLotDetail", "HTTP error body: " + errorBody);
-                            } catch (Exception e) {
-                                // Ignore
-                            }
-                        }
+                                    // Hiển thị thông báo lỗi chi tiết hơn
+                                    String errorMessage = "Network error";
+                                    if (throwable instanceof com.google.gson.JsonSyntaxException) {
+                                        errorMessage = "Data format error. Please contact support.";
+                                        android.util.Log.e("ParkingLotDetail",
+                                                "JSON parsing error: " + throwable.getMessage());
+                                    } else if (throwable instanceof java.io.IOException) {
+                                        errorMessage = "Connection error. Please check your internet.";
+                                    } else if (throwable instanceof retrofit2.HttpException) {
+                                        retrofit2.HttpException httpException = (retrofit2.HttpException) throwable;
+                                        errorMessage = "Server error: " + httpException.code();
+                                        try {
+                                            String errorBody = httpException.response().errorBody().string();
+                                            android.util.Log.e("ParkingLotDetail", "HTTP error body: " + errorBody);
+                                        } catch (Exception e) {
+                                            // Ignore
+                                        }
+                                    }
 
-                        showError(errorMessage);
-                    }
-                )
-        );
+                                    showError(errorMessage);
+                                }));
     }
 
     private void displayParkingLotDetail(ParkingLotDetailResponse.ParkingLotDetail parkingLotDetail) {
@@ -312,7 +322,8 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
                 parkingLotName = parkingLotDetail.getName();
             }
 
-            String fullAddress = (parkingLotDetail.getStreetAddress() != null ? parkingLotDetail.getStreetAddress() : "") + ", " +
+            String fullAddress = (parkingLotDetail.getStreetAddress() != null ? parkingLotDetail.getStreetAddress()
+                    : "") + ", " +
                     (parkingLotDetail.getWard() != null ? parkingLotDetail.getWard() : "") + ", " +
                     (parkingLotDetail.getCity() != null ? parkingLotDetail.getCity() : "");
             tvAddress.setText(fullAddress);
@@ -372,20 +383,20 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
                 tvImageCounter.setText("1/" + totalImages);
                 tvImageCounter.setVisibility(View.VISIBLE);
 
-                viewPagerImages.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
-                    @Override
-                    public void onPageSelected(int position) {
-                        super.onPageSelected(position);
-                        tvImageCounter.setText((position + 1) + "/" + totalImages);
-                    }
-                });
+                viewPagerImages
+                        .registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+                            @Override
+                            public void onPageSelected(int position) {
+                                super.onPageSelected(position);
+                                tvImageCounter.setText((position + 1) + "/" + totalImages);
+                            }
+                        });
             } else {
                 // Show placeholder if no images
                 imageAdapter.submitList(null);
                 TextView tvImageCounter = findViewById(R.id.tvImageCounter);
                 tvImageCounter.setVisibility(View.GONE);
             }
-
 
             // Display available spots
             if (parkingLotDetail.getAvailableSpots() != null && !parkingLotDetail.getAvailableSpots().isEmpty()) {
@@ -415,7 +426,8 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
 
             // Display average rating with 1 decimal place
             if (parkingLotDetail.getAverageRating() != null) {
-                tvAverageRating.setText(String.format(java.util.Locale.getDefault(), "%.1f", parkingLotDetail.getAverageRating()));
+                tvAverageRating.setText(
+                        String.format(java.util.Locale.getDefault(), "%.1f", parkingLotDetail.getAverageRating()));
             } else {
                 tvAverageRating.setText("0.0");
             }
@@ -444,9 +456,11 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
                 intent.putExtra("parkingLotId", parkingLotId);
                 intent.putExtra("parkingLotName", parkingLotDetail.getName());
                 // Pass averageRating as double, but convert to string for intent
-                double avgRating = parkingLotDetail.getAverageRating() != null ? parkingLotDetail.getAverageRating() : 0.0;
+                double avgRating = parkingLotDetail.getAverageRating() != null ? parkingLotDetail.getAverageRating()
+                        : 0.0;
                 intent.putExtra("averageRating", avgRating);
-                intent.putExtra("totalRatings", parkingLotDetail.getTotalRatings() != null ? parkingLotDetail.getTotalRatings() : 0);
+                intent.putExtra("totalRatings",
+                        parkingLotDetail.getTotalRatings() != null ? parkingLotDetail.getTotalRatings() : 0);
                 startActivity(intent);
             });
         } else {
@@ -478,7 +492,8 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
      * Setup Vehicle Type Tabs (Ô tô, Xe máy, Xe đạp)
      */
     private void setupVehicleTypeTabs() {
-        if (fullParkingLotDetail == null) return;
+        if (fullParkingLotDetail == null)
+            return;
 
         tabLayoutVehicleTypes.removeAllTabs();
 
@@ -503,7 +518,7 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         }
 
         // Add tabs in order: CAR -> MOTORBIKE -> BIKE
-        String[] orderedTypes = {"CAR_UP_TO_9_SEATS", "MOTORBIKE", "BIKE"};
+        String[] orderedTypes = { "CAR_UP_TO_9_SEATS", "MOTORBIKE", "BIKE" };
         for (String type : orderedTypes) {
             if (availableTypes.contains(type)) {
                 TabLayout.Tab tab = tabLayoutVehicleTypes.newTab();
@@ -529,10 +544,12 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
         });
     }
 
@@ -540,7 +557,8 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
      * Get display name for vehicle type tab
      */
     private String getVehicleTypeTabName(String vehicleType) {
-        if (vehicleType == null) return "";
+        if (vehicleType == null)
+            return "";
         switch (vehicleType) {
             case "CAR_UP_TO_9_SEATS":
                 return "🚗 Ô tô";
@@ -557,7 +575,8 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
      * Filter subscription packages and pricing rules by vehicle type
      */
     private void filterDataByVehicleType(String vehicleType) {
-        if (fullParkingLotDetail == null || vehicleType == null) return;
+        if (fullParkingLotDetail == null || vehicleType == null)
+            return;
 
         // Filter subscription packages
         java.util.List<com.parkmate.android.model.SubscriptionPackage> filteredPackages = new ArrayList<>();
@@ -600,7 +619,6 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         }
     }
 
-
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
     }
@@ -621,20 +639,22 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         Toast.makeText(this, "Đang mở chỉ đường...", Toast.LENGTH_SHORT).show();
 
         if (parkingLotLatitude == null || parkingLotLongitude == null) {
-            android.util.Log.e("ParkingLotDetail", "ERROR: No coordinates - Lat: " + parkingLotLatitude + ", Lng: " + parkingLotLongitude);
+            android.util.Log.e("ParkingLotDetail",
+                    "ERROR: No coordinates - Lat: " + parkingLotLatitude + ", Lng: " + parkingLotLongitude);
             showError("Không có thông tin vị trí bãi xe");
             return;
         }
 
-        android.util.Log.d("ParkingLotDetail", "Coordinates OK - Lat: " + parkingLotLatitude + ", Lng: " + parkingLotLongitude);
+        android.util.Log.d("ParkingLotDetail",
+                "Coordinates OK - Lat: " + parkingLotLatitude + ", Lng: " + parkingLotLongitude);
 
         // Kiểm tra permission
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             android.util.Log.d("ParkingLotDetail", "Requesting location permission...");
             // Request permission
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
                     LOCATION_PERMISSION_REQUEST_CODE);
             return;
         }
@@ -669,7 +689,7 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                          @NonNull int[] grantResults) {
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {

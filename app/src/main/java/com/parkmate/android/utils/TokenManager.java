@@ -12,6 +12,7 @@ public final class TokenManager {
 
     private static final String PREF_NAME = "auth_prefs";
     private static final String KEY_ACCESS_TOKEN = "access_token";
+    private static final String KEY_REFRESH_TOKEN = "refresh_token";
 
     private static TokenManager instance;
     private final SharedPreferences prefs;
@@ -47,6 +48,38 @@ public final class TokenManager {
 
     public void clearToken() {
         prefs.edit().remove(KEY_ACCESS_TOKEN).apply();
+    }
+
+    /**
+     * Lưu refresh token
+     */
+    public void saveRefreshToken(String refreshToken) {
+        prefs.edit().putString(KEY_REFRESH_TOKEN, refreshToken).apply();
+    }
+
+    /**
+     * Lấy refresh token
+     */
+    public String getRefreshToken() {
+        String token = prefs.getString(KEY_REFRESH_TOKEN, null);
+        return TextUtils.isEmpty(token) ? null : token;
+    }
+
+    /**
+     * Xóa refresh token
+     */
+    public void clearRefreshToken() {
+        prefs.edit().remove(KEY_REFRESH_TOKEN).apply();
+    }
+
+    /**
+     * Xóa tất cả tokens (access + refresh)
+     */
+    public void clearAllTokens() {
+        prefs.edit()
+            .remove(KEY_ACCESS_TOKEN)
+            .remove(KEY_REFRESH_TOKEN)
+            .apply();
     }
 }
 
