@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etEmail, etPassword;
     private CheckBox cbRememberMe;
     private MaterialButton btnLogin;
-    private com.google.android.material.floatingactionbutton.FloatingActionButton fabBiometricLogin;
+    private View fabBiometricLogin;
     private TextView tvRegisterLink, tvForgotPassword;
 
     private AuthRepository authRepository;
@@ -90,8 +90,8 @@ public class LoginActivity extends AppCompatActivity {
      * Kiểm tra và hiển thị biometric login nếu user đã bật
      */
     private void checkBiometricLogin() {
-        com.parkmate.android.utils.BiometricManager biometricManager =
-            com.parkmate.android.utils.BiometricManager.getInstance(this);
+        com.parkmate.android.utils.BiometricManager biometricManager = com.parkmate.android.utils.BiometricManager
+                .getInstance(this);
 
         if (biometricManager.isBiometricEnabled()) {
             // Delay một chút để UI render xong
@@ -106,39 +106,41 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void showBiometricLogin() {
         com.parkmate.android.utils.BiometricManager.getInstance(this).authenticate(this,
-            new com.parkmate.android.utils.BiometricManager.BiometricCallback() {
-                @Override
-                public void onSuccess(String email, String password) {
-                    // Auto login với credentials đã lưu
-                    android.util.Log.d(TAG, "Biometric success - Email: " + email);
+                new com.parkmate.android.utils.BiometricManager.BiometricCallback() {
+                    @Override
+                    public void onSuccess(String email, String password) {
+                        // Auto login với credentials đã lưu
+                        android.util.Log.d(TAG, "Biometric success - Email: " + email);
 
-                    // Show debug toast
-                    Toast.makeText(LoginActivity.this,
-                        "✅ Biometric OK\nEmail: " + (email != null ? email : "NULL") + "\nPass: " + (password != null ? "***" : "NULL"),
-                        Toast.LENGTH_LONG).show();
+                        // Show debug toast
+                        Toast.makeText(LoginActivity.this,
+                                "✅ Biometric OK\nEmail: " + (email != null ? email : "NULL") + "\nPass: "
+                                        + (password != null ? "***" : "NULL"),
+                                Toast.LENGTH_LONG).show();
 
-                    if (etEmail != null) {
-                        etEmail.setText(email); // Truyền email vào field email
+                        if (etEmail != null) {
+                            etEmail.setText(email); // Truyền email vào field email
+                        }
+                        if (etPassword != null) {
+                            etPassword.setText(password);
+                        }
+
+                        if (email == null || email.isEmpty()) {
+                            Toast.makeText(LoginActivity.this, "❌ Email NULL! Không thể login", Toast.LENGTH_LONG)
+                                    .show();
+                            return;
+                        }
+
+                        performLogin(email, password, false); // Đăng nhập với email và password
                     }
-                    if (etPassword != null) {
-                        etPassword.setText(password);
+
+                    @Override
+                    public void onError(String error) {
+                        // User có thể chọn đăng nhập thủ công
+                        android.util.Log.d(TAG, "Biometric login error: " + error);
+                        Toast.makeText(LoginActivity.this, "❌ Biometric: " + error, Toast.LENGTH_SHORT).show();
                     }
-
-                    if (email == null || email.isEmpty()) {
-                        Toast.makeText(LoginActivity.this, "❌ Email NULL! Không thể login", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    performLogin(email, password, false); // Đăng nhập với email và password
-                }
-
-                @Override
-                public void onError(String error) {
-                    // User có thể chọn đăng nhập thủ công
-                    android.util.Log.d(TAG, "Biometric login error: " + error);
-                    Toast.makeText(LoginActivity.this, "❌ Biometric: " + error, Toast.LENGTH_SHORT).show();
-                }
-            });
+                });
     }
 
     /**
@@ -153,6 +155,7 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Kiểm tra xem user đã đăng nhập chưa bằng cách check token và userId
+     * 
      * @return true nếu đã có token và userId hợp lệ
      */
     private boolean checkIfAlreadyLoggedIn() {
@@ -162,7 +165,7 @@ public class LoginActivity extends AppCompatActivity {
 
             // Nếu có token và userId thì coi như đã đăng nhập
             boolean isLoggedIn = token != null && !token.isEmpty() &&
-                                userId != null && !userId.isEmpty();
+                    userId != null && !userId.isEmpty();
 
             if (isLoggedIn) {
                 Log.d(TAG, "User already logged in - Token exists, navigating to Home");
@@ -180,7 +183,8 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void navigateToHome() {
         Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
@@ -205,15 +209,15 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void setupBiometricButton() {
         try {
-            com.parkmate.android.utils.BiometricManager biometricManager =
-                com.parkmate.android.utils.BiometricManager.getInstance(this);
+            com.parkmate.android.utils.BiometricManager biometricManager = com.parkmate.android.utils.BiometricManager
+                    .getInstance(this);
 
             if (fabBiometricLogin != null) {
                 // Chỉ hiện nút nếu:
                 // 1. Device có biometric
                 // 2. User đã bật biometric trong Profile
                 boolean shouldShow = biometricManager.isBiometricAvailable() &&
-                                   biometricManager.isBiometricEnabled();
+                        biometricManager.isBiometricEnabled();
 
                 fabBiometricLogin.setVisibility(shouldShow ? android.view.View.VISIBLE : android.view.View.GONE);
 
@@ -267,16 +271,28 @@ public class LoginActivity extends AppCompatActivity {
         SpannableString ss = new SpannableString(text);
         int start = text.indexOf("Đăng ký");
         int end = start + "Đăng ký".length();
-        ss.setSpan(new ClickableSpan() { @Override public void onClick(@NonNull View widget) { startActivity(new Intent(LoginActivity.this, RegisterActivity.class)); } }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ss.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorPrimary)), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ss.setSpan(new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+            }
+        }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ss.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorPrimary)), start, end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         tvRegisterLink.setText(ss);
         tvRegisterLink.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     private boolean validateInput(String email, String password) {
         boolean isValid = true;
-        if (email.isEmpty()) { etEmail.setError("Vui lòng nhập email"); isValid = false; }
-        if (password.isEmpty()) { etPassword.setError("Vui lòng nhập mật khẩu"); isValid = false; }
+        if (email.isEmpty()) {
+            etEmail.setError("Vui lòng nhập email");
+            isValid = false;
+        }
+        if (password.isEmpty()) {
+            etPassword.setError("Vui lòng nhập mật khẩu");
+            isValid = false;
+        }
         return isValid;
     }
 
@@ -316,9 +332,7 @@ public class LoginActivity extends AppCompatActivity {
                                     isLoggingIn = false;
                                     loadingButton.hideLoading();
                                     handleLoginError(throwable);
-                                }
-                        )
-        );
+                                }));
     }
 
     private void cancelTimeoutWarning() {
@@ -328,16 +342,20 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleLoginSuccess(LoginResponse resp, String email, boolean rememberMe) {
-        boolean ok = resp != null && (resp.getSuccess() == null || Boolean.TRUE.equals(resp.getSuccess())); // nhiều BE không trả success
+        boolean ok = resp != null && (resp.getSuccess() == null || Boolean.TRUE.equals(resp.getSuccess())); // nhiều BE
+                                                                                                            // không trả
+                                                                                                            // success
         if (!ok) {
-            Toast.makeText(this, resp != null && resp.getMessage() != null ? resp.getMessage() : "Đăng nhập thất bại", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, resp != null && resp.getMessage() != null ? resp.getMessage() : "Đăng nhập thất bại",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
         // Lưu token
         String rawToken = resp.getAnyToken();
         Log.d(TAG, "========== LOGIN SUCCESS ==========");
-        Log.d(TAG, "Raw token from backend: " + (rawToken != null ? "YES (length=" + rawToken.length() + ")" : "NO - NULL!"));
+        Log.d(TAG, "Raw token from backend: "
+                + (rawToken != null ? "YES (length=" + rawToken.length() + ")" : "NO - NULL!"));
 
         if (rawToken != null && !rawToken.isEmpty()) {
             String cleaned = rawToken.startsWith("Bearer ") ? rawToken.substring(7) : rawToken;
@@ -360,12 +378,31 @@ public class LoginActivity extends AppCompatActivity {
             Log.e(TAG, "❌ WARNING: Backend returned NULL or EMPTY token!");
         }
 
-        // Lưu thông tin user - ƯU TIÊN LẤY userId TỪ data.userResponse.id (id: 9) thay vì account.id (id: 13)
+        // Lưu refresh token
+        String refreshToken = null;
+        if (resp.getData() != null && resp.getData().getAuthResponse() != null) {
+            refreshToken = resp.getData().getAuthResponse().getRefreshToken();
+        }
+
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            try {
+                TokenManager.getInstance().saveRefreshToken(refreshToken);
+                Log.d(TAG, "✅ Refresh token saved successfully!");
+            } catch (Exception e) {
+                Log.e(TAG, "❌ EXCEPTION when saving refresh token: " + e.getMessage(), e);
+            }
+        } else {
+            Log.w(TAG, "⚠️ No refresh token returned from backend");
+        }
+
+        // Lưu thông tin user - ƯU TIÊN LẤY userId TỪ data.userResponse.id (id: 9) thay
+        // vì account.id (id: 13)
         try {
             String userId = null;
             String username = null;
 
-            // Ưu tiên lấy từ data.userResponse.id (đây mới là userId thực sự để dùng cho entityId)
+            // Ưu tiên lấy từ data.userResponse.id (đây mới là userId thực sự để dùng cho
+            // entityId)
             if (resp.getData() != null && resp.getData().getUserResponse() != null) {
                 Long userResponseId = resp.getData().getUserResponse().getId();
                 if (userResponseId != null) {
@@ -417,8 +454,8 @@ public class LoginActivity extends AppCompatActivity {
         try {
             boolean isIdVerified = false;
             if (resp.getData() != null &&
-                resp.getData().getUserResponse() != null &&
-                resp.getData().getUserResponse().getAccount() != null) {
+                    resp.getData().getUserResponse() != null &&
+                    resp.getData().getUserResponse().getAccount() != null) {
 
                 Boolean verified = resp.getData().getUserResponse().getAccount().getIsIdVerified();
                 isIdVerified = verified != null && verified;
@@ -441,10 +478,13 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         applyRememberMe(email, rememberMe);
-        Toast.makeText(this, resp.getMessage() != null ? resp.getMessage() : "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-        // Chuyển sang màn hình chính (HomeActivity) và clear back stack để tránh quay lại màn hình đăng nhập
+        Toast.makeText(this, resp.getMessage() != null ? resp.getMessage() : "Đăng nhập thành công", Toast.LENGTH_SHORT)
+                .show();
+        // Chuyển sang màn hình chính (HomeActivity) và clear back stack để tránh quay
+        // lại màn hình đăng nhập
         Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
@@ -478,7 +518,9 @@ public class LoginActivity extends AppCompatActivity {
         if (t instanceof HttpException) {
             HttpException http = (HttpException) t;
             try {
-                String body = http.response() != null && http.response().errorBody() != null ? http.response().errorBody().string() : null;
+                String body = http.response() != null && http.response().errorBody() != null
+                        ? http.response().errorBody().string()
+                        : null;
                 if (body != null && !body.isEmpty()) {
                     ErrorResponse er = new Gson().fromJson(body, ErrorResponse.class);
                     if (er != null && er.getError() != null) {
@@ -494,11 +536,14 @@ public class LoginActivity extends AppCompatActivity {
                             switch (code) {
                                 case "INVALID_CREDENTIALS":
                                 case "BAD_CREDENTIALS":
-                                    if (etPassword != null) etPassword.setError(msg != null ? msg : "Sai email hoặc mật khẩu");
-                                    Toast.makeText(this, msg != null ? msg : "Sai email hoặc mật khẩu", Toast.LENGTH_LONG).show();
+                                    if (etPassword != null)
+                                        etPassword.setError(msg != null ? msg : "Sai email hoặc mật khẩu");
+                                    Toast.makeText(this, msg != null ? msg : "Sai email hoặc mật khẩu",
+                                            Toast.LENGTH_LONG).show();
                                     return;
                                 case "ACCOUNT_NOT_ACTIVE":
-                                    Toast.makeText(this, msg != null ? msg : "Tài khoản chưa kích hoạt", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(this, msg != null ? msg : "Tài khoản chưa kích hoạt",
+                                            Toast.LENGTH_LONG).show();
                                     return;
                                 default:
                                     break;
@@ -510,7 +555,8 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             Toast.makeText(this, "Đăng nhập thất bại (" + http.code() + ")", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(this, t.getMessage() != null ? t.getMessage() : "Lỗi đăng nhập", Toast.LENGTH_LONG).show();
@@ -518,35 +564,45 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void applyFieldError(ErrorResponse.FieldError fe) {
-        if (fe == null) return;
+        if (fe == null)
+            return;
         String field = fe.getField();
         String msg = fe.getMessage() != null ? fe.getMessage() : "Giá trị không hợp lệ";
-        if (field == null) return;
+        if (field == null)
+            return;
         switch (field) {
-            case "email": if (etEmail != null) etEmail.setError(msg); break;
-            case "password": if (etPassword != null) etPassword.setError(msg); break;
+            case "email":
+                if (etEmail != null)
+                    etEmail.setError(msg);
+                break;
+            case "password":
+                if (etPassword != null)
+                    etPassword.setError(msg);
+                break;
         }
     }
 
-    private String safeText(TextInputEditText et) { return et == null || et.getText() == null ? "" : et.getText().toString().trim(); }
+    private String safeText(TextInputEditText et) {
+        return et == null || et.getText() == null ? "" : et.getText().toString().trim();
+    }
 
     /**
      * Hiển thị dialog yêu cầu xác thực căn cước công dân
      */
     private void showIdVerificationWarning() {
         new androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Cần xác thực danh tính")
-            .setMessage("Tài khoản của bạn chưa được xác thực.\n\n" +
-                       "Vui lòng cập nhật thông tin căn cước công dân để sử dụng đầy đủ tính năng (tạo đặt chỗ, đăng ký gói).")
-            .setPositiveButton("Xác thực ngay", (dialog, which) -> {
-                // TODO: Navigate to ID verification screen khi có màn hình
-                Toast.makeText(this, "Chức năng xác thực căn cước đang được phát triển", Toast.LENGTH_SHORT).show();
-                // Intent intent = new Intent(this, IdVerificationActivity.class);
-                // startActivity(intent);
-            })
-            .setNegativeButton("Để sau", null)
-            .setCancelable(true)
-            .show();
+                .setTitle("Cần xác thực danh tính")
+                .setMessage("Tài khoản của bạn chưa được xác thực.\n\n" +
+                        "Vui lòng cập nhật thông tin căn cước công dân để sử dụng đầy đủ tính năng (tạo đặt chỗ, đăng ký gói).")
+                .setPositiveButton("Xác thực ngay", (dialog, which) -> {
+                    // TODO: Navigate to ID verification screen khi có màn hình
+                    Toast.makeText(this, "Chức năng xác thực căn cước đang được phát triển", Toast.LENGTH_SHORT).show();
+                    // Intent intent = new Intent(this, IdVerificationActivity.class);
+                    // startActivity(intent);
+                })
+                .setNegativeButton("Để sau", null)
+                .setCancelable(true)
+                .show();
     }
 
     @Override

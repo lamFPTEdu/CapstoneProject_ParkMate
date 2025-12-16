@@ -12,14 +12,13 @@
 
     <item
         android:id="@+id/nav_ble"
-        android:icon="@drawable/ic_ble_highlighted"
+        android:icon="@drawable/ic_bluetooth_24"
         android:title="BLE" />
 
     <item
         android:id="@+id/nav_wallet"
         android:icon="@drawable/ic_account_balance_wallet_24"
         android:title="Ví" />
-
 
     <item
         android:id="@+id/nav_account"

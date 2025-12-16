@@ -1,58 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ParkingLotsActivity - Hiển thị danh sách bãi xe
-     Search được xử lý trong SearchParkingActivity (click vào search bar trong toolbar) -->
+<!-- ParkingLotsActivity - Modern Parking Lots List -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="#F8FAFC"
     tools:context=".activity.ParkingLotsActivity">
 
-    <!-- Filter Chips -->
+    <!-- Filter Chips - Modern rounded style -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:background="@color/white"
+        android:elevation="2dp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="12dp">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:singleSelection="false"
-            app:selectionRequired="false">
+            app:selectionRequired="false"
+            app:chipSpacingHorizontal="8dp">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAll"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tất cả" />
+                android:text="Tất cả"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="@color/chip_stroke_selector"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"
+                app:checkedIconVisible="false"
+                tools:ignore="HardcodedText" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipActive"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Đang hoạt động" />
+                android:text="Đang hoạt động"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="@color/chip_stroke_selector"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"
+                app:chipIcon="@drawable/ic_check_circle_24"
+                app:chipIconTint="@color/chip_icon_selector"
+                app:chipIconVisible="true"
+                app:checkedIconVisible="false"
+                tools:ignore="HardcodedText" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip24Hour"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="24/7" />
+                android:text="24/7"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"
+                app:chipStrokeColor="@color/chip_stroke_selector"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"
+                app:chipIcon="@drawable/ic_schedule_24"
+                app:chipIconTint="@color/chip_icon_selector"
+                app:chipIconVisible="true"
+                app:checkedIconVisible="false"
+                tools:ignore="HardcodedText" />
 
         </com.google.android.material.chip.ChipGroup>
 
     </HorizontalScrollView>
 
-    <!-- RecyclerView Container -->
+    <!-- Content Area -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -64,52 +91,66 @@
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingBottom="16dp"
             tools:listitem="@layout/item_parking_lot" />
 
-        <!-- Loading Progress -->
+        <!-- Loading Progress - Centered -->
         <ProgressBar
             android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="center"
+            android:indeterminateTint="@color/primary"
             android:visibility="gone" />
 
-        <!-- Empty State -->
+        <!-- Empty State - Modern design -->
         <LinearLayout
             android:id="@+id/llEmptyState"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:orientation="vertical"
-            android:padding="32dp"
-            android:visibility="gone">
+            android:gravity="center"
+            android:paddingHorizontal="48dp"
+            android:paddingVertical="64dp"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="16dp"
-                android:src="@drawable/ic_local_parking_24"
-                app:tint="@color/gray" />
+            <FrameLayout
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:background="@drawable/bg_stat_card">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_local_parking_24"
+                    app:tint="@color/text_secondary"
+                    android:alpha="0.5"
+                    android:contentDescription="Empty" />
+
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_marginTop="24dp"
                 android:text="Không tìm thấy bãi xe"
-                android:textColor="#667085"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="4dp"
-                android:text="Thử tìm kiếm với từ khóa khác"
-                android:textColor="#98A2B3"
-                android:textSize="14sp" />
+                android:layout_marginTop="8dp"
+                android:text="Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:gravity="center"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
 

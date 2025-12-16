@@ -68,6 +68,7 @@ public class ParkingLotAdapter extends RecyclerView.Adapter<ParkingLotAdapter.Pa
         private final TextView tvStatusBadge;
         private final TextView tvAddress;
         private final TextView tvOperatingInfo;
+        private final TextView tvFloors;
         private final TextView tvDistance;
 
         public ParkingLotViewHolder(@NonNull View itemView) {
@@ -77,6 +78,7 @@ public class ParkingLotAdapter extends RecyclerView.Adapter<ParkingLotAdapter.Pa
             tvStatusBadge = itemView.findViewById(R.id.tvStatusBadge);
             tvAddress = itemView.findViewById(R.id.tvAddress);
             tvOperatingInfo = itemView.findViewById(R.id.tvOperatingInfo);
+            tvFloors = itemView.findViewById(R.id.tvFloors);
             tvDistance = itemView.findViewById(R.id.tvDistance);
 
             itemView.setOnClickListener(v -> {
@@ -99,12 +101,15 @@ public class ParkingLotAdapter extends RecyclerView.Adapter<ParkingLotAdapter.Pa
                 tvStatusBadge.setBackgroundResource(R.drawable.bg_status_inactive);
             }
 
-            // Set operating hours
-            String operatingInfo = parkingLot.getOperatingHours();
-            if (parkingLot.getTotalFloors() != null) {
-                operatingInfo += " • " + parkingLot.getTotalFloors() + " floors";
+            // Set operating hours only
+            tvOperatingInfo.setText(parkingLot.getOperatingHours());
+
+            // Set floors separately
+            if (tvFloors != null && parkingLot.getTotalFloors() != null) {
+                tvFloors.setText(parkingLot.getTotalFloors() + " tầng");
+            } else if (tvFloors != null) {
+                tvFloors.setText("");
             }
-            tvOperatingInfo.setText(operatingInfo);
 
             // TODO: Calculate and set distance
             tvDistance.setText(""); // Hide distance for now

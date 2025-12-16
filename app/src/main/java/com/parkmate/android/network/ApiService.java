@@ -62,6 +62,10 @@ public interface ApiService {
     @POST("api/v1/user-service/auth/login")
     Single<LoginResponse> login(@Body LoginRequest request);
 
+    // Refresh token
+    @POST("api/v1/user-service/auth/refresh")
+    Single<com.parkmate.android.model.response.RefreshTokenResponse> refreshToken(@Body com.parkmate.android.model.request.RefreshTokenRequest request);
+
     // Upload ảnh CCCD
     @Multipart
     @POST("api/v1/user-service/upload/image/entity")

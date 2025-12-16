@@ -53,6 +53,34 @@ public class AuthRepository {
     }
 
     /**
+     * Refresh access token using refresh token
+     * @param refreshToken The refresh token
+     * @return New access token and refresh token
+     */
+    public Single<com.parkmate.android.model.response.RefreshTokenResponse> refreshToken(String refreshToken) {
+        Log.d(TAG, "Refreshing access token...");
+        com.parkmate.android.model.request.RefreshTokenRequest request =
+            new com.parkmate.android.model.request.RefreshTokenRequest(refreshToken);
+        return apiService.refreshToken(request)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Refresh token HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Refresh token error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Refresh token error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
+    /**
      * Upload ảnh CCCD (mặt trước hoặc mặt sau)
      * @param entityId ID của entity (user)
      * @param imageType Loại ảnh (FRONT_ID_CARD hoặc BACK_ID_CARD)

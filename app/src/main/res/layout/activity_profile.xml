@@ -5,519 +5,567 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white">
+    android:background="#F8FAFC">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:orientation="vertical"
         tools:context=".activity.ProfileActivity">
 
-        <!-- Profile Header Background -->
-        <View
+        <!-- Profile Header -->
+        <LinearLayout
             android:id="@+id/profileHeaderBackground"
-            android:layout_width="406dp"
-            android:layout_height="197dp"
-            android:background="@color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Back Button - Hidden when using BaseActivity -->
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/back"
-            android:src="@drawable/ic_arrow_back_24"
-            app:tint="@color/colorPrimary"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Profile Avatar -->
-        <ImageView
-            android:id="@+id/profileAvatar"
-            android:layout_width="@dimen/profile_avatar_size"
-            android:layout_height="@dimen/profile_avatar_size"
-            android:layout_marginTop="@dimen/profile_avatar_margin_top"
-            android:background="@drawable/bg_profile_avatar_border"
-            android:contentDescription="@string/profile_avatar_desc"
-            android:padding="8dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_person_24"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Edit Profile Button -->
-        <ImageButton
-            android:id="@+id/btnEditProfile"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@drawable/bg_edit_button_border"
-            android:contentDescription="@string/profile_edit"
-            android:padding="8dp"
-            android:src="@drawable/ic_edit_24"
-            app:tint="@color/colorPrimary"
-            app:layout_constraintBottom_toBottomOf="@id/profileAvatar"
-            app:layout_constraintEnd_toEndOf="@id/profileAvatar"
-            app:layout_constraintStart_toEndOf="@id/profileAvatar" />
-
-        <!-- User Name -->
-        <TextView
-            android:id="@+id/tvUserName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/profile_user_name"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/profileAvatar" />
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="40dp"
+            android:paddingBottom="24dp"
+            android:background="@color/white">
 
-        <!-- User Email -->
-        <TextView
-            android:id="@+id/tvUserEmail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/profile_user_email"
-            android:textColor="@color/bottom_nav_text_inactive"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvUserName" />
+            <!-- Hidden Back Button -->
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_arrow_back_24"
+                android:visibility="gone"
+                app:tint="@color/primary" />
 
-        <!-- Menu Items Container -->
+            <!-- Avatar -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/profileAvatar"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:background="@drawable/bg_profile_avatar_border"
+                    android:contentDescription="@string/profile_avatar_desc"
+                    android:padding="4dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_person_24" />
+
+                <ImageButton
+                    android:id="@+id/btnEditProfile"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="bottom|end"
+                    android:background="@drawable/bg_circle_white"
+                    android:contentDescription="@string/profile_edit"
+                    android:elevation="2dp"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_edit_24"
+                    app:tint="@color/primary" />
+
+            </FrameLayout>
+
+            <!-- User Name -->
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/profile_user_name"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- User Email -->
+            <TextView
+                android:id="@+id/tvUserEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/profile_user_email"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Menu Items -->
         <LinearLayout
             android:id="@+id/menuItemsContainer"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="@dimen/profile_section_margin_top"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/profileHeaderBackground">
+            android:padding="16dp">
 
-            <!-- My Bookings -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuMyBookings"
+            <!-- Section: Hoạt động -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Hoạt động"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_rounded_white"
+                android:elevation="1dp"
+                android:layout_marginBottom="16dp">
 
-                <ImageView
-                    android:id="@+id/iconMyBookings"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_my_bookings"
-                    android:src="@drawable/ic_local_parking_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                <!-- My Bookings -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuMyBookings"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
-                <TextView
-                    android:id="@+id/tvMyBookings"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/profile_menu_my_bookings"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconMyBookingsChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconMyBookings"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    <ImageView
+                        android:id="@+id/iconMyBookings"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_local_parking_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="@string/profile_menu_my_bookings"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-                <ImageView
-                    android:id="@+id/iconMyBookingsChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/profile_menu_my_bookings"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:id="@+id/tvMyBookings"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="@string/profile_menu_my_bookings"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        app:layout_constraintStart_toEndOf="@id/iconMyBookings"
+                        app:layout_constraintEnd_toStartOf="@id/iconMyBookingsChevron"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-            <!-- My Subscriptions (Vé tháng) -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuMySubscriptions"
+                    <ImageView
+                        android:id="@+id/iconMyBookingsChevron"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@null"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginStart="52dp" />
+
+                <!-- My Subscriptions -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuMySubscriptions"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/iconMySubscriptions"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_card_membership_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="Vé tháng"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvMySubscriptions"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="Vé tháng của tôi"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        tools:ignore="HardcodedText"
+                        app:layout_constraintStart_toEndOf="@id/iconMySubscriptions"
+                        app:layout_constraintEnd_toStartOf="@id/iconMySubscriptionsChevron"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/iconMySubscriptionsChevron"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@null"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginStart="52dp" />
+
+                <!-- My Ratings -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuMyRatings"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/iconMyRatings"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_star_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="Đánh giá"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvMyRatings"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="Đánh giá của tôi"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        tools:ignore="HardcodedText"
+                        app:layout_constraintStart_toEndOf="@id/iconMyRatings"
+                        app:layout_constraintEnd_toStartOf="@id/iconMyRatingsChevron"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/iconMyRatingsChevron"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@null"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginStart="52dp" />
+
+                <!-- My Vehicles -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuMyVehicles"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/iconMyVehicles"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_car_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="@string/profile_menu_my_vehicles"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvMyVehicles"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="@string/profile_menu_my_vehicles"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        app:layout_constraintStart_toEndOf="@id/iconMyVehicles"
+                        app:layout_constraintEnd_toStartOf="@id/iconMyVehiclesChevron"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/iconMyVehiclesChevron"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@null"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginStart="52dp" />
+
+                <!-- Parking History -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuParkingHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/iconHistory"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_history_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="@string/profile_menu_parking_history"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvParkingHistory"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="@string/profile_menu_parking_history"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        app:layout_constraintStart_toEndOf="@id/iconHistory"
+                        app:layout_constraintEnd_toStartOf="@id/iconHistoryChevron"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/iconHistoryChevron"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@null"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+            <!-- Section: Tài khoản -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Tài khoản"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_rounded_white"
+                android:elevation="1dp"
+                android:layout_marginBottom="16dp">
 
-                <ImageView
-                    android:id="@+id/iconMySubscriptions"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="Vé tháng của tôi"
-                    android:src="@drawable/ic_card_membership_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                <!-- Account QR -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuPaymentMethods"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
-                <TextView
-                    android:id="@+id/tvMySubscriptions"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="Vé tháng của tôi"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconMySubscriptionsChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconMySubscriptions"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    <ImageView
+                        android:id="@+id/iconPayment"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_qrcode_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="@string/profile_menu_account_qr"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-                <ImageView
-                    android:id="@+id/iconMySubscriptionsChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="Vé tháng của tôi"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:id="@+id/tvPaymentMethods"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="@string/profile_menu_account_qr"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        app:layout_constraintStart_toEndOf="@id/iconPayment"
+                        app:layout_constraintEnd_toStartOf="@id/iconPaymentChevron"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-            <!-- My Ratings -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuMyRatings"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
+                    <ImageView
+                        android:id="@+id/iconPaymentChevron"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@null"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <ImageView
-                    android:id="@+id/iconMyRatings"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="Đánh giá của tôi"
-                    android:src="@drawable/ic_star_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginStart="52dp" />
 
-                <TextView
-                    android:id="@+id/tvMyRatings"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="Đánh giá của tôi"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconMyRatingsChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconMyRatings"
-                    app:layout_constraintTop_toTopOf="parent" />
+                <!-- Verify CCCD -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuVerifyCccd"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
-                <ImageView
-                    android:id="@+id/iconMyRatingsChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="Đánh giá của tôi"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <ImageView
+                        android:id="@+id/iconVerifyCccd"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_card_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="Xác thực CCCD"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-            <!-- My Vehicles -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuMyVehicles"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
+                    <TextView
+                        android:id="@+id/tvVerifyCccd"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="Xác thực CCCD"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        tools:ignore="HardcodedText"
+                        app:layout_constraintStart_toEndOf="@id/iconVerifyCccd"
+                        app:layout_constraintEnd_toStartOf="@id/iconVerifyCccdChevron"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-                <ImageView
-                    android:id="@+id/iconMyVehicles"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_my_vehicles"
-                    android:src="@drawable/ic_car_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    <ImageView
+                        android:id="@+id/iconVerifyCccdChevron"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@null"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TextView
-                    android:id="@+id/tvMyVehicles"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/profile_menu_my_vehicles"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconMyVehiclesChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconMyVehicles"
-                    app:layout_constraintTop_toTopOf="parent" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginStart="52dp" />
 
-                <ImageView
-                    android:id="@+id/iconMyVehiclesChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/profile_menu_my_vehicles"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Biometric -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/menuBiometric"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:paddingHorizontal="16dp"
+                    android:background="?attr/selectableItemBackground">
 
-            <!-- Account QR Code -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuPaymentMethods"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
+                    <ImageView
+                        android:id="@+id/iconBiometric"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_fingerprint_24"
+                        app:tint="@color/primary"
+                        android:contentDescription="Sinh trắc học"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-                <ImageView
-                    android:id="@+id/iconPayment"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_account_qr"
-                    android:src="@drawable/ic_qrcode_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    <TextView
+                        android:id="@+id/tvBiometric"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="Xác thực sinh trắc học"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        tools:ignore="HardcodedText"
+                        app:layout_constraintStart_toEndOf="@id/iconBiometric"
+                        app:layout_constraintEnd_toStartOf="@id/switchBiometric"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
-                <TextView
-                    android:id="@+id/tvPaymentMethods"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/profile_menu_account_qr"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconPaymentChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconPayment"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switchBiometric"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <ImageView
-                    android:id="@+id/iconPaymentChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/profile_menu_account_qr"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
 
-            <!-- Verify CCCD - NEW -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuVerifyCccd"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
-
-                <ImageView
-                    android:id="@+id/iconVerifyCccd"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="Xác thực CCCD"
-                    android:src="@drawable/ic_card_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvVerifyCccd"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="Xác thực CCCD"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconVerifyCccdChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconVerifyCccd"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:id="@+id/iconVerifyCccdChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="Xác thực CCCD"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Parking History -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuParkingHistory"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
-
-                <ImageView
-                    android:id="@+id/iconHistory"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_parking_history"
-                    android:src="@drawable/ic_history_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvParkingHistory"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/profile_menu_parking_history"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iconHistoryChevron"
-                    app:layout_constraintStart_toEndOf="@id/iconHistory"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:id="@+id/iconHistoryChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/profile_menu_parking_history"
-                    android:src="@drawable/ic_chevron_right_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Biometric Authentication -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/menuBiometric"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:layout_marginBottom="@dimen/profile_menu_item_margin"
-                android:background="@drawable/bg_profile_menu_item"
-                android:padding="@dimen/profile_menu_item_padding">
-
-                <ImageView
-                    android:id="@+id/iconBiometric"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="Xác thực sinh trắc học"
-                    android:src="@drawable/ic_fingerprint_24"
-                    app:tint="@color/colorPrimary"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvBiometric"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="Xác thực sinh trắc học"
-                    android:textColor="@color/bottom_nav_text_active"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/switchBiometric"
-                    app:layout_constraintStart_toEndOf="@id/iconBiometric"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/switchBiometric"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Logout Button -->
+            <!-- Logout -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/menuLogout"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/profile_menu_item_height"
-                android:background="@drawable/bg_profile_menu_item"
+                android:layout_height="52dp"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/bg_rounded_white"
+                android:elevation="1dp"
                 android:clickable="true"
-                android:focusable="true"
-                android:padding="@dimen/profile_menu_item_padding">
+                android:focusable="true">
 
                 <ImageView
                     android:id="@+id/iconLogout"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/profile_menu_logout"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/ic_logout_24"
-                    app:tint="#DC2626"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:tint="@color/error_red"
+                    android:contentDescription="@string/profile_menu_logout"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
                 <TextView
                     android:id="@+id/tvLogout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginStart="14dp"
                     android:text="@string/profile_menu_logout"
-                    android:textColor="#DC2626"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    android:textColor="@color/error_red"
+                    android:textSize="15sp"
                     app:layout_constraintStart_toEndOf="@id/iconLogout"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- App Version -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:text="ParkMate v1.0"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
 </ScrollView>

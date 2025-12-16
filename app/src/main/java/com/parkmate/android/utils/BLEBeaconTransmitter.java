@@ -66,6 +66,8 @@ public class BLEBeaconTransmitter {
      * Bật chế độ phát broadcast
      */
     public boolean enable() {
+        Log.d(TAG, "enable() called, isTransmitting=" + isTransmitting);
+
         if (isTransmitting) {
             Log.d(TAG, "Already transmitting");
             return true;
@@ -79,8 +81,17 @@ public class BLEBeaconTransmitter {
             return false;
         }
 
-        startAdvertising(userId);
+        // Khởi tạo lại advertiser nếu cần
+        if (advertiser == null) {
+            initializeAdvertiser();
+        }
+
+        // Set isTransmitting NGAY LẬP TỨC để UI cập nhật hiệu ứng
+        // Nếu startAdvertising thất bại, callback sẽ set lại thành false
+        isTransmitting = true;
         saveState(true);
+
+        startAdvertising(userId);
         Log.d(TAG, "BLE transmitter enabled");
         return true;
     }
@@ -91,20 +102,23 @@ public class BLEBeaconTransmitter {
     public void disable() {
         Log.d(TAG, "disable() called, isTransmitting=" + isTransmitting);
 
-        // Luôn gọi stopAdvertising bất kể isTransmitting state
+        // QUAN TRỌNG: Phải dừng advertising trước
         stopAdvertising();
-        saveState(false);
-        isTransmitting = false;
 
-        Log.d(TAG, "BLE transmitter disabled");
+        // Sau đó mới set state
+        isTransmitting = false;
+        saveState(false);
+
+        Log.d(TAG, "BLE transmitter disabled - advertising stopped");
     }
 
     /**
      * Kiểm tra trạng thái
+     * Trả về true nếu đang thực sự transmitting (không chỉ check prefs)
      */
     public boolean isEnabled() {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getBoolean(PREFS_ENABLED, false);
+        // Kiểm tra cả isTransmitting (trạng thái thực tế) và SharedPreferences
+        return isTransmitting;
     }
 
     /**
@@ -221,6 +235,9 @@ public class BLEBeaconTransmitter {
      * Dừng phát broadcast BLE
      */
     private void stopAdvertising() {
+        Log.d(TAG, "stopAdvertising() called - advertiser: " + (advertiser != null) +
+                   ", callback: " + (advertiseCallback != null));
+
         if (advertiser != null && advertiseCallback != null) {
             // Check for Bluetooth ADVERTISE permission on Android 12+ (API 31+)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -234,12 +251,19 @@ public class BLEBeaconTransmitter {
             try {
                 advertiser.stopAdvertising(advertiseCallback);
                 isTransmitting = false;
-                Log.d(TAG, "BLE advertising stopped");
+                Log.d(TAG, "========================================");
+                Log.d(TAG, "✓ BLE ADVERTISING STOPPED SUCCESSFULLY");
+                Log.d(TAG, "========================================");
             } catch (SecurityException se) {
                 Log.e(TAG, "SecurityException: Missing Bluetooth permissions", se);
+                isTransmitting = false;
             } catch (Exception e) {
                 Log.e(TAG, "Error stopping BLE advertising", e);
+                isTransmitting = false;
             }
+        } else {
+            Log.w(TAG, "Cannot stop advertising - advertiser or callback is null");
+            isTransmitting = false;
         }
     }
 

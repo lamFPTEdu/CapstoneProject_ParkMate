@@ -135,19 +135,25 @@ public class BLEToggleActivity extends BaseActivity {
 
         // Bật BLE
         boolean success = bleTransmitter.enable();
+
+        // Cập nhật UI NGAY LẬP TỨC để hiệu ứng xuất hiện ngay
+        updateUI();
+
         if (success) {
-            startWaveAnimation();
-            updateUI();
             showToast(getString(R.string.ble_enabled_success));
         } else {
+            // Nếu thất bại, cập nhật lại UI sau 100ms
+            btnBLEToggle.postDelayed(this::updateUI, 100);
             showToast("Không thể bật BLE. Vui lòng kiểm tra quyền Bluetooth");
         }
     }
 
     private void disableBLE() {
         bleTransmitter.disable();
-        stopWaveAnimation();
+
+        // Cập nhật UI NGAY LẬP TỨC để hiệu ứng tắt ngay
         updateUI();
+
         showToast(getString(R.string.ble_disabled_success));
     }
 
@@ -306,6 +312,13 @@ public class BLEToggleActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopWaveAnimation();
+
+        // QUAN TRỌNG: Không tự động tắt BLE khi đóng activity
+        // Chỉ tắt khi user chủ động tắt bằng nút toggle
+        // Nếu muốn tắt khi đóng app, uncomment dòng dưới:
+        // if (bleTransmitter != null && bleTransmitter.isEnabled()) {
+        //     bleTransmitter.disable();
+        // }
     }
 
     @Override
@@ -313,6 +326,15 @@ public class BLEToggleActivity extends BaseActivity {
         super.onResume();
         // Update UI khi quay lại màn hình
         updateUI();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Cập nhật: Khi user rời khỏi màn hình, nếu BLE đang tắt thì đảm bảo cleanup
+        if (!bleTransmitter.isEnabled()) {
+            bleTransmitter.cleanup();
+        }
     }
 }
 
