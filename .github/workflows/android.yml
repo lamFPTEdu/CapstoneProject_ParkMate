@@ -27,7 +27,7 @@ jobs:
     # Tạo gradle.properties với AndroidX enabled
     - name: Create gradle.properties
       run: |
-        cat <<EOF > gradle. properties
+        cat <<EOF > gradle.properties
         android.useAndroidX=true
         android.enableJetifier=true
         org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
