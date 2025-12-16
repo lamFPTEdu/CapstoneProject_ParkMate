@@ -1,7 +1,7 @@
 name: Android CI
 
 on:
-  push:
+  push: 
     branches: [ "main" ]
   pull_request: 
     branches: [ "main" ]
@@ -14,26 +14,26 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: set up JDK 17
-      uses: actions/setup-java@v4
+      uses:  actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
         
     # Decode Base64 và tạo file
-    - name: Create google-services.json
-      run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/google-services. json
+    - name:  Create google-services.json
+      run: echo "${{ secrets. GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/google-services.json
       
     # Tạo gradle.properties với AndroidX enabled
     - name: Create gradle.properties
       run: |
-        cat <<EOF > gradle.properties
+        cat <<EOF > gradle. properties
         android.useAndroidX=true
         android.enableJetifier=true
-        org. gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+        org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
         android.nonTransitiveRClass=true
-        MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}
-        DIRECTIONS_API_KEY=${{ secrets. DIRECTIONS_API_KEY }}
+        MAPS_API_KEY=${{ secrets. MAPS_API_KEY }}
+        DIRECTIONS_API_KEY=${{ secrets.DIRECTIONS_API_KEY }}
         EOF
 
     - name: Grant execute permission for gradlew
