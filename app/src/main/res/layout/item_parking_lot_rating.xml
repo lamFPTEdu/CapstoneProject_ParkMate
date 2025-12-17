@@ -1,43 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Clean Rating Item Card - Compact Design -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="320dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="12dp"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginBottom="10dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:cardBackgroundColor="@color/white"
-    app:strokeWidth="1dp"
-    app:strokeColor="#E0E0E0">
+    app:cardElevation="1dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="10dp">
 
-        <!-- Header: User info + Rating -->
+        <!-- Header Row: Avatar + Name/Date + Star Badge -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- User Avatar (can show image or initial) -->
+            <!-- User Avatar -->
             <FrameLayout
                 android:layout_width="40dp"
                 android:layout_height="40dp">
 
-                <!-- Avatar Image -->
                 <ImageView
                     android:id="@+id/ivUserAvatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="visible" />
+                    android:scaleType="centerCrop" />
 
-                <!-- Initial Text (fallback) -->
                 <TextView
                     android:id="@+id/tvUserInitial"
                     android:layout_width="match_parent"
@@ -46,25 +45,25 @@
                     android:gravity="center"
                     android:text="U"
                     android:textColor="@android:color/white"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
             </FrameLayout>
 
-            <!-- User Name + Date -->
+            <!-- Name + Date -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="10dp"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvUserName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/black"
-                    android:textSize="15sp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:maxLines="1"
                     android:ellipsize="end"
@@ -75,124 +74,150 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:layout_marginTop="2dp"
-                    tools:text="26/11/2025" />
+                    tools:text="02/12/2025" />
+
+            </LinearLayout>
+
+            <!-- Star Badge -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_rating_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_star_filled"
+                    app:tint="@color/rating_star" />
+
+                <TextView
+                    android:id="@+id/tvRatingScore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="5" />
+
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Star Rating -->
+        <!-- Parking Lot Name Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="50dp"
+            android:gravity="center_vertical">
+
+            <!-- Parking Lot Name -->
+            <TextView
+                android:id="@+id/tvParkingLotName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:drawableStart="@drawable/ic_location_on_16"
+                android:drawablePadding="3dp"
+                app:drawableTint="@color/primary"
+                tools:text="FPT LotDown" />
+
+        </LinearLayout>
+
+        <!-- Hidden Stars for Java compatibility -->
         <LinearLayout
             android:id="@+id/layoutStars"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="12dp">
-
-            <ImageView
-                android:id="@+id/star1"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/ic_star_filled"
-                app:tint="@color/rating_star" />
-
-            <ImageView
-                android:id="@+id/star2"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/ic_star_filled"
-                app:tint="@color/rating_star" />
-
-            <ImageView
-                android:id="@+id/star3"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/ic_star_filled"
-                app:tint="@color/rating_star" />
-
-            <ImageView
-                android:id="@+id/star4"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/ic_star_filled"
-                app:tint="@color/rating_star" />
-
-            <ImageView
-                android:id="@+id/star5"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/ic_star_filled"
-                app:tint="@color/rating_star" />
+            android:visibility="gone">
+            <ImageView android:id="@+id/star1" android:layout_width="1dp" android:layout_height="1dp" />
+            <ImageView android:id="@+id/star2" android:layout_width="1dp" android:layout_height="1dp" />
+            <ImageView android:id="@+id/star3" android:layout_width="1dp" android:layout_height="1dp" />
+            <ImageView android:id="@+id/star4" android:layout_width="1dp" android:layout_height="1dp" />
+            <ImageView android:id="@+id/star5" android:layout_width="1dp" android:layout_height="1dp" />
         </LinearLayout>
 
-        <!-- Rating Title -->
-        <TextView
-            android:id="@+id/tvRatingTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            tools:text="Bãi xe ma" />
-
-        <!-- Rating Comment -->
-        <TextView
-            android:id="@+id/tvRatingComment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp"
-            android:lineSpacingExtra="2dp"
-            android:maxLines="3"
-            android:ellipsize="end"
-            tools:text="Data thì giả, giá thì đắt" />
-
-        <!-- Action Buttons: Edit & Delete -->
+        <!-- Content: Title + Comment (indented to align with name) -->
         <LinearLayout
-            android:id="@+id/layoutActions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end"
-            android:layout_marginTop="12dp"
-            android:visibility="gone">
+            android:orientation="vertical"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="6dp">
 
-            <!-- Edit Button -->
-            <ImageView
-                android:id="@+id/btnEditRating"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_edit_24"
-                android:padding="6dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Chỉnh sửa đánh giá"
-                app:tint="@color/colorPrimary" />
+            <!-- Rating Title -->
+            <TextView
+                android:id="@+id/tvRatingTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:maxLines="2"
+                android:ellipsize="end"
+                tools:text="Bãi xe tốt" />
 
-            <!-- Delete Button -->
-            <ImageView
-                android:id="@+id/btnDeleteRating"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/ic_delete_24"
-                android:padding="6dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Xóa đánh giá"
-                app:tint="#DC2626" />
+            <!-- Rating Comment -->
+            <TextView
+                android:id="@+id/tvRatingComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="3"
+                android:ellipsize="end"
+                tools:text="Nhân viên nhiệt tình." />
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:id="@+id/layoutActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end"
+                android:layout_marginTop="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/btnEditRating"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_edit_24"
+                    android:padding="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Chỉnh sửa"
+                    app:tint="@color/primary" />
+
+                <ImageView
+                    android:id="@+id/btnDeleteRating"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/ic_delete_24"
+                    android:padding="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Xóa"
+                    app:tint="#DC2626" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
-

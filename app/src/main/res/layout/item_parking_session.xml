@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modern Parking Session Item with Parking Lot Name -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
     app:cardBackgroundColor="@color/white"
     android:clickable="true"
     android:focusable="true"
@@ -23,30 +26,67 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="12dp"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tvLicensePlate"
+            <!-- Vehicle Icon -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/background">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_car_24"
+                    app:tint="@color/primary" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- License Plate & Parking Lot -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="59A-99999"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary" />
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/tvLicensePlate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    tools:text="51A-12345" />
+
+                <TextView
+                    android:id="@+id/tvParkingLotName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="Fpt University" />
+
+            </LinearLayout>
+
+            <!-- Status Badge -->
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hoàn thành"
-                android:textSize="12sp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:padding="6dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:background="@drawable/badge_background" />
+                android:textColor="@color/white"
+                android:background="@drawable/bg_status_active"
+                tools:text="Hoàn thành" />
 
         </LinearLayout>
 
@@ -55,157 +95,166 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/divider"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp" />
 
-        <!-- Thời gian vào -->
+        <!-- Time Grid -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:orientation="horizontal">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_calendar"
-                app:tint="@color/text_secondary"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Left Column: Entry Time -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Vào: "
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginEnd="4dp" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvEntryTime"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_arrow_downward_24"
+                        app:tint="@color/success_green" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Vào"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvEntryTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    tools:text="15:49 - 14/12/2025" />
+
+            </LinearLayout>
+
+            <!-- Right Column: Exit Time -->
+            <LinearLayout
+                android:id="@+id/layoutExitTime"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="11:30 - 03/11/2025"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_arrow_upward_24"
+                        app:tint="@color/error_red" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Ra"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvExitTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    tools:text="15:52 - 14/12/2025" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Thời gian ra -->
-        <LinearLayout
-            android:id="@+id/layoutExitTime"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_calendar"
-                app:tint="@color/text_secondary"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ra: "
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginEnd="4dp" />
-
-            <TextView
-                android:id="@+id/tvExitTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="14:30 - 03/11/2025"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-        <!-- Thời lượng -->
+        <!-- Footer: Duration, Type, Amount -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_time_24"
-                app:tint="@color/text_secondary"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tvDuration"
+            <!-- Duration Badge -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thời lượng: 100 phút (1h 40')"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_stat_card"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="5dp">
 
-        </LinearLayout>
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_time_24"
+                    app:tint="@color/primary" />
 
-        <!-- Loại -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+                <TextView
+                    android:id="@+id/tvDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:textSize="11sp"
+                    android:textColor="@color/primary"
+                    android:textStyle="bold"
+                    tools:text="2 phút" />
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_category"
-                app:tint="@color/text_secondary"
-                android:layout_marginEnd="8dp" />
+            </LinearLayout>
 
+            <!-- Reference Type Badge -->
             <TextView
                 android:id="@+id/tvReferenceType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Loại: Vãng lai"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary" />
+                android:layout_marginStart="6dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="5dp"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:background="@drawable/bg_stat_card"
+                tools:text="Đặt chỗ" />
 
-        </LinearLayout>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
-        <!-- Tổng tiền -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="4dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_payment_24"
-                app:tint="@color/primary"
-                android:layout_marginEnd="8dp" />
-
+            <!-- Total Amount -->
             <TextView
                 android:id="@+id/tvTotalAmount"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="100,000đ"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_arrow_forward"
-                app:tint="@color/text_secondary" />
+                android:textColor="@color/primary"
+                tools:text="20,000đ" />
 
         </LinearLayout>
 
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
-

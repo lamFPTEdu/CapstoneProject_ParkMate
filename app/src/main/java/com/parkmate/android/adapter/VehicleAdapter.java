@@ -25,6 +25,7 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
 
     public interface OnVehicleClickListener {
         void onDeleteClick(Vehicle vehicle, int position);
+
         void onVehicleClick(Vehicle vehicle, int position);
     }
 
@@ -70,6 +71,7 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
     }
 
     class VehicleViewHolder extends RecyclerView.ViewHolder {
+        private final ImageView ivVehiclePhoto;
         private final ImageView ivVehicleIcon;
         private final TextView tvLicensePlate;
         private final TextView tvVehicleTypeBadge;
@@ -79,6 +81,7 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
 
         public VehicleViewHolder(@NonNull View itemView) {
             super(itemView);
+            ivVehiclePhoto = itemView.findViewById(R.id.ivVehiclePhoto);
             ivVehicleIcon = itemView.findViewById(R.id.ivVehicleIcon);
             tvLicensePlate = itemView.findViewById(R.id.tvLicensePlate);
             tvVehicleTypeBadge = itemView.findViewById(R.id.tvVehicleTypeBadge);
@@ -95,19 +98,29 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
                     imageUrl = ApiClient.getBaseUrl() + imageUrl;
                 }
 
-                Glide.with(itemView.getContext())
-                        .load(imageUrl)
-                        .placeholder(R.drawable.ic_car_24)
-                        .error(R.drawable.ic_car_24)
-                        .centerCrop()
-                        .into(ivVehicleIcon);
-
-                // Xóa tint khi có ảnh thật
-                ivVehicleIcon.setImageTintList(null);
+                // Hiển thị ảnh thật, ẩn icon
+                if (ivVehiclePhoto != null) {
+                    ivVehiclePhoto.setVisibility(View.VISIBLE);
+                    Glide.with(itemView.getContext())
+                            .load(imageUrl)
+                            .placeholder(R.drawable.ic_car_24)
+                            .error(R.drawable.ic_car_24)
+                            .centerCrop()
+                            .into(ivVehiclePhoto);
+                }
+                if (ivVehicleIcon != null) {
+                    ivVehicleIcon.setVisibility(View.GONE);
+                }
             } else {
-                // Hiển thị icon mặc định nếu không có ảnh
-                ivVehicleIcon.setImageResource(R.drawable.ic_car_24);
-                ivVehicleIcon.setImageTintList(itemView.getContext().getColorStateList(R.color.colorPrimary));
+                // Không có ảnh, hiển thị icon mặc định
+                if (ivVehiclePhoto != null) {
+                    ivVehiclePhoto.setVisibility(View.GONE);
+                }
+                if (ivVehicleIcon != null) {
+                    ivVehicleIcon.setVisibility(View.VISIBLE);
+                    ivVehicleIcon.setImageResource(R.drawable.ic_car_24);
+                    ivVehicleIcon.setImageTintList(itemView.getContext().getColorStateList(R.color.primary));
+                }
             }
 
             tvLicensePlate.setText(vehicle.getLicensePlate());
@@ -156,7 +169,8 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
         }
 
         private String getDisplayVehicleType(String vehicleType) {
-            if (vehicleType == null) return "";
+            if (vehicleType == null)
+                return "";
 
             String upperType = vehicleType.toUpperCase().trim();
 
@@ -176,7 +190,8 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
         }
 
         private int getVehicleTypeBackground(String vehicleType) {
-            if (vehicleType == null) return R.drawable.bg_vehicle_type_other;
+            if (vehicleType == null)
+                return R.drawable.bg_vehicle_type_other;
 
             String upperType = vehicleType.toUpperCase().trim();
 

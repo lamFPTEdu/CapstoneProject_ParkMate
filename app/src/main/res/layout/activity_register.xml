@@ -9,15 +9,7 @@
     android:background="@color/white"
     tools:context=".activity.RegisterActivity">
 
-    <!-- Toolbar -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
-        android:elevation="4dp"
-        app:navigationIcon="@drawable/ic_arrow_back_24"
-        app:titleTextColor="@color/black" />
+    <!-- Toolbar removed - users can swipe back or use login link -->
 
     <ViewFlipper
         android:id="@+id/viewFlipper"

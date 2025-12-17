@@ -75,6 +75,7 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
         private final TextView tvStatus;
         private final TextView tvVehicleInfo;
         private final TextView tvPackageName;
+        private final LinearLayout layoutSpotInfo;
         private final TextView tvSpotName;
         private final TextView tvDateRange;
         private final TextView tvPrice;
@@ -90,6 +91,7 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvVehicleInfo = itemView.findViewById(R.id.tvVehicleInfo);
             tvPackageName = itemView.findViewById(R.id.tvPackageName);
+            layoutSpotInfo = itemView.findViewById(R.id.layoutSpotInfo);
             tvSpotName = itemView.findViewById(R.id.tvSpotName);
             tvDateRange = itemView.findViewById(R.id.tvDateRange);
             tvPrice = itemView.findViewById(R.id.tvPrice);
@@ -125,13 +127,13 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
                 tvPackageName.setVisibility(View.VISIBLE);
             }
 
-            // Spot name - handle null
+            // Spot name - handle null (ẩn cho xe máy/xe đạp)
             String spotName = subscription.getAssignedSpotName();
             if (spotName != null && !spotName.isEmpty()) {
+                layoutSpotInfo.setVisibility(View.VISIBLE);
                 tvSpotName.setText(String.format("Chỗ: %s", spotName));
-                tvSpotName.setVisibility(View.VISIBLE);
             } else {
-                tvSpotName.setVisibility(View.GONE);
+                layoutSpotInfo.setVisibility(View.GONE);
             }
 
             // Date range

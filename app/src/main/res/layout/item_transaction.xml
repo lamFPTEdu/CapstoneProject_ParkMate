@@ -1,105 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Transaction Item - Vertical layout to show full text -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginTop="8dp"
+    android:background="@drawable/bg_rounded_white"
+    android:elevation="1dp">
 
-    <!-- Transaction Row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="16dp"
+        android:orientation="vertical"
+        android:padding="16dp"
         android:background="?attr/selectableItemBackground">
 
-        <!-- Icon -->
-        <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_stat_card">
-
-            <ImageView
-                android:id="@+id/ivTransactionIcon"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_arrow_upward_24"
-                android:contentDescription="@string/transaction_icon_description"
-                app:tint="@color/primary" />
-
-        </FrameLayout>
-
-        <!-- Title & Date - Full width between icon and amount -->
+        <!-- Top Row: Icon + Title + Amount -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tvTransactionTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end"
-                tools:text="Thanh toán gói đăng ký" />
+            <!-- Icon -->
+            <FrameLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_stat_card">
 
-            <TextView
-                android:id="@+id/tvTransactionDate"
-                android:layout_width="match_parent"
+                <ImageView
+                    android:id="@+id/ivTransactionIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_arrow_upward_24"
+                    android:contentDescription="@string/transaction_icon_description"
+                    app:tint="@color/primary" />
+
+            </FrameLayout>
+
+            <!-- Amount - Right side -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                tools:text="13/12/2025 15:23" />
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="end"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:id="@+id/tvTransactionAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#DC2626"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="-1.500.000 đ" />
+
+                <TextView
+                    android:id="@+id/tvTransactionStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/success_green"
+                    android:textSize="12sp"
+                    tools:text="Thành công" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Amount & Status - Right aligned -->
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <!-- Title - Full width, can wrap -->
+        <TextView
+            android:id="@+id/tvTransactionTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="end"
-            android:minWidth="90dp">
+            android:layout_marginTop="12dp"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="Thanh toán gói đăng ký tháng Premium VIP" />
 
-            <TextView
-                android:id="@+id/tvTransactionAmount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#DC2626"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                tools:text="-1.500.000 đ" />
-
-            <TextView
-                android:id="@+id/tvTransactionStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/success_green"
-                android:textSize="12sp"
-                tools:text="Thành công" />
-
-        </LinearLayout>
+        <!-- Date -->
+        <TextView
+            android:id="@+id/tvTransactionDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:drawableStart="@drawable/ic_schedule_16"
+            android:drawablePadding="6dp"
+            app:drawableTint="@color/text_secondary"
+            tools:text="16/12/2025 11:13" />
 
     </LinearLayout>
-
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginStart="72dp"
-        android:background="@color/divider" />
 
 </LinearLayout>

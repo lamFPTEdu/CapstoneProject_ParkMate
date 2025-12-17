@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -47,11 +46,12 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
 
     private MaterialToolbar toolbar;
     private ImageView ivQrCode;
-    private ImageButton btnSaveQr;
+    private MaterialButton btnSaveQr;
     private TextView tvSubscriptionId;
     private TextView tvStatus;
     private TextView tvPackageName;
     private TextView tvParkingLotName;
+    private View layoutSpotInfo;
     private TextView tvSpotName;
     private TextView tvPeriod;
     private TextView tvPrice;
@@ -89,6 +89,7 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tvStatus);
         tvPackageName = findViewById(R.id.tvPackageName);
         tvParkingLotName = findViewById(R.id.tvParkingLotName);
+        layoutSpotInfo = findViewById(R.id.layoutSpotInfo);
         tvSpotName = findViewById(R.id.tvSpotName);
         tvPeriod = findViewById(R.id.tvPeriod);
         tvPrice = findViewById(R.id.tvPrice);
@@ -133,8 +134,13 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
         // Parking Lot
         tvParkingLotName.setText(subscription.getParkingLotName());
 
-        // Spot Name
-        tvSpotName.setText(subscription.getAssignedSpotName());
+        // Spot Name - chỉ hiển thị nếu có (car), ẩn nếu không có (motorbike/bike)
+        if (subscription.getAssignedSpotName() != null && !subscription.getAssignedSpotName().isEmpty()) {
+            layoutSpotInfo.setVisibility(View.VISIBLE);
+            tvSpotName.setText(subscription.getAssignedSpotName());
+        } else {
+            layoutSpotInfo.setVisibility(View.GONE);
+        }
 
         // Period
         String period = formatPeriod(subscription.getStartDate(), subscription.getEndDate());
@@ -159,7 +165,8 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
     }
 
     private String getStatusDisplay(String status) {
-        if (status == null) return "";
+        if (status == null)
+            return "";
         switch (status) {
             case "PENDING_PAYMENT":
                 return "Chờ thanh toán";
@@ -257,10 +264,10 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
 
         // Check permission for Android 10 and below
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
                         REQUEST_STORAGE_PERMISSION);
                 return;
             }
@@ -271,7 +278,8 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
 
     private void saveImageToGallery() {
         try {
-            String fileName = "ParkMate_Subscription_QR_" + subscription.getId() + "_" + System.currentTimeMillis() + ".png";
+            String fileName = "ParkMate_Subscription_QR_" + subscription.getId() + "_" + System.currentTimeMillis()
+                    + ".png";
             OutputStream outputStream;
             Uri imageUri;
 
@@ -321,7 +329,7 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_STORAGE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -341,8 +349,7 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
         Intent listIntent = new Intent(this, UserSubscriptionListActivity.class);
 
         // Start Profile, then immediately start List
-        startActivities(new Intent[]{profileIntent, listIntent});
+        startActivities(new Intent[] { profileIntent, listIntent });
         finish();
     }
 }
-

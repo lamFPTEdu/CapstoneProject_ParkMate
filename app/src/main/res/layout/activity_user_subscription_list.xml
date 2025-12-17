@@ -43,7 +43,8 @@
                 android:id="@+id/rvSubscriptions"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="16dp"
                 android:clipToPadding="false" />
 
             <!-- Empty State -->

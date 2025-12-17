@@ -1,73 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Notification Item - Redesigned to show full content -->
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginTop="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="16dp"
         android:background="?attr/selectableItemBackground">
 
-        <ImageView
-            android:id="@+id/ivNotificationIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_notifications_24"
-            android:contentDescription="@string/notification_icon_description"/>
-
+        <!-- Top Row: Icon + Title + Unread Dot -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <!-- Icon with background -->
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_stat_card">
+
+                <ImageView
+                    android:id="@+id/ivNotificationIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_notifications_24"
+                    android:contentDescription="@string/notification_icon_description"
+                    app:tint="@color/primary" />
+
+            </FrameLayout>
+
+            <!-- Title -->
             <TextView
                 android:id="@+id/tvNotificationTitle"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Đặt chỗ thành công"
-                android:textSize="16sp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp"
+                android:text="ĐẶT CHỖ THÀNH CÔNG"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"/>
-
-            <TextView
-                android:id="@+id/tvNotificationMessage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Bạn đã đặt chỗ thành công tại bãi đỗ ABC"
-                android:textSize="14sp"
-                android:textColor="#667085"
+                android:textColor="@color/text_primary"
                 android:maxLines="2"
-                android:ellipsize="end"/>
+                tools:ignore="HardcodedText" />
 
-            <TextView
-                android:id="@+id/tvNotificationTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="5 phút trước"
-                android:textSize="12sp"
-                android:textColor="#98A2B3"/>
+            <!-- Unread indicator dot -->
+            <View
+                android:id="@+id/vUnreadDot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/bg_notification_badge"
+                android:visibility="visible" />
+
         </LinearLayout>
 
-        <!-- Unread indicator dot -->
-        <View
-            android:id="@+id/vUnreadDot"
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_gravity="center_vertical"
-            android:background="@drawable/bg_notification_badge"
-            android:visibility="visible"/>
+        <!-- Message - Full width, up to 4 lines -->
+        <TextView
+            android:id="@+id/tvNotificationMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Bạn đã đặt chỗ thành công cho xe có biển số 51H2-12345 tại bãi xe Fpt Software"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="4"
+            android:ellipsize="end"
+            tools:ignore="HardcodedText" />
+
+        <!-- Time -->
+        <TextView
+            android:id="@+id/tvNotificationTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="2 ngày trước"
+            android:textSize="12sp"
+            android:textColor="#98A2B3"
+            android:drawableStart="@drawable/ic_schedule_16"
+            android:drawablePadding="4dp"
+            app:drawableTint="#98A2B3"
+            tools:ignore="HardcodedText" />
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
-

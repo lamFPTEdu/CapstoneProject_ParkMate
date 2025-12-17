@@ -23,13 +23,15 @@ import java.util.Locale;
 
 public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAdapter.RatingViewHolder> {
 
-    private static final SimpleDateFormat INPUT_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    private static final SimpleDateFormat INPUT_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+            Locale.getDefault());
     private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     private OnRatingActionListener listener;
 
     public interface OnRatingActionListener {
         void onEditRating(ParkingLotRating rating);
+
         void onDeleteRating(ParkingLotRating rating);
     }
 
@@ -46,9 +48,15 @@ public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAda
 
         @Override
         public boolean areContentsTheSame(@NonNull ParkingLotRating oldItem, @NonNull ParkingLotRating newItem) {
-            return oldItem.getOverallRating() != null && oldItem.getOverallRating().equals(newItem.getOverallRating())
-                    && oldItem.getTitle() != null && oldItem.getTitle().equals(newItem.getTitle())
-                    && oldItem.getComment() != null && oldItem.getComment().equals(newItem.getComment());
+            boolean sameRating = oldItem.getOverallRating() != null
+                    && oldItem.getOverallRating().equals(newItem.getOverallRating());
+            boolean sameTitle = (oldItem.getTitle() == null && newItem.getTitle() == null) ||
+                    (oldItem.getTitle() != null && oldItem.getTitle().equals(newItem.getTitle()));
+            boolean sameComment = (oldItem.getComment() == null && newItem.getComment() == null) ||
+                    (oldItem.getComment() != null && oldItem.getComment().equals(newItem.getComment()));
+            boolean sameLotName = (oldItem.getLotName() == null && newItem.getLotName() == null) ||
+                    (oldItem.getLotName() != null && oldItem.getLotName().equals(newItem.getLotName()));
+            return sameRating && sameTitle && sameComment && sameLotName;
         }
     };
 
@@ -70,6 +78,8 @@ public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAda
         private final TextView tvUserInitial;
         private final TextView tvUserName;
         private final TextView tvRatingDate;
+        private final TextView tvParkingLotName;
+        private final TextView tvRatingScore;
         private final ImageView[] stars;
         private final TextView tvRatingTitle;
         private final TextView tvRatingComment;
@@ -83,8 +93,10 @@ public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAda
             tvUserInitial = itemView.findViewById(R.id.tvUserInitial);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvRatingDate = itemView.findViewById(R.id.tvRatingDate);
+            tvParkingLotName = itemView.findViewById(R.id.tvParkingLotName);
+            tvRatingScore = itemView.findViewById(R.id.tvRatingScore);
 
-            stars = new ImageView[]{
+            stars = new ImageView[] {
                     itemView.findViewById(R.id.star1),
                     itemView.findViewById(R.id.star2),
                     itemView.findViewById(R.id.star3),
@@ -117,8 +129,8 @@ public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAda
                 ivUserAvatar.setVisibility(View.VISIBLE);
                 tvUserInitial.setVisibility(View.GONE);
 
-                String fullAvatarUrl = avatarUrl.startsWith("http") ? avatarUrl :
-                    "https://parkmate-image-bucket.s3.ap-southeast-1.amazonaws.com/" + avatarUrl;
+                String fullAvatarUrl = avatarUrl.startsWith("http") ? avatarUrl
+                        : "https://parkmate-image-bucket.s3.ap-southeast-1.amazonaws.com/" + avatarUrl;
 
                 Glide.with(itemView.getContext())
                         .load(fullAvatarUrl)
@@ -129,8 +141,9 @@ public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAda
             } else {
                 ivUserAvatar.setVisibility(View.GONE);
                 tvUserInitial.setVisibility(View.VISIBLE);
-                String initial = fullName != null && !fullName.isEmpty() ?
-                        String.valueOf(fullName.charAt(0)).toUpperCase() : "U";
+                String initial = fullName != null && !fullName.isEmpty()
+                        ? String.valueOf(fullName.charAt(0)).toUpperCase()
+                        : "U";
                 tvUserInitial.setText(initial);
             }
 
@@ -147,16 +160,22 @@ public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAda
                 }
             }
 
-            // Star rating
-            Integer overallRating = rating.getOverallRating();
-            if (overallRating != null) {
-                for (int i = 0; i < stars.length; i++) {
-                    if (i < overallRating) {
-                        stars[i].setImageResource(R.drawable.ic_star_filled);
-                    } else {
-                        stars[i].setImageResource(R.drawable.ic_star_outline);
-                    }
+            // Parking Lot Name - Always show in MyRatings to let user know which lot they
+            // rated
+            if (tvParkingLotName != null) {
+                String lotName = rating.getLotName();
+                if (lotName != null && !lotName.isEmpty()) {
+                    tvParkingLotName.setVisibility(View.VISIBLE);
+                    tvParkingLotName.setText(lotName);
+                } else {
+                    tvParkingLotName.setVisibility(View.GONE);
                 }
+            }
+
+            // Star rating - set to badge
+            Integer overallRating = rating.getOverallRating();
+            if (overallRating != null && tvRatingScore != null) {
+                tvRatingScore.setText(String.valueOf(overallRating));
             }
 
             // Title
@@ -193,4 +212,3 @@ public class MyRatingsAdapter extends ListAdapter<ParkingLotRating, MyRatingsAda
         }
     }
 }
-

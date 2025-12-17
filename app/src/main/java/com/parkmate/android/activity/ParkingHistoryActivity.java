@@ -121,26 +121,27 @@ public class ParkingHistoryActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
+        // Don't use setSupportActionBar - let MaterialToolbar manage its own menu from
+        // XML
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        btnFilter.setOnClickListener(v -> {
-            if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            } else {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        // Setup menu item click for filter
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_filter) {
+                if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                } else {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                }
+                return true;
             }
+            return false;
         });
     }
 
     private void setupRecyclerView() {
         adapter = new ParkingSessionAdapter(this, sessionList, session -> {
             // TODO: Navigate to session detail if needed
-            Toast.makeText(this, "Session: " + session.getId(), Toast.LENGTH_SHORT).show();
         });
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -283,63 +284,62 @@ public class ParkingHistoryActivity extends AppCompatActivity {
     }
 
     private void loadSessions() {
-        if (isLoading) return;
+        if (isLoading)
+            return;
 
         isLoading = true;
         showLoading(true);
 
         compositeDisposable.add(
-            repository.getSessionsWithFilters(
-                currentPage,
-                PAGE_SIZE,
-                "entryTime",
-                "DESC",
-                filterStatus,
-                filterReferenceType,
-                null, // startTime
-                null, // endTime
-                filterAmountMax,
-                filterAmountMin,
-                filterDurationMin,
-                filterDurationMax
-            ).subscribe(
-                response -> {
-                    isLoading = false;
-                    showLoading(false);
-                    swipeRefreshLayout.setRefreshing(false);
+                repository.getSessionsWithFilters(
+                        currentPage,
+                        PAGE_SIZE,
+                        "entryTime",
+                        "DESC",
+                        filterStatus,
+                        filterReferenceType,
+                        null, // startTime
+                        null, // endTime
+                        filterAmountMax,
+                        filterAmountMin,
+                        filterDurationMin,
+                        filterDurationMax).subscribe(
+                                response -> {
+                                    isLoading = false;
+                                    showLoading(false);
+                                    swipeRefreshLayout.setRefreshing(false);
 
-                    if (response.isSuccess() && response.getData() != null) {
-                        List<ParkingSession> newSessions = response.getData().getContent();
+                                    if (response.isSuccess() && response.getData() != null) {
+                                        List<ParkingSession> newSessions = response.getData().getContent();
 
-                        if (newSessions != null && !newSessions.isEmpty()) {
-                            adapter.addSessions(newSessions);
-                            currentPage++;
+                                        if (newSessions != null && !newSessions.isEmpty()) {
+                                            adapter.addSessions(newSessions);
+                                            currentPage++;
 
-                            // Check if last page
-                            isLastPage = response.getData().isLast();
-                        }
+                                            // Check if last page
+                                            isLastPage = response.getData().isLast();
+                                        }
 
-                        // Show empty state if no data
-                        if (adapter.getItemCount() == 0) {
-                            tvEmptyState.setVisibility(View.VISIBLE);
-                        } else {
-                            tvEmptyState.setVisibility(View.GONE);
-                        }
-                    }
-                },
-                error -> {
-                    isLoading = false;
-                    showLoading(false);
-                    swipeRefreshLayout.setRefreshing(false);
-                    Log.e(TAG, "Error loading sessions", error);
-                    Toast.makeText(this, "Lỗi tải dữ liệu: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                        // Show empty state if no data
+                                        if (adapter.getItemCount() == 0) {
+                                            tvEmptyState.setVisibility(View.VISIBLE);
+                                        } else {
+                                            tvEmptyState.setVisibility(View.GONE);
+                                        }
+                                    }
+                                },
+                                error -> {
+                                    isLoading = false;
+                                    showLoading(false);
+                                    swipeRefreshLayout.setRefreshing(false);
+                                    Log.e(TAG, "Error loading sessions", error);
+                                    Toast.makeText(this, "Lỗi tải dữ liệu: " + error.getMessage(), Toast.LENGTH_SHORT)
+                                            .show();
 
-                    if (adapter.getItemCount() == 0) {
-                        tvEmptyState.setVisibility(View.VISIBLE);
-                    }
-                }
-            )
-        );
+                                    if (adapter.getItemCount() == 0) {
+                                        tvEmptyState.setVisibility(View.VISIBLE);
+                                    }
+                                }));
     }
 
     private void loadMoreSessions() {
@@ -358,4 +358,3 @@ public class ParkingHistoryActivity extends AppCompatActivity {
         compositeDisposable.clear();
     }
 }
-

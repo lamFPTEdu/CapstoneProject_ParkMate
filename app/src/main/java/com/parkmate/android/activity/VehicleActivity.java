@@ -63,8 +63,7 @@ public class VehicleActivity extends AppCompatActivity {
                     // Reload danh sách xe sau khi thêm thành công
                     loadVehicles();
                 }
-            }
-    );
+            });
 
     // ActivityResultLauncher để nhận kết quả từ ViewVehicleDetailActivity
     private final ActivityResultLauncher<Intent> viewVehicleDetailLauncher = registerForActivityResult(
@@ -74,8 +73,7 @@ public class VehicleActivity extends AppCompatActivity {
                     // Reload danh sách xe sau khi có thay đổi từ EditVehicleActivity
                     loadVehicles();
                 }
-            }
-    );
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +101,12 @@ public class VehicleActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         progressBar = findViewById(R.id.progressBar);
         progressBarLoadMore = findViewById(R.id.progressBarLoadMore);
+
+        // Setup toolbar navigation
+        com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
+        }
     }
 
     private void setupRecyclerView() {
@@ -177,14 +181,12 @@ public class VehicleActivity extends AppCompatActivity {
         isLoading = true;
 
         compositeDisposable.add(
-            apiService.getVehicles(currentPage, pageSize, "createdAt", "desc", true)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    this::handleVehicleResponse,
-                    this::handleError
-                )
-        );
+                apiService.getVehicles(currentPage, pageSize, "createdAt", "desc", true)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                this::handleVehicleResponse,
+                                this::handleError));
     }
 
     private void handleVehicleResponse(ApiResponse<VehicleResponse> apiResponse) {
@@ -206,7 +208,8 @@ public class VehicleActivity extends AppCompatActivity {
                     }
                 }
 
-                android.util.Log.d("VehicleActivity", "Total vehicles from API: " + newVehicles.size() + ", Active vehicles: " + activeVehicles.size());
+                android.util.Log.d("VehicleActivity", "Total vehicles from API: " + newVehicles.size()
+                        + ", Active vehicles: " + activeVehicles.size());
 
                 // Thêm xe active vào danh sách
                 vehicleList.addAll(activeVehicles);
@@ -223,8 +226,8 @@ public class VehicleActivity extends AppCompatActivity {
         } else {
             // Xử lý khi API trả về success = false
             String errorMsg = apiResponse != null && apiResponse.getMessage() != null
-                ? apiResponse.getMessage()
-                : "Không thể tải danh sách xe";
+                    ? apiResponse.getMessage()
+                    : "Không thể tải danh sách xe";
             Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
         }
     }
@@ -279,42 +282,44 @@ public class VehicleActivity extends AppCompatActivity {
     }
 
     private void deleteVehicle(Vehicle vehicle) {
-        android.util.Log.d("VehicleActivity", "Deleting vehicle: ID=" + vehicle.getId() + ", plate=" + vehicle.getLicensePlate());
+        android.util.Log.d("VehicleActivity",
+                "Deleting vehicle: ID=" + vehicle.getId() + ", plate=" + vehicle.getLicensePlate());
 
         // Hiển thị progress
         showLoading(true);
 
         compositeDisposable.add(
-            apiService.deleteVehicle(vehicle.getId())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> {
-                        showLoading(false);
-                        android.util.Log.d("VehicleActivity", "Delete response: success=" + (response != null && response.isSuccess()));
+                apiService.deleteVehicle(vehicle.getId())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    showLoading(false);
+                                    android.util.Log.d("VehicleActivity",
+                                            "Delete response: success=" + (response != null && response.isSuccess()));
 
-                        if (response != null && response.isSuccess()) {
-                            // Xóa thành công (backend set active = false)
-                            // Reload lại danh sách để tự động lọc xe đã bị xóa
-                            Toast.makeText(this, R.string.vehicle_deleted_success, Toast.LENGTH_SHORT).show();
-                            loadVehicles();
-                        } else {
-                            // API trả về lỗi
-                            String errorMsg = response != null && response.getMessage() != null
-                                ? response.getMessage()
-                                : "Không thể xóa xe";
-                            android.util.Log.e("VehicleActivity", "Delete failed: " + errorMsg);
-                            Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    throwable -> {
-                        showLoading(false);
-                        android.util.Log.e("VehicleActivity", "Delete error: " + throwable.getMessage(), throwable);
-                        String errorMessage = "Không thể xóa xe: " + throwable.getMessage();
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
-                    }
-                )
-        );
+                                    if (response != null && response.isSuccess()) {
+                                        // Xóa thành công (backend set active = false)
+                                        // Reload lại danh sách để tự động lọc xe đã bị xóa
+                                        Toast.makeText(this, R.string.vehicle_deleted_success, Toast.LENGTH_SHORT)
+                                                .show();
+                                        loadVehicles();
+                                    } else {
+                                        // API trả về lỗi
+                                        String errorMsg = response != null && response.getMessage() != null
+                                                ? response.getMessage()
+                                                : "Không thể xóa xe";
+                                        android.util.Log.e("VehicleActivity", "Delete failed: " + errorMsg);
+                                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                                    }
+                                },
+                                throwable -> {
+                                    showLoading(false);
+                                    android.util.Log.e("VehicleActivity", "Delete error: " + throwable.getMessage(),
+                                            throwable);
+                                    String errorMessage = "Không thể xóa xe: " + throwable.getMessage();
+                                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+                                }));
     }
 
     @Override

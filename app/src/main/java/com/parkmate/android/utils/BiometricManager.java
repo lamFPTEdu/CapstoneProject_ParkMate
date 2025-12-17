@@ -296,7 +296,7 @@ public class BiometricManager {
                                     callback.onSuccess(email, password);
                                 } catch (Exception e) {
                                     Log.e(TAG, "Error decrypting with WEAK biometric", e);
-                                    callback.onError("❌ Lỗi decrypt: " + e.getMessage());
+                                    callback.onError("Lỗi giải mã dữ liệu xác thực");
                                 }
                             }
                         } catch (Exception e) {

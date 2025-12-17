@@ -23,7 +23,8 @@ import java.util.Locale;
 
 public class ParkingLotRatingAdapter extends ListAdapter<ParkingLotRating, ParkingLotRatingAdapter.RatingViewHolder> {
 
-    private static final SimpleDateFormat INPUT_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    private static final SimpleDateFormat INPUT_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+            Locale.getDefault());
     private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     public ParkingLotRatingAdapter() {
@@ -38,9 +39,15 @@ public class ParkingLotRatingAdapter extends ListAdapter<ParkingLotRating, Parki
 
         @Override
         public boolean areContentsTheSame(@NonNull ParkingLotRating oldItem, @NonNull ParkingLotRating newItem) {
-            return oldItem.getOverallRating() != null && oldItem.getOverallRating().equals(newItem.getOverallRating())
-                    && oldItem.getTitle() != null && oldItem.getTitle().equals(newItem.getTitle())
-                    && oldItem.getComment() != null && oldItem.getComment().equals(newItem.getComment());
+            boolean sameRating = oldItem.getOverallRating() != null
+                    && oldItem.getOverallRating().equals(newItem.getOverallRating());
+            boolean sameTitle = (oldItem.getTitle() == null && newItem.getTitle() == null) ||
+                    (oldItem.getTitle() != null && oldItem.getTitle().equals(newItem.getTitle()));
+            boolean sameComment = (oldItem.getComment() == null && newItem.getComment() == null) ||
+                    (oldItem.getComment() != null && oldItem.getComment().equals(newItem.getComment()));
+            boolean sameLotName = (oldItem.getLotName() == null && newItem.getLotName() == null) ||
+                    (oldItem.getLotName() != null && oldItem.getLotName().equals(newItem.getLotName()));
+            return sameRating && sameTitle && sameComment && sameLotName;
         }
     };
 
@@ -62,6 +69,8 @@ public class ParkingLotRatingAdapter extends ListAdapter<ParkingLotRating, Parki
         private final TextView tvUserInitial;
         private final TextView tvUserName;
         private final TextView tvRatingDate;
+        private final TextView tvParkingLotName;
+        private final TextView tvRatingScore;
         private final TextView tvRatingTitle;
         private final TextView tvRatingComment;
         private final ImageView star1, star2, star3, star4, star5;
@@ -72,6 +81,8 @@ public class ParkingLotRatingAdapter extends ListAdapter<ParkingLotRating, Parki
             tvUserInitial = itemView.findViewById(R.id.tvUserInitial);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvRatingDate = itemView.findViewById(R.id.tvRatingDate);
+            tvParkingLotName = itemView.findViewById(R.id.tvParkingLotName);
+            tvRatingScore = itemView.findViewById(R.id.tvRatingScore);
             tvRatingTitle = itemView.findViewById(R.id.tvRatingTitle);
             tvRatingComment = itemView.findViewById(R.id.tvRatingComment);
             star1 = itemView.findViewById(R.id.star1);
@@ -136,6 +147,12 @@ public class ParkingLotRatingAdapter extends ListAdapter<ParkingLotRating, Parki
                 }
             }
 
+            // Parking Lot Name - Hide in AllRatings because user already knows which lot
+            // they're viewing
+            if (tvParkingLotName != null) {
+                tvParkingLotName.setVisibility(View.GONE);
+            }
+
             // Title
             if (rating.getTitle() != null && !rating.getTitle().isEmpty()) {
                 tvRatingTitle.setVisibility(View.VISIBLE);
@@ -152,21 +169,12 @@ public class ParkingLotRatingAdapter extends ListAdapter<ParkingLotRating, Parki
                 tvRatingComment.setVisibility(View.GONE);
             }
 
-            // Star rating
+            // Star rating - set to badge
             int overallRating = rating.getOverallRating() != null ? rating.getOverallRating() : 0;
-            updateStarRating(overallRating);
-        }
-
-        private void updateStarRating(int rating) {
-            ImageView[] stars = {star1, star2, star3, star4, star5};
-            for (int i = 0; i < stars.length; i++) {
-                if (i < rating) {
-                    stars[i].setImageResource(R.drawable.ic_star_filled);
-                } else {
-                    stars[i].setImageResource(R.drawable.ic_star_outline);
-                }
+            if (tvRatingScore != null) {
+                tvRatingScore.setText(String.valueOf(overallRating));
             }
         }
+
     }
 }
-

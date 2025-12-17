@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modern Subscription Item Card -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="2dp"
     app:cardBackgroundColor="@color/white"
     android:clickable="true"
@@ -15,258 +17,270 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- Header: Parking Lot Name và Status -->
+        <!-- Header: Parking Lot Name + Status Badge -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="12dp"
-            android:gravity="center_vertical">
+            android:padding="14dp"
+            android:gravity="center_vertical"
+            android:background="@color/background">
 
-            <TextView
-                android:id="@+id/tvParkingLotName"
+            <!-- Location Icon + Name -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Vincom Center Parking"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
+                <FrameLayout
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_stat_card">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_location_on_16"
+                        app:tint="@color/primary" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvParkingLotName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="Vincom Center"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textColor="@color/text_primary" />
+
+            </LinearLayout>
+
+            <!-- Status Badge -->
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ACTIVE"
-                android:textSize="12sp"
+                android:text="Đang hoạt động"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:padding="6dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:background="@drawable/bg_status_active"
-                android:textColor="@color/white" />
-
-        </LinearLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Vehicle Info -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:id="@+id/iconVehicle"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_car_24"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Xe"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tvVehicleInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="51H-12345 • Ô tô"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-        <!-- Package Info -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:id="@+id/iconPackage"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_card_24"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Gói"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tvPackageName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gói tháng - Ô tô"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-        <!-- Spot Info -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:id="@+id/iconSpot"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_parking_spot"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Chỗ đỗ"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tvSpotName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Chỗ: A-01"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-        <!-- Date Range -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:id="@+id/iconDate"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_calendar"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Thời gian"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tvDateRange"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="01/11/2025 - 01/12/2025"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-        <!-- Price & Days Remaining -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_payment_24"
-                app:tint="@color/primary"
-                android:contentDescription="Giá"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="1,500,000đ"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary" />
-
-            <TextView
-                android:id="@+id/tvDaysRemaining"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Còn 15 ngày"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:visibility="visible" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_arrow_forward"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Xem chi tiết"
-                android:layout_marginStart="8dp" />
-
-        </LinearLayout>
-
-        <!-- Rating Button (only for EXPIRED status) -->
-        <LinearLayout
-            android:id="@+id/layoutRatingButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp"
-            android:visibility="gone">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRate"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:text="Đánh giá bãi đỗ xe"
-                android:textSize="13sp"
-                android:textColor="@color/primary"
-                android:textStyle="bold"
-                app:icon="@drawable/ic_rate"
-                app:iconTint="@color/primary"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                app:backgroundTint="@color/primary_light"
-                app:strokeWidth="0dp"
-                app:cornerRadius="8dp"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        </LinearLayout>
-
-        <!-- Renewal Button (only when needRenewalDecision is true) -->
-        <LinearLayout
-            android:id="@+id/layoutRenewalButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp"
-            android:visibility="gone">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRenew"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:text="Gia hạn gói đăng ký"
-                android:textSize="13sp"
                 android:textColor="@color/white"
-                android:textStyle="bold"
-                app:icon="@drawable/ic_refresh"
-                app:iconTint="@color/white"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                app:backgroundTint="@color/primary"
-                app:strokeWidth="0dp"
-                app:cornerRadius="8dp"
-                style="@style/Widget.Material3.Button" />
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:background="@drawable/bg_status_active" />
+
+        </LinearLayout>
+
+        <!-- Content Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="14dp">
+
+            <!-- Vehicle Info Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:id="@+id/iconVehicle"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_car_24"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvVehicleInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="51H-12345 • Ô tô"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
+
+            <!-- Package Info Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:id="@+id/iconPackage"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_card_24"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvPackageName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Gói tháng"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
+
+            <!-- Spot Info Row -->
+            <LinearLayout
+                android:id="@+id/layoutSpotInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:id="@+id/iconSpot"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_parking_spot"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvSpotName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Chỗ: A-01"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
+
+            <!-- Date Range Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:id="@+id/iconDate"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_schedule_16"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvDateRange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="01/11/2025 - 01/12/2025"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
+
+            <!-- Price + Days Remaining Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_payment_24"
+                    app:tint="@color/primary" />
+
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="1.500.000đ"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary" />
+
+                <!-- Days Remaining Badge -->
+                <TextView
+                    android:id="@+id/tvDaysRemaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Còn 15 ngày"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:background="@drawable/bg_days_remaining"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp" />
+
+            </LinearLayout>
+
+            <!-- Rating Button (only for EXPIRED status) -->
+            <LinearLayout
+                android:id="@+id/layoutRatingButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRate"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="⭐ Đánh giá bãi đỗ xe"
+                    android:textSize="13sp"
+                    android:textColor="@color/primary"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/primary_light"
+                    app:strokeWidth="0dp"
+                    app:cornerRadius="10dp"
+                    style="@style/Widget.Material3.Button" />
+
+            </LinearLayout>
+
+            <!-- Renewal Button -->
+            <LinearLayout
+                android:id="@+id/layoutRenewalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRenew"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="🔄 Gia hạn gói đăng ký"
+                    android:textSize="13sp"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/primary"
+                    app:strokeWidth="0dp"
+                    app:cornerRadius="10dp"
+                    style="@style/Widget.Material3.Button" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
-

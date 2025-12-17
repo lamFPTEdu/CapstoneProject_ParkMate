@@ -29,6 +29,9 @@ public class ParkingLotRating implements java.io.Serializable {
     @SerializedName("isVisible")
     private Boolean isVisible;
 
+    @SerializedName("lotName")
+    private String lotName;
+
     @SerializedName("createdAt")
     private String createdAt;
 
@@ -98,6 +101,14 @@ public class ParkingLotRating implements java.io.Serializable {
 
     public void setIsVisible(Boolean visible) {
         isVisible = visible;
+    }
+
+    public String getLotName() {
+        return lotName;
+    }
+
+    public void setLotName(String lotName) {
+        this.lotName = lotName;
     }
 
     public String getCreatedAt() {

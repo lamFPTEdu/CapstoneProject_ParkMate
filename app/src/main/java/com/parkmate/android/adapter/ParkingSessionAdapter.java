@@ -60,6 +60,7 @@ public class ParkingSessionAdapter extends RecyclerView.Adapter<ParkingSessionAd
 
     class SessionViewHolder extends RecyclerView.ViewHolder {
         TextView tvLicensePlate;
+        TextView tvParkingLotName;
         TextView tvStatus;
         TextView tvEntryTime;
         TextView tvExitTime;
@@ -71,6 +72,7 @@ public class ParkingSessionAdapter extends RecyclerView.Adapter<ParkingSessionAd
         SessionViewHolder(@NonNull View itemView) {
             super(itemView);
             tvLicensePlate = itemView.findViewById(R.id.tvLicensePlate);
+            tvParkingLotName = itemView.findViewById(R.id.tvParkingLotName);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvEntryTime = itemView.findViewById(R.id.tvEntryTime);
             tvExitTime = itemView.findViewById(R.id.tvExitTime);
@@ -91,19 +93,31 @@ public class ParkingSessionAdapter extends RecyclerView.Adapter<ParkingSessionAd
             // License plate
             tvLicensePlate.setText(session.getLicensePlate() != null ? session.getLicensePlate() : "N/A");
 
+            // Parking lot name
+            if (tvParkingLotName != null) {
+                String parkingLotName = session.getParkingLotName();
+                if (parkingLotName != null && !parkingLotName.isEmpty()) {
+                    tvParkingLotName.setVisibility(View.VISIBLE);
+                    tvParkingLotName.setText(parkingLotName);
+                } else {
+                    tvParkingLotName.setVisibility(View.GONE);
+                }
+            }
+
             // Status
             String status = session.getStatus();
             if ("COMPLETED".equals(status)) {
                 tvStatus.setText("Hoàn thành");
-                tvStatus.setBackgroundResource(R.drawable.badge_completed);
-                tvStatus.setTextColor(Color.parseColor("#2E7D32"));
+                tvStatus.setBackgroundResource(R.drawable.bg_status_active);
+                tvStatus.setTextColor(Color.WHITE);
             } else if ("ACTIVE".equals(status)) {
                 tvStatus.setText("Đang đỗ");
-                tvStatus.setBackgroundResource(R.drawable.badge_active);
-                tvStatus.setTextColor(Color.parseColor("#1976D2"));
+                tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
+                tvStatus.setTextColor(Color.WHITE);
             } else {
                 tvStatus.setText(status);
-                tvStatus.setBackgroundResource(R.drawable.badge_background);
+                tvStatus.setBackgroundResource(R.drawable.bg_status_inactive);
+                tvStatus.setTextColor(Color.WHITE);
             }
 
             // Entry time
@@ -117,31 +131,33 @@ public class ParkingSessionAdapter extends RecyclerView.Adapter<ParkingSessionAd
                 layoutExitTime.setVisibility(View.GONE);
             }
 
-            // Duration
+            // Duration - simplified format
             if (session.getDurationMinute() != null) {
                 int minutes = session.getDurationMinute();
-                int hours = minutes / 60;
-                int mins = minutes % 60;
-                String durationText = String.format(Locale.getDefault(),
-                        "Thời lượng: %d phút (%dh %d')", minutes, hours, mins);
+                String durationText;
+                if (minutes >= 60) {
+                    int hours = minutes / 60;
+                    int mins = minutes % 60;
+                    durationText = String.format(Locale.getDefault(), "%dh %d'", hours, mins);
+                } else {
+                    durationText = String.format(Locale.getDefault(), "%d phút", minutes);
+                }
                 tvDuration.setText(durationText);
             } else {
-                tvDuration.setText("Thời lượng: Đang tính...");
+                tvDuration.setText("--");
             }
 
-            // Reference type
+            // Reference type - simplified
             String refType = session.getReferenceType();
-            String refTypeText = "Loại: ";
             if ("WALK_IN".equals(refType)) {
-                refTypeText += "Vãng lai";
+                tvReferenceType.setText("Vãng lai");
             } else if ("RESERVATION".equals(refType)) {
-                refTypeText += "Đặt chỗ";
+                tvReferenceType.setText("Đặt chỗ");
             } else if ("SUBSCRIPTION".equals(refType)) {
-                refTypeText += "Đăng ký";
+                tvReferenceType.setText("Vé tháng");
             } else {
-                refTypeText += refType;
+                tvReferenceType.setText(refType != null ? refType : "--");
             }
-            tvReferenceType.setText(refTypeText);
 
             // Total amount
             if (session.getTotalAmount() != null) {
@@ -187,4 +203,3 @@ public class ParkingSessionAdapter extends RecyclerView.Adapter<ParkingSessionAd
         notifyDataSetChanged();
     }
 }
-
