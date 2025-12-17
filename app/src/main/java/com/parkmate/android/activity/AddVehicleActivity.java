@@ -74,8 +74,7 @@ public class AddVehicleActivity extends AppCompatActivity {
                     selectedImageUri = result.getData().getData();
                     displaySelectedImage();
                 }
-            }
-    );
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +102,12 @@ public class AddVehicleActivity extends AppCompatActivity {
         etColor = findViewById(R.id.etColor);
         switchElectric = findViewById(R.id.switchElectric);
         btnAddVehicle = findViewById(R.id.btnAddVehicle);
+
+        // Setup toolbar navigation
+        com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
+        }
     }
 
     private void setupVehicleTypes() {
@@ -122,8 +127,7 @@ public class AddVehicleActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_dropdown_item_1line,
-                vehicleTypes
-        );
+                vehicleTypes);
         actvVehicleType.setAdapter(adapter);
     }
 
@@ -143,7 +147,8 @@ public class AddVehicleActivity extends AppCompatActivity {
     private void openImagePicker() {
         android.util.Log.d("AddVehicle", "openImagePicker called");
 
-        // Từ Android 13 (API 33) trở lên, không cần quyền READ_EXTERNAL_STORAGE để chọn ảnh từ gallery
+        // Từ Android 13 (API 33) trở lên, không cần quyền READ_EXTERNAL_STORAGE để chọn
+        // ảnh từ gallery
         // Chỉ cần sử dụng ACTION_PICK hoặc ACTION_GET_CONTENT
         android.util.Log.d("AddVehicle", "Launching image picker");
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -258,8 +263,7 @@ public class AddVehicleActivity extends AppCompatActivity {
                 color,
                 vehicleType,
                 null, // Tạm thời gửi null thay vì base64 image
-                isElectric
-        );
+                isElectric);
 
         // Log request để debug
         android.util.Log.d("AddVehicle", "Request: " +
@@ -285,9 +289,7 @@ public class AddVehicleActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 this::handleAddVehicleSuccess,
-                                this::handleAddVehicleError
-                        )
-        );
+                                this::handleAddVehicleError));
     }
 
     private void handleAddVehicleSuccess(ApiResponse<Vehicle> response) {
@@ -332,16 +334,16 @@ public class AddVehicleActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 response -> {
-                                    android.util.Log.d("AddVehicle", "Vehicle image uploaded successfully: " + response.getImagePath());
+                                    android.util.Log.d("AddVehicle",
+                                            "Vehicle image uploaded successfully: " + response.getImagePath());
                                     finishSuccess();
                                 },
                                 error -> {
                                     android.util.Log.e("AddVehicle", "Error uploading vehicle image", error);
-                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng xe đã được tạo", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng xe đã được tạo", Toast.LENGTH_SHORT)
+                                            .show();
                                     finishSuccess(); // Vẫn hoàn thành vì xe đã được tạo
-                                }
-                        )
-        );
+                                }));
     }
 
     private void finishSuccess() {

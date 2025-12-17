@@ -246,13 +246,30 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
     }
 
     private void navigateToFloorSelection() {
-        Intent intent = new Intent(this, SubscriptionLocationSelectionActivity.class);
-        intent.putExtra("PARKING_LOT_ID", parkingLot.getId());
-        intent.putExtra("VEHICLE_ID", selectedVehicleId);
-        intent.putExtra("PACKAGE_ID", selectedPackageId);
-        intent.putExtra("PACKAGE", selectedPackage); // Pass package object
-        intent.putExtra("START_DATE", selectedStartDate);
-        startActivity(intent);
+        // Check vehicle type - nếu xe máy/xe đạp thì skip location selection
+        if (selectedPackage != null &&
+            (selectedPackage.getVehicleType().equals("MOTORBIKE") ||
+             selectedPackage.getVehicleType().equals("BIKE"))) {
+            // Skip location selection, go directly to summary
+            Intent intent = new Intent(this, SubscriptionSummaryActivity.class);
+            intent.putExtra("PARKING_LOT_ID", parkingLot.getId());
+            intent.putExtra("VEHICLE_ID", selectedVehicleId);
+            intent.putExtra("PACKAGE_ID", selectedPackageId);
+            intent.putExtra("PACKAGE_NAME", selectedPackage.getName());
+            intent.putExtra("PACKAGE_PRICE", selectedPackage.getPrice());
+            intent.putExtra("START_DATE", selectedStartDate);
+            // Không truyền SPOT_ID - để null
+            startActivity(intent);
+        } else {
+            // Ô tô - vẫn phải chọn location
+            Intent intent = new Intent(this, SubscriptionLocationSelectionActivity.class);
+            intent.putExtra("PARKING_LOT_ID", parkingLot.getId());
+            intent.putExtra("VEHICLE_ID", selectedVehicleId);
+            intent.putExtra("PACKAGE_ID", selectedPackageId);
+            intent.putExtra("PACKAGE", selectedPackage); // Pass package object
+            intent.putExtra("START_DATE", selectedStartDate);
+            startActivity(intent);
+        }
     }
 
     /**

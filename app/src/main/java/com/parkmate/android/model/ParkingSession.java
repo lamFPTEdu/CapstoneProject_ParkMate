@@ -49,6 +49,9 @@ public class ParkingSession implements Serializable {
     @SerializedName("lotId")
     private Long lotId;
 
+    @SerializedName("parkingLotName")
+    private String parkingLotName;
+
     @SerializedName("cardUUID")
     private String cardUUID;
 
@@ -174,6 +177,14 @@ public class ParkingSession implements Serializable {
         this.lotId = lotId;
     }
 
+    public String getParkingLotName() {
+        return parkingLotName;
+    }
+
+    public void setParkingLotName(String parkingLotName) {
+        this.parkingLotName = parkingLotName;
+    }
+
     public String getCardUUID() {
         return cardUUID;
     }
@@ -206,4 +217,3 @@ public class ParkingSession implements Serializable {
         this.referenceType = referenceType;
     }
 }
-

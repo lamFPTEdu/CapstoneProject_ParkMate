@@ -43,6 +43,31 @@ public class AuthRepository {
                 });
     }
 
+    /**
+     * Resend OTP code (chỉ dành cho đăng ký)
+     * @param email Email của user
+     */
+    public Single<com.parkmate.android.model.response.ApiResponse<Void>> resendOtp(String email) {
+        Log.d(TAG, "Resending OTP to email: " + email);
+        return apiService.resendOtp(email)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Resend OTP HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Resend OTP error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Resend OTP error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
     public Single<RegisterResponse> register(RegisterRequest request) {
         return apiService.register(request);
     }
@@ -211,6 +236,63 @@ public class AuthRepository {
                         }
                     } else {
                         Log.e(TAG, "Get user info error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
+    /**
+     * Gửi mã reset password về email
+     * @param email Email của user
+     */
+    public Single<com.parkmate.android.model.response.ForgotPasswordResponse> forgotPassword(String email) {
+        Log.d(TAG, "Sending reset code to email: " + email);
+        com.parkmate.android.model.request.ForgotPasswordRequest request =
+            new com.parkmate.android.model.request.ForgotPasswordRequest(email);
+        return apiService.forgotPassword(request)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Forgot password HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Forgot password error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Forgot password error: " + err.getMessage(), err);
+                    }
+                });
+    }
+
+    /**
+     * Reset password với mã code đã nhận
+     * @param email Email của user
+     * @param resetCode Mã code nhận được từ email
+     * @param newPassword Mật khẩu mới
+     */
+    public Single<com.parkmate.android.model.response.ResetPasswordResponse> resetPassword(
+            String email, String resetCode, String newPassword) {
+        Log.d(TAG, "Resetting password for email: " + email);
+        com.parkmate.android.model.request.ResetPasswordRequest request =
+            new com.parkmate.android.model.request.ResetPasswordRequest(email, resetCode, newPassword);
+        return apiService.resetPassword(request)
+                .doOnError(err -> {
+                    if (err instanceof HttpException) {
+                        HttpException he = (HttpException) err;
+                        Log.e(TAG, "Reset password HTTP " + he.code() + " msg=" + he.message());
+                        try {
+                            if (he.response() != null && he.response().errorBody() != null) {
+                                String errorBody = he.response().errorBody().string();
+                                Log.e(TAG, "Reset password error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Cannot parse error body", e);
+                        }
+                    } else {
+                        Log.e(TAG, "Reset password error: " + err.getMessage(), err);
                     }
                 });
     }

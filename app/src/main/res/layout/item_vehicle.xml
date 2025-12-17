@@ -1,109 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Premium Vehicle Item Card -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginTop="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
-    app:strokeColor="#E4E7EC"
-    app:strokeWidth="1dp">
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/white"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-        <!-- Icon/Ảnh xe -->
-        <ImageView
-            android:id="@+id/ivVehicleIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/bg_image_placeholder"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_car_24"
-            android:contentDescription="@string/vehicle_icon_description"
-            app:tint="@color/colorPrimary"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <!-- Vehicle Image/Icon -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/background">
 
-        <!-- Biển số xe -->
-        <TextView
-            android:id="@+id/tvLicensePlate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:textColor="#101828"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@+id/ivVehicleIcon"
-            app:layout_constraintTop_toTopOf="@+id/ivVehicleIcon"
-            tools:text="30A-123.45" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-        <!-- Badge loại xe (kế bên biển số) -->
-        <TextView
-            android:id="@+id/tvVehicleTypeBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:background="@drawable/bg_vehicle_type_badge"
-            app:layout_constraintStart_toEndOf="@+id/tvLicensePlate"
-            app:layout_constraintTop_toTopOf="@+id/tvLicensePlate"
-            app:layout_constraintBottom_toBottomOf="@+id/tvLicensePlate"
-            tools:text="Xe máy" />
+                <!-- Vehicle Photo -->
+                <ImageView
+                    android:id="@+id/ivVehiclePhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
 
-        <!-- Thông tin hãng và màu xe -->
-        <TextView
-            android:id="@+id/tvVehicleInfo"
+                <!-- Default Icon -->
+                <ImageView
+                    android:id="@+id/ivVehicleIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_car_24"
+                    app:tint="@color/primary" />
+
+            </FrameLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Vehicle Info -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="#667085"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toStartOf="@+id/btnDelete"
-            app:layout_constraintStart_toStartOf="@+id/tvLicensePlate"
-            app:layout_constraintTop_toBottomOf="@+id/tvLicensePlate"
-            tools:text="Honda • Đỏ" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="8dp">
 
-        <!-- Badge trạng thái (vé tháng/đang đặt chỗ) -->
-        <TextView
-            android:id="@+id/tvStatusBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp"
-            android:textColor="@color/white"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:background="@drawable/bg_status_inactive"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="@+id/tvVehicleInfo"
-            app:layout_constraintTop_toBottomOf="@+id/tvVehicleInfo"
-            tools:text="Đã có vé tháng"
-            tools:visibility="visible" />
+            <!-- License Plate -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-        <!-- Nút xóa -->
-        <ImageButton
-            android:id="@+id/btnDelete"
+                <TextView
+                    android:id="@+id/tvLicensePlate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    tools:text="51H2-12345" />
+
+            </LinearLayout>
+
+            <!-- Vehicle Type Badge -->
+            <TextView
+                android:id="@+id/tvVehicleTypeBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_status_active"
+                tools:text="Ô tô" />
+
+            <!-- Brand & Color -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_info_24"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvVehicleInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary"
+                    tools:text="Honda • Đỏ" />
+
+            </LinearLayout>
+
+            <!-- Status Badge (optional) -->
+            <TextView
+                android:id="@+id/tvStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_status_pending"
+                android:visibility="gone"
+                tools:text="Đã có vé tháng" />
+
+        </LinearLayout>
+
+        <!-- Delete Button -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/vehicle_delete_button"
-            android:padding="8dp"
-            android:src="@drawable/ic_delete_24"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#667085" />
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FFF5F5"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/vehicle_delete_button"
+                android:src="@drawable/ic_delete_24"
+                android:padding="8dp"
+                app:tint="#E53935" />
 
-</androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

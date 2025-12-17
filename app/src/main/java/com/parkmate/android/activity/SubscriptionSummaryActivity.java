@@ -43,10 +43,11 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
     private String packageName;
     private long packagePrice;
     private String startDate;
-    private long spotId;
+    private Long spotId; // Changed to Long (nullable) - for motorbike/bike this will be null
     private String spotName;
 
     private boolean isSpotHeld = false;
+    private boolean requiresSpot = false; // Flag to check if this subscription requires spot selection
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +65,17 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         packageName = getIntent().getStringExtra("PACKAGE_NAME");
         packagePrice = getIntent().getLongExtra("PACKAGE_PRICE", 0);
         startDate = getIntent().getStringExtra("START_DATE");
-        spotId = getIntent().getLongExtra("SPOT_ID", -1);
+
+        // Get spotId - có thể null cho xe máy/xe đạp
+        long spotIdExtra = getIntent().getLongExtra("SPOT_ID", -1);
+        spotId = (spotIdExtra != -1) ? spotIdExtra : null;
         spotName = getIntent().getStringExtra("SPOT_NAME");
 
-        // Validate required fields
-        if (parkingLotId == -1 || vehicleId == -1 || packageId == -1 || startDate == null || spotId == -1) {
+        // Check if this subscription requires spot (car) or not (motorbike/bike)
+        requiresSpot = (spotId != null);
+
+        // Validate required fields - spotId không bắt buộc
+        if (parkingLotId == -1 || vehicleId == -1 || packageId == -1 || startDate == null) {
             Toast.makeText(this, "Thông tin không hợp lệ", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -78,7 +85,7 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         if (packageName == null || packageName.isEmpty()) {
             packageName = "Gói đăng ký";
         }
-        if (spotName == null || spotName.isEmpty()) {
+        if (requiresSpot && (spotName == null || spotName.isEmpty())) {
             spotName = "Spot #" + spotId;
         }
 
@@ -86,8 +93,11 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         setupToolbar();
         setupBackPressHandler();
         displaySummary();
-        // Hold spot ở đây - khi vào Summary
-        holdSpot();
+
+        // Hold spot chỉ khi subscription yêu cầu spot (car)
+        if (requiresSpot) {
+            holdSpot();
+        }
     }
 
     private void releasePreviousHeldSpot() {
@@ -137,11 +147,17 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
     }
 
     private void displaySummary() {
-        // Display spot name
-        if (spotName != null && !spotName.isEmpty()) {
-            tvSpotName.setText(String.format("Chỗ: %s", spotName));
+        // Display spot name - chỉ hiển thị nếu có spot
+        if (requiresSpot && spotId != null) {
+            tvSpotName.setVisibility(View.VISIBLE);
+            if (spotName != null && !spotName.isEmpty()) {
+                tvSpotName.setText(String.format("Chỗ: %s", spotName));
+            } else {
+                tvSpotName.setText(String.format("Chỗ: Spot #%d", spotId));
+            }
         } else {
-            tvSpotName.setText(String.format("Chỗ: Spot #%d", spotId));
+            // Ẩn thông tin spot cho xe máy/xe đạp
+            tvSpotName.setVisibility(View.GONE);
         }
 
         // Display start date
@@ -208,7 +224,12 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         request.put("vehicleId", vehicleId);
         request.put("subscriptionPackageId", packageId);
         request.put("parkingLotId", parkingLotId);
-        request.put("assignedSpotId", spotId);
+
+        // Chỉ gửi assignedSpotId nếu có (car), không gửi cho motorbike/bike
+        if (requiresSpot && spotId != null) {
+            request.put("assignedSpotId", spotId);
+        }
+
         request.put("startDate", formattedStartDate);
 
         compositeDisposable.add(
@@ -235,7 +256,8 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
     }
 
     private void releaseSpotAndFinish() {
-        if (isSpotHeld) {
+        // Chỉ release spot nếu có spot và đã được held
+        if (requiresSpot && isSpotHeld && spotId != null) {
             compositeDisposable.add(
                     ApiClient.getApiService()
                             .releaseHoldSpot(spotId)
@@ -285,7 +307,8 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
 
         // Release held spot if activity is destroyed without completing subscription
         // This handles cases like app crash, task removal, etc.
-        if (isSpotHeld && !isFinishing()) {
+        // Chỉ release nếu có spot (car)
+        if (requiresSpot && isSpotHeld && spotId != null && !isFinishing()) {
             // Activity is being destroyed but not by normal finish()
             // Release the spot asynchronously without blocking
             new Thread(() -> {

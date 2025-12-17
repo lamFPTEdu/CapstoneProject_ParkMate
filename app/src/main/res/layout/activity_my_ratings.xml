@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modern My Ratings Screen -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/background">
 
     <!-- App Bar -->
     <com.google.android.material.appbar.AppBarLayout
@@ -21,7 +22,8 @@
             app:navigationIcon="@drawable/ic_arrow_back_24"
             app:navigationIconTint="@color/black"
             app:title="Đánh giá của tôi"
-            app:titleTextColor="@color/text_primary" />
+            app:titleTextColor="@color/text_primary"
+            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -49,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:padding="16dp"
                     android:clipToPadding="false"
-                    tools:listitem="@layout/item_parking_lot_rating" />
+                    tools:listitem="@layout/item_parking_lot_rating_vertical" />
 
                 <!-- Empty State -->
                 <LinearLayout
@@ -62,19 +64,28 @@
                     android:padding="48dp"
                     android:visibility="gone">
 
-                    <ImageView
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:src="@drawable/ic_star_24"
-                        app:tint="@color/text_secondary"
-                        android:contentDescription="@null" />
+                    <FrameLayout
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:background="@drawable/bg_stat_card">
+
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_star_outline"
+                            app:tint="@color/primary"
+                            android:contentDescription="@null" />
+
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="20dp"
                         android:text="Chưa có đánh giá"
                         android:textSize="18sp"
+                        android:textStyle="bold"
                         android:textColor="@color/text_primary"
                         tools:ignore="HardcodedText" />
 
@@ -82,10 +93,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Bạn chưa đánh giá bãi xe nào"
+                        android:text="Sau khi đỗ xe, bạn có thể đánh giá\ntrải nghiệm của mình tại đây"
                         android:textSize="14sp"
                         android:textColor="@color/text_secondary"
                         android:gravity="center"
+                        android:lineSpacingExtra="2dp"
                         tools:ignore="HardcodedText" />
 
                 </LinearLayout>
@@ -105,4 +117,3 @@
         android:visibility="gone" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

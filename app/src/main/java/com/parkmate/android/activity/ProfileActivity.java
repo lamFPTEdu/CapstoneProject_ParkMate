@@ -399,7 +399,8 @@ public class ProfileActivity extends BaseActivity {
                 .setMessage("Nhập mật khẩu hiện tại để xác nhận")
                 .setPositiveButton("Xác nhận", (dialog, which) -> {
                     try {
-                        String password = etPassword.getText().toString().trim();
+                        String password = etPassword.getText() != null ?
+                            etPassword.getText().toString().trim() : "";
 
                         if (password.isEmpty()) {
                             Toast.makeText(this, "Vui lòng nhập mật khẩu", Toast.LENGTH_SHORT).show();
@@ -413,40 +414,28 @@ public class ProfileActivity extends BaseActivity {
                         android.util.Log.d("BiometricDebug", "Email from UserManager: " + email);
                         android.util.Log.d("BiometricDebug", "UserId from UserManager: " + userId);
 
-                        // Show debug info
-                        Toast.makeText(this, "Email: " + (email != null ? email : "NULL") + "\nUserID: " + (userId != null ? "OK" : "NULL"), Toast.LENGTH_LONG).show();
-
-                        // Validate email
+                        // Validate email và userId
                         if (email == null || email.isEmpty()) {
                             android.util.Log.e("BiometricDebug", "Email is NULL! Cannot enable biometric without email");
                             switchBiometric.setChecked(false);
-                            Toast.makeText(this, "❌ Email NULL! Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, "Lỗi: Không tìm thấy email. Vui lòng đăng nhập lại.", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
                         if (userId == null || userId.isEmpty()) {
                             android.util.Log.e("BiometricDebug", "UserId is NULL!");
                             switchBiometric.setChecked(false);
-                            Toast.makeText(this, "❌ UserID NULL! Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, "Lỗi: Không tìm thấy thông tin tài khoản. Vui lòng đăng nhập lại.", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
-                        com.parkmate.android.utils.BiometricManager biometricManager =
-                            com.parkmate.android.utils.BiometricManager.getInstance(this);
-                        boolean success = biometricManager.enableBiometric(userId, email, password);
+                        // Xác thực mật khẩu với API trước khi enable biometric
+                        verifyPasswordAndEnableBiometric(userId, email, password);
 
-                        android.util.Log.d("BiometricDebug", "Enable biometric result: " + success);
-
-                        if (success) {
-                            Toast.makeText(this, "✅ Đã lưu:\nEmail: " + email + "\nPassword: ***", Toast.LENGTH_LONG).show();
-                        } else {
-                            switchBiometric.setChecked(false);
-                            Toast.makeText(this, "❌ Lỗi khi lưu biometric!", Toast.LENGTH_LONG).show();
-                        }
                     } catch (Exception e) {
                         android.util.Log.e("BiometricDebug", "Error enabling biometric", e);
                         switchBiometric.setChecked(false);
-                        Toast.makeText(this, "❌ Exception: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Hủy", (dialog, which) -> {
@@ -464,6 +453,74 @@ public class ProfileActivity extends BaseActivity {
             Toast.makeText(this, "Lỗi hiển thị dialog: " + e.getMessage(), Toast.LENGTH_LONG).show();
             switchBiometric.setChecked(false);
         }
+    }
+
+    /**
+     * Xác thực mật khẩu với API trước khi enable biometric
+     */
+    private void verifyPasswordAndEnableBiometric(String userId, String email, String password) {
+        // Show loading
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+        progressDialog.setMessage("Đang xác thực...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        // Gọi API login để verify password
+        com.parkmate.android.model.request.LoginRequest loginRequest =
+            new com.parkmate.android.model.request.LoginRequest(email, password);
+
+        compositeDisposable.add(
+            new com.parkmate.android.repository.AuthRepository().login(loginRequest)
+                .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
+                .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe(
+                    response -> {
+                        progressDialog.dismiss();
+
+                        // Kiểm tra response hợp lệ
+                        boolean success = response != null &&
+                            (response.getSuccess() == null || Boolean.TRUE.equals(response.getSuccess()));
+
+                        if (success) {
+                            // Mật khẩu đúng, enable biometric
+                            com.parkmate.android.utils.BiometricManager biometricManager =
+                                com.parkmate.android.utils.BiometricManager.getInstance(this);
+                            boolean enableSuccess = biometricManager.enableBiometric(userId, email, password);
+
+                            android.util.Log.d("BiometricDebug", "Enable biometric result: " + enableSuccess);
+
+                            if (enableSuccess) {
+                                Toast.makeText(this, "Đã bật xác thực sinh trắc học", Toast.LENGTH_SHORT).show();
+                            } else {
+                                switchBiometric.setChecked(false);
+                                Toast.makeText(this, "Lỗi khi lưu thông tin", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            // Response không thành công
+                            switchBiometric.setChecked(false);
+                            Toast.makeText(this, "Mật khẩu không chính xác", Toast.LENGTH_SHORT).show();
+                        }
+                    },
+                    error -> {
+                        progressDialog.dismiss();
+                        switchBiometric.setChecked(false);
+
+                        android.util.Log.e("BiometricDebug", "Password verification failed", error);
+
+                        // Xử lý lỗi chi tiết
+                        if (error instanceof retrofit2.HttpException) {
+                            retrofit2.HttpException httpException = (retrofit2.HttpException) error;
+                            if (httpException.code() == 401 || httpException.code() == 403) {
+                                Toast.makeText(this, "Mật khẩu không chính xác", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(this, "Lỗi xác thực: " + httpException.code(), Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(this, "Lỗi kết nối. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                )
+        );
     }
 
     /**

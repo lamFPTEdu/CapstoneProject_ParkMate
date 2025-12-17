@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -55,7 +54,7 @@ public class ReservationDetailActivity extends AppCompatActivity {
     // Views
     private MaterialToolbar toolbar;
     private ImageView ivQrCode;
-    private ImageButton btnSaveQr;
+    private MaterialButton btnSaveQr;
     private TextView tvReservationId;
     private TextView tvStatus;
     private TextView tvReservationFee;
@@ -136,7 +135,8 @@ public class ReservationDetailActivity extends AppCompatActivity {
     }
 
     private void displayReservationInfo() {
-        if (reservation == null) return;
+        if (reservation == null)
+            return;
 
         // Hiển thị ID
         tvReservationId.setText("" + reservation.getId());
@@ -183,31 +183,32 @@ public class ReservationDetailActivity extends AppCompatActivity {
     }
 
     private void setStatusBackground(String status) {
-        if (status == null) return;
+        if (status == null)
+            return;
 
-        int backgroundColor;
+        int backgroundRes;
         switch (status) {
             case "PENDING":
-                backgroundColor = 0xFFFF9800; // Orange - Đặt rồi nhưng chưa vào bãi
+                backgroundRes = R.drawable.bg_status_pending; // Orange - Đặt rồi nhưng chưa vào bãi
                 break;
             case "ACTIVE":
-                backgroundColor = 0xFF4CAF50; // Green - Xe đang trong bãi
+                backgroundRes = R.drawable.bg_status_active; // Green - Xe đang trong bãi
                 break;
             case "COMPLETED":
-                backgroundColor = 0xFF2196F3; // Blue - Xe ra khỏi bãi hoàn thành
+                backgroundRes = R.drawable.bg_status_active; // Green - Hoàn thành
                 break;
             case "CANCELLED":
-                backgroundColor = 0xFFF44336; // Red - Booking bị hủy
+                backgroundRes = R.drawable.bg_status_cancelled; // Red - Đã hủy
                 break;
             case "EXPIRED":
-                backgroundColor = 0xFF9E9E9E; // Gray - Hết hạn
+                backgroundRes = R.drawable.bg_status_expired; // Gray - Hết hạn
                 break;
             default:
-                backgroundColor = 0xFF9E9E9E; // Gray
+                backgroundRes = R.drawable.bg_status_expired; // Gray
                 break;
         }
 
-        tvStatus.setBackgroundColor(backgroundColor);
+        tvStatus.setBackgroundResource(backgroundRes);
     }
 
     private void displayQrCode() {
@@ -259,7 +260,8 @@ public class ReservationDetailActivity extends AppCompatActivity {
     }
 
     private String getVehicleTypeDisplayName(String vehicleType) {
-        if (vehicleType == null) return "Không xác định";
+        if (vehicleType == null)
+            return "Không xác định";
 
         switch (vehicleType) {
             case "MOTORBIKE":
@@ -316,10 +318,10 @@ public class ReservationDetailActivity extends AppCompatActivity {
 
         // Check permission for Android 10 and below
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
                         REQUEST_STORAGE_PERMISSION);
                 return;
             }
@@ -330,7 +332,8 @@ public class ReservationDetailActivity extends AppCompatActivity {
 
     private void saveImageToGallery() {
         try {
-            String fileName = "ParkMate_Reservation_QR_" + reservation.getId() + "_" + System.currentTimeMillis() + ".png";
+            String fileName = "ParkMate_Reservation_QR_" + reservation.getId() + "_" + System.currentTimeMillis()
+                    + ".png";
             OutputStream outputStream;
             Uri imageUri;
 
@@ -380,7 +383,7 @@ public class ReservationDetailActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_STORAGE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

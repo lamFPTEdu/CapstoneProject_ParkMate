@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modern Filter Bottom Sheet -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottomSheetFilter"
@@ -15,7 +16,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
+
+        <!-- Handle Bar -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_handle_bar" />
 
         <!-- Header -->
         <LinearLayout
@@ -23,25 +32,35 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="20dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Bộ lọc"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary" />
 
-            <ImageButton
-                android:id="@+id/btnCloseFilter"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Đóng"
-                android:src="@drawable/ic_close_24"
-                app:tint="@color/text_secondary" />
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/background">
+
+                <ImageButton
+                    android:id="@+id/btnCloseFilter"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Đóng"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_close_24"
+                    app:tint="@color/text_secondary" />
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
@@ -53,13 +72,13 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="10dp" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             app:singleSelection="true"
             app:selectionRequired="false">
 
@@ -95,13 +114,13 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="10dp" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupReferenceType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             app:singleSelection="true"
             app:selectionRequired="false">
 
@@ -144,13 +163,13 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="10dp" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupDuration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             app:singleSelection="true"
             app:selectionRequired="false">
 
@@ -193,13 +212,13 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="10dp" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="20dp"
             app:singleSelection="true"
             app:selectionRequired="false">
 
@@ -238,33 +257,40 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
+            android:orientation="horizontal">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnResetFilter"
-                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="6dp"
                 android:text="Đặt lại"
+                android:textSize="14sp"
                 android:textColor="@color/primary"
-                app:strokeColor="@color/primary" />
+                android:textAllCaps="false"
+                app:backgroundTint="@color/white"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1dp"
+                app:cornerRadius="12dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnApplyFilter"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="6dp"
                 android:text="Áp dụng"
-                android:backgroundTint="@color/primary"
-                android:textColor="@color/white" />
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="12dp"
+                style="@style/Widget.Material3.Button" />
 
         </LinearLayout>
 
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
-

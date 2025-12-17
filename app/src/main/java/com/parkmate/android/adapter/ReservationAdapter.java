@@ -35,7 +35,9 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     public interface OnReservationClickListener {
         void onReservationClick(Reservation reservation);
+
         void onRateClick(Reservation reservation);
+
         void onCancelClick(Reservation reservation);
     }
 
@@ -80,8 +82,8 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
         // Hiển thị tên bãi đỗ (không còn thông tin spot từ API)
         String parkingLotInfo = reservation.getParkingLotName() != null
-            ? reservation.getParkingLotName()
-            : "Bãi đỗ xe";
+                ? reservation.getParkingLotName()
+                : "Bãi đỗ xe";
         holder.tvSpotInfo.setText(parkingLotInfo);
 
         // Màu status background giống ReservationDetailActivity
@@ -95,7 +97,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
             holder.tvRefundPolicy.setVisibility(View.VISIBLE);
             holder.tvRefundPolicy.setText(String.format(Locale.getDefault(),
-                "💡 Hủy trước %d phút để được hoàn tiền", refundMinutes));
+                    "💡 Hủy trước %d phút để được hoàn tiền", refundMinutes));
 
             // Hiển thị button cancel
             holder.btnCancelReservation.setVisibility(View.VISIBLE);
@@ -135,31 +137,32 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     }
 
     private void setStatusBackground(TextView tvStatus, String status) {
-        if (status == null) return;
+        if (status == null)
+            return;
 
-        int backgroundColor;
+        int backgroundRes;
         switch (status) {
             case "PENDING":
-                backgroundColor = 0xFFFF9800; // Orange - Đặt rồi nhưng chưa vào bãi
+                backgroundRes = R.drawable.bg_status_pending; // Orange - Đặt rồi nhưng chưa vào bãi
                 break;
             case "ACTIVE":
-                backgroundColor = 0xFF4CAF50; // Green - Xe đang trong bãi
+                backgroundRes = R.drawable.bg_status_active; // Green - Xe đang trong bãi
                 break;
             case "COMPLETED":
-                backgroundColor = 0xFF2196F3; // Blue - Xe ra khỏi bãi hoàn thành
+                backgroundRes = R.drawable.bg_status_active; // Green - Hoàn thành
                 break;
             case "CANCELLED":
-                backgroundColor = 0xFFF44336; // Red - Booking bị hủy
+                backgroundRes = R.drawable.bg_status_cancelled; // Red - Đã hủy
                 break;
             case "EXPIRED":
-                backgroundColor = 0xFF9E9E9E; // Gray - Hết hạn
+                backgroundRes = R.drawable.bg_status_expired; // Gray - Hết hạn
                 break;
             default:
-                backgroundColor = 0xFF9E9E9E; // Gray
+                backgroundRes = R.drawable.bg_status_expired; // Gray
                 break;
         }
 
-        tvStatus.setBackgroundColor(backgroundColor);
+        tvStatus.setBackgroundResource(backgroundRes);
         tvStatus.setTextColor(0xFFFFFFFF); // White text
     }
 

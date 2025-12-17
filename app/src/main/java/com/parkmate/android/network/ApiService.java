@@ -1,8 +1,12 @@
 package com.parkmate.android.network;
 
 import com.parkmate.android.model.request.RegisterRequest;
+import com.parkmate.android.model.request.ForgotPasswordRequest;
+import com.parkmate.android.model.request.ResetPasswordRequest;
 import com.parkmate.android.model.response.RegisterResponse;
 import com.parkmate.android.model.response.OtpVerifyResponse;
+import com.parkmate.android.model.response.ForgotPasswordResponse;
+import com.parkmate.android.model.response.ResetPasswordResponse;
 import com.parkmate.android.model.response.UploadImageResponse;
 import com.parkmate.android.model.response.VehicleResponse;
 import com.parkmate.android.model.response.ApiResponse;
@@ -58,6 +62,10 @@ public interface ApiService {
     @PUT("api/v1/user-service/auth/verify")
     Single<OtpVerifyResponse> verifyOtp(@Query("verifyCode") String verifyCode, @Body EmptyJsonBody emptyBody);
 
+    // Resend OTP (chỉ dành cho đăng ký)
+    @PUT("api/v1/user-service/auth/resend")
+    Single<com.parkmate.android.model.response.ApiResponse<Void>> resendOtp(@Query("email") String email);
+
     // Đăng nhập
     @POST("api/v1/user-service/auth/login")
     Single<LoginResponse> login(@Body LoginRequest request);
@@ -65,6 +73,14 @@ public interface ApiService {
     // Refresh token
     @POST("api/v1/user-service/auth/refresh")
     Single<com.parkmate.android.model.response.RefreshTokenResponse> refreshToken(@Body com.parkmate.android.model.request.RefreshTokenRequest request);
+
+    // Forgot Password - Gửi mã reset về email
+    @POST("api/v1/user-service/auth/forgot-password")
+    Single<ForgotPasswordResponse> forgotPassword(@Body ForgotPasswordRequest request);
+
+    // Reset Password - Đặt lại mật khẩu với mã reset
+    @POST("api/v1/user-service/auth/reset-password")
+    Single<ResetPasswordResponse> resetPassword(@Body ResetPasswordRequest request);
 
     // Upload ảnh CCCD
     @Multipart

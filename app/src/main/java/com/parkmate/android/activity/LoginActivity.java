@@ -112,12 +112,6 @@ public class LoginActivity extends AppCompatActivity {
                         // Auto login với credentials đã lưu
                         android.util.Log.d(TAG, "Biometric success - Email: " + email);
 
-                        // Show debug toast
-                        Toast.makeText(LoginActivity.this,
-                                "✅ Biometric OK\nEmail: " + (email != null ? email : "NULL") + "\nPass: "
-                                        + (password != null ? "***" : "NULL"),
-                                Toast.LENGTH_LONG).show();
-
                         if (etEmail != null) {
                             etEmail.setText(email); // Truyền email vào field email
                         }
@@ -126,8 +120,7 @@ public class LoginActivity extends AppCompatActivity {
                         }
 
                         if (email == null || email.isEmpty()) {
-                            Toast.makeText(LoginActivity.this, "❌ Email NULL! Không thể login", Toast.LENGTH_LONG)
-                                    .show();
+                            Toast.makeText(LoginActivity.this, "Không thể đăng nhập. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
@@ -138,7 +131,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onError(String error) {
                         // User có thể chọn đăng nhập thủ công
                         android.util.Log.d(TAG, "Biometric login error: " + error);
-                        Toast.makeText(LoginActivity.this, "❌ Biometric: " + error, Toast.LENGTH_SHORT).show();
+                        // Không hiển thị toast error để tránh spam user
                     }
                 });
     }

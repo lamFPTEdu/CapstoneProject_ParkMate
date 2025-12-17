@@ -81,13 +81,12 @@ public class EditVehicleActivity extends AppCompatActivity {
                     selectedImageUri = result.getData().getData();
                     displaySelectedImage();
                 }
-            }
-    );
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_vehicle_detail);
+        setContentView(R.layout.activity_edit_vehicle);
 
         apiService = ApiClient.getApiService();
         vehicleRepository = new VehicleRepository();
@@ -106,8 +105,12 @@ public class EditVehicleActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        btnBack = findViewById(R.id.btnBack);
-        btnEdit = findViewById(R.id.btnEdit);
+        // Get toolbar
+        com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
+        }
+
         cvVehicleImage = findViewById(R.id.cvVehicleImage);
         ivVehicleImage = findViewById(R.id.ivVehicleImage);
         llUploadPlaceholder = findViewById(R.id.llUploadPlaceholder);
@@ -120,18 +123,23 @@ public class EditVehicleActivity extends AppCompatActivity {
         switchElectric = findViewById(R.id.switchElectric);
         btnUpdateVehicle = findViewById(R.id.btnUpdateVehicle);
 
-        // Setup chế độ chỉnh sửa
-        btnEdit.setImageResource(R.drawable.ic_close_24);
-        btnUpdateVehicle.setVisibility(View.VISIBLE);
-        cvVehicleImage.setClickable(true);
+        // Old IDs for compatibility (hidden)
+        btnBack = findViewById(R.id.btnBack);
+        btnEdit = findViewById(R.id.btnEdit);
 
-        // Enable tất cả các trường
-        actvVehicleType.setEnabled(true);
-        etLicensePlate.setEnabled(true);
-        etBrand.setEnabled(true);
-        etModel.setEnabled(true);
-        etColor.setEnabled(true);
-        switchElectric.setEnabled(true);
+        // Enable tất cả các trường (trừ biển số xe)
+        if (actvVehicleType != null)
+            actvVehicleType.setEnabled(true);
+        if (etLicensePlate != null)
+            etLicensePlate.setEnabled(false); // Biển số xe không được sửa
+        if (etBrand != null)
+            etBrand.setEnabled(true);
+        if (etModel != null)
+            etModel.setEnabled(true);
+        if (etColor != null)
+            etColor.setEnabled(true);
+        if (switchElectric != null)
+            switchElectric.setEnabled(true);
     }
 
     private void setupVehicleTypes() {
@@ -152,7 +160,8 @@ public class EditVehicleActivity extends AppCompatActivity {
                 getString(R.string.vehicle_type_other)
         };
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vehicleTypes);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line,
+                vehicleTypes);
         actvVehicleType.setAdapter(adapter);
     }
 
@@ -161,8 +170,7 @@ public class EditVehicleActivity extends AppCompatActivity {
                 apiService.getVehicleById(vehicleId)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(this::handleLoadSuccess, this::handleLoadError)
-        );
+                        .subscribe(this::handleLoadSuccess, this::handleLoadError));
     }
 
     private void handleLoadSuccess(ApiResponse<Vehicle> response) {
@@ -181,7 +189,8 @@ public class EditVehicleActivity extends AppCompatActivity {
     }
 
     private void populateVehicleData() {
-        if (vehicle == null) return;
+        if (vehicle == null)
+            return;
 
         // Hiển thị ảnh xe hiện tại
         if (vehicle.getVehiclePhotoUrl() != null && !vehicle.getVehiclePhotoUrl().isEmpty()) {
@@ -221,15 +230,18 @@ public class EditVehicleActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-        btnEdit.setOnClickListener(v -> finish()); // Nút X để hủy
-        cvVehicleImage.setOnClickListener(v -> openImagePicker());
-        btnRemoveImage.setOnClickListener(v -> removeSelectedImage());
-        btnUpdateVehicle.setOnClickListener(v -> validateAndUpdateVehicle());
+        // Toolbar navigation is set up in initViews
+        if (cvVehicleImage != null)
+            cvVehicleImage.setOnClickListener(v -> openImagePicker());
+        if (btnRemoveImage != null)
+            btnRemoveImage.setOnClickListener(v -> removeSelectedImage());
+        if (btnUpdateVehicle != null)
+            btnUpdateVehicle.setOnClickListener(v -> validateAndUpdateVehicle());
     }
 
     private void openImagePicker() {
-        // Từ Android 13 (API 33) trở lên, không cần quyền READ_EXTERNAL_STORAGE để chọn ảnh từ gallery
+        // Từ Android 13 (API 33) trở lên, không cần quyền READ_EXTERNAL_STORAGE để chọn
+        // ảnh từ gallery
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         imagePickerLauncher.launch(intent);
@@ -267,7 +279,8 @@ public class EditVehicleActivity extends AppCompatActivity {
     private Bitmap resizeBitmap(Bitmap bitmap, int maxSize) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-        if (width <= maxSize && height <= maxSize) return bitmap;
+        if (width <= maxSize && height <= maxSize)
+            return bitmap;
 
         float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
         int newWidth = Math.round(width * ratio);
@@ -291,7 +304,7 @@ public class EditVehicleActivity extends AppCompatActivity {
         boolean isElectric = switchElectric.isChecked();
 
         if (vehicleTypeDisplay.isEmpty() || licensePlate.isEmpty() || brand.isEmpty() ||
-            model.isEmpty() || color.isEmpty()) {
+                model.isEmpty() || color.isEmpty()) {
             Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -303,7 +316,8 @@ public class EditVehicleActivity extends AppCompatActivity {
         }
 
         // Không gửi licenseImage trong request, sẽ upload riêng sau
-        AddVehicleRequest request = new AddVehicleRequest(licensePlate, brand, model, color, vehicleType, null, isElectric);
+        AddVehicleRequest request = new AddVehicleRequest(licensePlate, brand, model, color, vehicleType, null,
+                isElectric);
         updateVehicle(request);
     }
 
@@ -312,8 +326,7 @@ public class EditVehicleActivity extends AppCompatActivity {
                 apiService.updateVehicle(vehicleId, request)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(this::handleUpdateSuccess, this::handleUpdateError)
-        );
+                        .subscribe(this::handleUpdateSuccess, this::handleUpdateError));
     }
 
     private void handleUpdateSuccess(ApiResponse<Vehicle> response) {
@@ -346,16 +359,16 @@ public class EditVehicleActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 uploadResponse -> {
-                                    android.util.Log.d("EditVehicle", "Vehicle image uploaded successfully: " + uploadResponse.getImagePath());
+                                    android.util.Log.d("EditVehicle",
+                                            "Vehicle image uploaded successfully: " + uploadResponse.getImagePath());
                                     finishSuccess();
                                 },
                                 error -> {
                                     android.util.Log.e("EditVehicle", "Error uploading vehicle image", error);
-                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng xe đã được cập nhật", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng xe đã được cập nhật",
+                                            Toast.LENGTH_SHORT).show();
                                     finishSuccess();
-                                }
-                        )
-        );
+                                }));
     }
 
     private void finishSuccess() {
@@ -374,4 +387,3 @@ public class EditVehicleActivity extends AppCompatActivity {
         compositeDisposable.clear();
     }
 }
-

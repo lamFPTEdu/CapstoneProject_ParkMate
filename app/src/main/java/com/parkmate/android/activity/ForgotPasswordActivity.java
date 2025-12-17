@@ -1,8 +1,11 @@
 package com.parkmate.android.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,13 +17,30 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.Gson;
 import com.parkmate.android.R;
+import com.parkmate.android.model.response.ErrorResponse;
+import com.parkmate.android.repository.AuthRepository;
+import com.parkmate.android.utils.LoadingButton;
+
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import retrofit2.HttpException;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
+    private static final String TAG = "ForgotPasswordActivity";
     private ViewFlipper viewFlipper;
     private androidx.appcompat.widget.Toolbar toolbar;
     private String userEmail;
+    private AuthRepository authRepository;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private LoadingButton loadingButtonSend;
+    private LoadingButton loadingButtonVerify;
+    private LoadingButton loadingButtonReset;
 
     // Email Screen Views
     private TextInputEditText etEmail;
@@ -36,7 +56,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private Button btnVerify;
 
     // New Password Screen Views
-    private TextInputEditText etNewPassword, etConfirmPassword;
+    private TextInputEditText etResetEmail, etNewPassword, etConfirmPassword;
     private Button btnResetPassword;
 
     // Success Screen View
@@ -50,6 +70,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         // Setup edge-to-edge display
         com.parkmate.android.utils.EdgeToEdgeHelper.setupEdgeToEdge(this);
 
+        authRepository = new AuthRepository();
         initViews();
         setupListeners();
 
@@ -77,6 +98,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         View emailView = viewFlipper.getChildAt(0);
         etEmail = emailView.findViewById(R.id.etEmail);
         btnSend = emailView.findViewById(R.id.btnSend);
+        loadingButtonSend = new LoadingButton(btnSend);
 
         // Initialize Check Email Screen Views
         View checkEmailView = viewFlipper.getChildAt(1);
@@ -93,12 +115,15 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         etOtp6 = otpView.findViewById(R.id.etOtp6);
         tvResendCode = otpView.findViewById(R.id.tvResendCode);
         btnVerify = otpView.findViewById(R.id.btnVerify);
+        loadingButtonVerify = new LoadingButton(btnVerify);
 
         // Initialize New Password Screen Views
         View newPasswordView = viewFlipper.getChildAt(3);
+        etResetEmail = newPasswordView.findViewById(R.id.etEmail);
         etNewPassword = newPasswordView.findViewById(R.id.etNewPassword);
         etConfirmPassword = newPasswordView.findViewById(R.id.etConfirmPassword);
         btnResetPassword = newPasswordView.findViewById(R.id.btnResetPassword);
+        loadingButtonReset = new LoadingButton(btnResetPassword);
 
         // Initialize Success Screen Views
         View successView = viewFlipper.getChildAt(4);
@@ -138,10 +163,11 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         // OTP Screen Listeners
         setupOtpInputs();
-        tvResendCode.setOnClickListener(v -> {
-            // Here would be API call to resend OTP
-            Toast.makeText(this, "Otp resent to your email", Toast.LENGTH_SHORT).show();
-        });
+
+        // Ẩn nút "Gửi lại mã" vì resend OTP chỉ dành cho Register, không dành cho Forgot Password
+        if (tvResendCode != null) {
+            tvResendCode.setVisibility(View.GONE);
+        }
         btnVerify.setOnClickListener(v -> {
             if (validateOtp()) {
                 // Here would be API call to verify OTP
@@ -160,7 +186,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         // Success Screen Listeners
         btnLogin.setOnClickListener(v -> {
             // Navigate to login screen
-            finish(); // This would typically go to your login activity
+            navigateToLogin();
         });
     }
 
@@ -177,11 +203,31 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     private void sendOtp(String email) {
-        // Simulate API call to send OTP
-        // In a real app, you would make an API call here
+        loadingButtonSend.showLoading("Đang gửi...");
 
-        tvUserEmail.setText(email);
-        viewFlipper.setDisplayedChild(1); // Move to Check Email screen
+        compositeDisposable.add(
+                authRepository.forgotPassword(email)
+                        .timeout(30, TimeUnit.SECONDS)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    loadingButtonSend.hideLoading();
+                                    if (response != null && (response.getSuccess() == null || Boolean.TRUE.equals(response.getSuccess()))) {
+                                        String message = response.getMessage() != null ? response.getMessage() : "Mã xác thực đã được gửi đến email của bạn";
+                                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                                        tvUserEmail.setText(email);
+                                        viewFlipper.setDisplayedChild(1); // Move to Check Email screen
+                                    } else {
+                                        Toast.makeText(this, response.getMessage() != null ? response.getMessage() : "Gửi mã thất bại", Toast.LENGTH_LONG).show();
+                                    }
+                                },
+                                throwable -> {
+                                    loadingButtonSend.hideLoading();
+                                    handleError(throwable, "Không thể gửi mã xác thực");
+                                }
+                        )
+        );
     }
 
     private void setupOtpInputs() {
@@ -223,9 +269,11 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     private void verifyOtp() {
-        // Simulate API call to verify OTP
-        // In a real app, you would make an API call here
-
+        // Lưu OTP code vào biến để dùng sau
+        // Hiển thị email trong màn hình reset password (disabled)
+        if (etResetEmail != null && userEmail != null) {
+            etResetEmail.setText(userEmail);
+        }
         viewFlipper.setDisplayedChild(3); // Move to New Password screen
     }
 
@@ -250,14 +298,63 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     private void resetPassword() {
-        // Simulate API call to reset password
-        // In a real app, you would make an API call here
+        loadingButtonReset.showLoading("Đang đặt lại...");
 
-        viewFlipper.setDisplayedChild(4); // Move to Success screen
+        // Lấy mã OTP từ các field
+        String resetCode = etOtp1.getText().toString() +
+                etOtp2.getText().toString() +
+                etOtp3.getText().toString() +
+                etOtp4.getText().toString() +
+                etOtp5.getText().toString() +
+                etOtp6.getText().toString();
+
+        String newPassword = etNewPassword.getText().toString().trim();
+
+        compositeDisposable.add(
+                authRepository.resetPassword(userEmail, resetCode, newPassword)
+                        .timeout(30, TimeUnit.SECONDS)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    loadingButtonReset.hideLoading();
+                                    if (response != null && (response.getSuccess() == null || Boolean.TRUE.equals(response.getSuccess()))) {
+                                        String message = response.getMessage() != null ? response.getMessage() : "Đặt lại mật khẩu thành công";
+                                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                                        viewFlipper.setDisplayedChild(4); // Move to Success screen
+                                        hideBackButton(); // Ẩn nút back trên toolbar
+                                    } else {
+                                        Toast.makeText(this, response.getMessage() != null ? response.getMessage() : "Đặt lại mật khẩu thất bại", Toast.LENGTH_LONG).show();
+                                    }
+                                },
+                                throwable -> {
+                                    loadingButtonReset.hideLoading();
+                                    handleError(throwable, "Không thể đặt lại mật khẩu");
+                                }
+                        )
+        );
+    }
+
+    /**
+     * Ẩn nút back trên toolbar (dùng khi đến màn hình Success)
+     */
+    private void hideBackButton() {
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        }
     }
 
     private void handleBackPress() {
         int currentScreen = viewFlipper.getDisplayedChild();
+
+        // Nếu đang ở màn hình Success (screen 4), không cho back
+        // Buộc user phải bấm nút "Đăng nhập"
+        if (currentScreen == 4) {
+            // Về màn hình đăng nhập thay vì back
+            navigateToLogin();
+            return;
+        }
+
         if (currentScreen > 0) {
             viewFlipper.setDisplayedChild(currentScreen - 1);
         } else {
@@ -265,10 +362,72 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Navigate to login screen
+     */
+    private void navigateToLogin() {
+        android.content.Intent intent = new android.content.Intent(this, LoginActivity.class);
+        intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
     @Override
     public boolean onSupportNavigateUp() {
         handleBackPress();
         return true;
+    }
+
+    /**
+     * Xử lý lỗi API
+     */
+    private void handleError(Throwable t, String defaultMessage) {
+        Log.e(TAG, "Error: " + t.getMessage(), t);
+
+        // Xử lý timeout
+        if (t instanceof java.util.concurrent.TimeoutException) {
+            Toast.makeText(this, "Kết nối quá chậm, vui lòng thử lại", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (t instanceof java.net.SocketTimeoutException) {
+            Toast.makeText(this, "Không thể kết nối đến máy chủ", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (t instanceof java.net.UnknownHostException || t instanceof java.net.ConnectException) {
+            Toast.makeText(this, "Không có kết nối mạng", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (t instanceof HttpException) {
+            HttpException http = (HttpException) t;
+            try {
+                String body = http.response() != null && http.response().errorBody() != null
+                        ? http.response().errorBody().string()
+                        : null;
+                if (body != null && !body.isEmpty()) {
+                    ErrorResponse er = new Gson().fromJson(body, ErrorResponse.class);
+                    if (er != null && er.getError() != null) {
+                        String msg = er.getError().getMessage();
+                        if (msg != null && !msg.isEmpty()) {
+                            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            Toast.makeText(this, defaultMessage + " (" + http.code() + ")", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, t.getMessage() != null ? t.getMessage() : defaultMessage, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.clear();
     }
 }
 
