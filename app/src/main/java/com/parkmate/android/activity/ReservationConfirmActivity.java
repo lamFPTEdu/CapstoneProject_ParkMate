@@ -2,7 +2,10 @@ package com.parkmate.android.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -10,7 +13,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.parkmate.android.R;
 import com.parkmate.android.model.request.HoldReservationRequest;
@@ -20,6 +22,11 @@ import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.utils.ReservationHoldManager;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -27,20 +34,21 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ReservationConfirmActivity extends AppCompatActivity {
 
-    private MaterialToolbar toolbar;
+    private ImageButton btnBack;
     private TextView tvAvailableCapacity;
     private TextView tvTotalCapacity;
     private TextView tvInitialCharge;
     private TextView tvStepRate;
     private TextView tvEstimatedTotal;
-    private com.google.android.material.card.MaterialCardView cardExpiresAt;
-    private TextView tvExpiresAt;
+    private LinearLayout llCountdown;
+    private TextView tvCountdown;
     private MaterialButton btnConfirmReservation;
     private ProgressBar progressBar;
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ReservationHoldManager holdManager;
     private DecimalFormat formatter = new DecimalFormat("#,###");
+    private CountDownTimer countDownTimer;
 
     // Data from intent
     private Long parkingLotId;
@@ -83,11 +91,10 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                                         holdManager.clearHoldId();
                                     },
                                     throwable -> {
-                                        android.util.Log.e("ReservationConfirm", "Error releasing previous hold", throwable);
+                                        android.util.Log.e("ReservationConfirm", "Error releasing previous hold",
+                                                throwable);
                                         holdManager.clearHoldId();
-                                    }
-                            )
-            );
+                                    }));
         }
     }
 
@@ -100,19 +107,18 @@ public class ReservationConfirmActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        toolbar = findViewById(R.id.toolbar);
+        btnBack = findViewById(R.id.btnBack);
         tvAvailableCapacity = findViewById(R.id.tvAvailableCapacity);
         tvTotalCapacity = findViewById(R.id.tvTotalCapacity);
         tvInitialCharge = findViewById(R.id.tvInitialCharge);
         tvStepRate = findViewById(R.id.tvStepRate);
         tvEstimatedTotal = findViewById(R.id.tvEstimatedTotal);
-        cardExpiresAt = findViewById(R.id.cardExpiresAt);
-        tvExpiresAt = findViewById(R.id.tvExpiresAt);
+        llCountdown = findViewById(R.id.llCountdown);
+        tvCountdown = findViewById(R.id.tvCountdown);
         btnConfirmReservation = findViewById(R.id.btnConfirmReservation);
         progressBar = findViewById(R.id.progressBar);
 
-        toolbar.setNavigationOnClickListener(v -> handleBackPress());
-
+        btnBack.setOnClickListener(v -> handleBackPress());
         btnConfirmReservation.setOnClickListener(v -> confirmReservation());
 
         // Handle back press
@@ -129,7 +135,8 @@ public class ReservationConfirmActivity extends AppCompatActivity {
         tvTotalCapacity.setText(String.valueOf(spotData.getTotalCapacity()));
 
         AvailableSpotResponse.Pricing pricing = spotData.getPricing();
-        tvInitialCharge.setText(formatter.format(pricing.getInitialCharge()) + " VNĐ (" + pricing.getInitialDurationMinute() + " phút đầu)");
+        tvInitialCharge.setText(formatter.format(pricing.getInitialCharge()) + " VNĐ ("
+                + pricing.getInitialDurationMinute() + " phút đầu)");
         tvStepRate.setText(formatter.format(pricing.getStepRate()) + " VNĐ (mỗi " + pricing.getStepMinute() + " phút)");
         tvEstimatedTotal.setText(formatter.format(pricing.getEstimateTotalFee()) + " VNĐ");
     }
@@ -141,8 +148,7 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                 parkingLotId,
                 vehicleId,
                 reservedFrom,
-                assumedStayMinute
-        );
+                assumedStayMinute);
 
         compositeDisposable.add(
                 ApiClient.getApiService()
@@ -164,9 +170,7 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                                     android.util.Log.e("ReservationConfirm", "Error holding reservation", throwable);
                                     showError("Lỗi mạng: " + throwable.getMessage());
                                     finish();
-                                }
-                        )
-        );
+                                }));
     }
 
     private void handleHoldSuccess(HoldReservationResponse holdResponse) {
@@ -176,10 +180,120 @@ public class ReservationConfirmActivity extends AppCompatActivity {
         // Save to manager for global tracking
         holdManager.setHoldId(this.holdId);
 
-        tvExpiresAt.setText("Giữ chỗ đến: " + holdResponse.getExpiresAt());
-        cardExpiresAt.setVisibility(View.VISIBLE);
+        // Start countdown timer
+        startCountdownTimer(holdResponse.getExpiresAt());
 
         Toast.makeText(this, holdResponse.getMessage(), Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Start countdown timer from expiresAt time string
+     */
+    private void startCountdownTimer(String expiresAt) {
+        try {
+            // Parse the expiresAt time (format: HH:mm:ss or similar)
+            // Try multiple formats
+            long remainingMillis = parseRemainingTime(expiresAt);
+
+            if (remainingMillis <= 0) {
+                // Default to 15 minutes if parsing fails
+                remainingMillis = 15 * 60 * 1000;
+            }
+
+            llCountdown.setVisibility(View.VISIBLE);
+
+            countDownTimer = new CountDownTimer(remainingMillis, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    long minutes = millisUntilFinished / 60000;
+                    long seconds = (millisUntilFinished % 60000) / 1000;
+                    String timeText = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
+                    tvCountdown.setText(timeText);
+
+                    // Change color when less than 2 minutes
+                    if (millisUntilFinished < 2 * 60 * 1000) {
+                        llCountdown.setBackgroundResource(R.drawable.bg_countdown_urgent);
+                    }
+                }
+
+                @Override
+                public void onFinish() {
+                    tvCountdown.setText("00:00");
+                    showHoldExpiredDialog();
+                }
+            };
+            countDownTimer.start();
+
+        } catch (Exception e) {
+            android.util.Log.e("ReservationConfirm", "Error parsing expiresAt", e);
+            // Default countdown 15 minutes
+            startDefaultCountdown();
+        }
+    }
+
+    /**
+     * Parse remaining time from expiresAt string
+     */
+    private long parseRemainingTime(String expiresAt) {
+        try {
+            // Try format: "2025-12-23T14:30:00"
+            SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+            isoFormat.setTimeZone(TimeZone.getDefault());
+            Date expiryDate = isoFormat.parse(expiresAt);
+            if (expiryDate != null) {
+                return expiryDate.getTime() - System.currentTimeMillis();
+            }
+        } catch (ParseException e1) {
+            try {
+                // Try format: "HH:mm:ss"
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                Date expiryTime = timeFormat.parse(expiresAt);
+                if (expiryTime != null) {
+                    // Assume same day
+                    SimpleDateFormat todayFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    String today = todayFormat.format(new Date());
+                    SimpleDateFormat fullFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                    Date fullExpiry = fullFormat.parse(today + " " + expiresAt);
+                    if (fullExpiry != null) {
+                        return fullExpiry.getTime() - System.currentTimeMillis();
+                    }
+                }
+            } catch (ParseException e2) {
+                android.util.Log.e("ReservationConfirm", "Cannot parse expiresAt: " + expiresAt);
+            }
+        }
+        return -1;
+    }
+
+    private void startDefaultCountdown() {
+        llCountdown.setVisibility(View.VISIBLE);
+        countDownTimer = new CountDownTimer(15 * 60 * 1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long minutes = millisUntilFinished / 60000;
+                long seconds = (millisUntilFinished % 60000) / 1000;
+                tvCountdown.setText(String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                tvCountdown.setText("00:00");
+                showHoldExpiredDialog();
+            }
+        };
+        countDownTimer.start();
+    }
+
+    private void showHoldExpiredDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Hết thời gian giữ chỗ")
+                .setMessage("Thời gian giữ chỗ đã hết. Vui lòng thực hiện lại đặt chỗ.")
+                .setPositiveButton("Đóng", (dialog, which) -> {
+                    releaseHold();
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private void confirmReservation() {
@@ -204,15 +318,13 @@ public class ReservationConfirmActivity extends AppCompatActivity {
         // Get initialFee from pricing
         long initialFee = (long) spotData.getPricing().getInitialCharge();
 
-        com.parkmate.android.model.request.ReservationRequest request =
-                new com.parkmate.android.model.request.ReservationRequest(
-                        vehicleId,
-                        parkingLotId,
-                        initialFee,
-                        reservedFrom,
-                        assumedStayMinute,
-                        holdId
-                );
+        com.parkmate.android.model.request.ReservationRequest request = new com.parkmate.android.model.request.ReservationRequest(
+                vehicleId,
+                parkingLotId,
+                initialFee,
+                reservedFrom,
+                assumedStayMinute,
+                holdId);
 
         compositeDisposable.add(
                 ApiClient.getApiService()
@@ -232,12 +344,15 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                                     showLoading(false);
                                     android.util.Log.e("ReservationConfirm", "Error creating reservation", throwable);
                                     showError("Lỗi mạng: " + throwable.getMessage());
-                                }
-                        )
-        );
+                                }));
     }
 
     private void handleReservationSuccess(com.parkmate.android.model.Reservation reservation) {
+        // Stop countdown
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
         // Đặt chỗ thành công, không cần release hold nữa
         isHoldActive = false;
         holdManager.clearHoldId(); // Clear from manager
@@ -273,9 +388,7 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                                     android.util.Log.e("ReservationConfirm", "Error releasing hold", throwable);
                                     // Clear anyway to avoid stuck state
                                     holdManager.clearHoldId();
-                                }
-                        )
-        );
+                                }));
     }
 
     private void handleBackPress() {
@@ -283,6 +396,9 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                 .setTitle("Hủy đặt chỗ")
                 .setMessage("Bạn có chắc chắn muốn hủy? Chỗ đang giữ sẽ được giải phóng.")
                 .setPositiveButton("Có", (dialog, which) -> {
+                    if (countDownTimer != null) {
+                        countDownTimer.cancel();
+                    }
                     releaseHold();
                     finish();
                 })
@@ -302,13 +418,16 @@ public class ReservationConfirmActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // Cancel countdown timer
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
         compositeDisposable.clear();
 
         // Release hold if activity is destroyed without completing reservation
-        // This handles cases like app crash, task removal, etc.
         if (isHoldActive && holdId != null && !isFinishing()) {
-            // Activity is being destroyed but not by normal finish()
-            // Release the hold asynchronously without blocking
             new Thread(() -> {
                 try {
                     ApiClient.getApiService()
@@ -319,19 +438,16 @@ public class ReservationConfirmActivity extends AppCompatActivity {
                                         holdManager.clearHoldId();
                                     },
                                     throwable -> {
-                                        android.util.Log.e("ReservationConfirm", "Error releasing hold on destroy", throwable);
+                                        android.util.Log.e("ReservationConfirm", "Error releasing hold on destroy",
+                                                throwable);
                                         holdManager.clearHoldId();
-                                    }
-                            );
+                                    });
                 } catch (Exception e) {
-                    // Ignore errors, will be cleaned up on next app start
                     holdManager.clearHoldId();
                 }
             }).start();
         } else if (isHoldActive) {
-            // Normal finish with hold active, release normally
             releaseHold();
         }
     }
 }
-

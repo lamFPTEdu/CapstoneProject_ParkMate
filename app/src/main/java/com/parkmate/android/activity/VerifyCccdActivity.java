@@ -1,85 +1,65 @@
 package com.parkmate.android.activity;
 
-import android.app.DatePickerDialog;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.CheckBox;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.parkmate.android.R;
+import com.parkmate.android.adapter.CccdStepAdapter;
+import com.parkmate.android.fragment.CccdStep1Fragment;
+import com.parkmate.android.fragment.CccdStep2Fragment;
+import com.parkmate.android.fragment.CccdStep3Fragment;
 import com.parkmate.android.model.request.UpdateUserRequest;
-import com.parkmate.android.model.response.UpdateUserResponse;
-import com.parkmate.android.model.response.UploadImageResponse;
-import com.parkmate.android.model.response.UserInfoResponse;
 import com.parkmate.android.repository.AuthRepository;
 import com.parkmate.android.utils.FileUtils;
 import com.parkmate.android.utils.UserManager;
+import com.parkmate.android.viewmodel.CccdViewModel;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
+/**
+ * Activity xác thực CCCD với Stepped Wizard (3 bước)
+ * Bước 1: Thông tin cơ bản
+ * Bước 2: Chi tiết CCCD
+ * Bước 3: Upload ảnh
+ */
 public class VerifyCccdActivity extends AppCompatActivity {
 
     private static final String TAG = "VerifyCccdActivity";
+    private static final int TOTAL_STEPS = 3;
 
+    // Views
     private ImageButton btnBack;
-    private TextInputEditText etCccdNumber, etFullName, etDateOfBirth, etIssueDate, etIssuePlace, etExpiryDate, etPermanentAddress;
-    private AutoCompleteTextView actvGender, actvNationality;
-    private TextInputLayout tilDateOfBirth, tilIssueDate, tilExpiryDate;
-    private CheckBox cbCommitment;
-    private FrameLayout flFrontImage, flBackImage;
-    private ImageView ivFrontImage, ivBackImage;
-    private LinearLayout llFrontImagePlaceholder, llBackImagePlaceholder;
-    private ProgressBar pbFrontUpload, pbBackUpload;
-    private ImageView ivFrontUploadSuccess, ivBackUploadSuccess;
-    private MaterialButton btnSubmit;
+    private ViewPager2 viewPagerSteps;
+    private MaterialButton btnPrevious, btnNext;
+    private LinearLayout layoutStep1, layoutStep2, layoutStep3;
+    private TextView tvStep1Number, tvStep2Number, tvStep3Number;
+    private TextView tvStep1Label, tvStep2Label, tvStep3Label;
+    private View viewConnector1, viewConnector2;
 
-    private Calendar calendar;
-    private SimpleDateFormat dateFormatter;
-    private Uri frontImageUri, backImageUri;
-    private Uri tempCameraImageUri;
-    private boolean frontImageUploaded = false;
-    private boolean backImageUploaded = false;
-    private String frontImagePath = "";
-    private String backImagePath = "";
+    // Data
+    private CccdViewModel viewModel;
+    private CccdStepAdapter adapter;
+    private int currentStep = 0;
 
-    private ActivityResultLauncher<Intent> frontCameraLauncher;
-    private ActivityResultLauncher<Intent> backCameraLauncher;
-    private ActivityResultLauncher<Intent> frontGalleryLauncher;
-    private ActivityResultLauncher<Intent> backGalleryLauncher;
-    private ActivityResultLauncher<String> cameraPermissionLauncher;
-    private boolean pendingFrontCamera = false;
-
+    // Network
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private AuthRepository authRepository;
 
@@ -88,279 +68,206 @@ public class VerifyCccdActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify_cccd);
 
-        calendar = Calendar.getInstance();
-        dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-
+        viewModel = new ViewModelProvider(this).get(CccdViewModel.class);
         authRepository = new AuthRepository();
 
-        setupImageCaptureLaunchers();
-        setupPermissionLauncher();
-
         initViews();
-        setupDropdowns();
+        setupViewPager();
         setupListeners();
-        setupDatePickers();
-
-        // Load thông tin user đã có (nếu đã xác thực CCCD trước đó)
         loadUserInfo();
-    }
-
-    private void setupPermissionLauncher() {
-        cameraPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                isGranted -> {
-                    if (isGranted) {
-                        if (pendingFrontCamera) {
-                            openCamera(true);
-                        } else {
-                            openCamera(false);
-                        }
-                        pendingFrontCamera = false;
-                    } else {
-                        Toast.makeText(this, "Cần cấp quyền camera để chụp ảnh", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-    }
-
-    private void setupImageCaptureLaunchers() {
-        frontCameraLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK) {
-                        if (tempCameraImageUri != null) {
-                            frontImageUri = tempCameraImageUri;
-                            ivFrontImage.setImageURI(frontImageUri);
-                            ivFrontImage.setVisibility(View.VISIBLE);
-                            llFrontImagePlaceholder.setVisibility(View.GONE);
-                        }
-                    }
-                }
-        );
-
-        backCameraLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK) {
-                        if (tempCameraImageUri != null) {
-                            backImageUri = tempCameraImageUri;
-                            ivBackImage.setImageURI(backImageUri);
-                            ivBackImage.setVisibility(View.VISIBLE);
-                            llBackImagePlaceholder.setVisibility(View.GONE);
-                        }
-                    }
-                }
-        );
-
-        frontGalleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri imageUri = result.getData().getData();
-                        if (imageUri != null) {
-                            frontImageUri = imageUri;
-                            ivFrontImage.setImageURI(frontImageUri);
-                            ivFrontImage.setVisibility(View.VISIBLE);
-                            llFrontImagePlaceholder.setVisibility(View.GONE);
-                        }
-                    }
-                }
-        );
-
-        backGalleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri imageUri = result.getData().getData();
-                        if (imageUri != null) {
-                            backImageUri = imageUri;
-                            ivBackImage.setImageURI(backImageUri);
-                            ivBackImage.setVisibility(View.VISIBLE);
-                            llBackImagePlaceholder.setVisibility(View.GONE);
-                        }
-                    }
-                }
-        );
     }
 
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
-        etCccdNumber = findViewById(R.id.etCccdNumber);
-        etFullName = findViewById(R.id.etFullName);
-        actvGender = findViewById(R.id.actvGender);
-        etDateOfBirth = findViewById(R.id.etDateOfBirth);
-        actvNationality = findViewById(R.id.actvNationality);
-        etPermanentAddress = findViewById(R.id.etPermanentAddress);
-        etIssueDate = findViewById(R.id.etIssueDate);
-        etIssuePlace = findViewById(R.id.etIssuePlace);
-        etExpiryDate = findViewById(R.id.etExpiryDate);
-        tilDateOfBirth = findViewById(R.id.tilDateOfBirth);
-        tilIssueDate = findViewById(R.id.tilIssueDate);
-        tilExpiryDate = findViewById(R.id.tilExpiryDate);
+        viewPagerSteps = findViewById(R.id.viewPagerSteps);
+        btnPrevious = findViewById(R.id.btnPrevious);
+        btnNext = findViewById(R.id.btnNext);
 
-        flFrontImage = findViewById(R.id.flFrontImage);
-        flBackImage = findViewById(R.id.flBackImage);
-        ivFrontImage = findViewById(R.id.ivFrontImage);
-        ivBackImage = findViewById(R.id.ivBackImage);
-        llFrontImagePlaceholder = findViewById(R.id.llFrontImagePlaceholder);
-        llBackImagePlaceholder = findViewById(R.id.llBackImagePlaceholder);
-        pbFrontUpload = findViewById(R.id.pbFrontUpload);
-        pbBackUpload = findViewById(R.id.pbBackUpload);
-        ivFrontUploadSuccess = findViewById(R.id.ivFrontUploadSuccess);
-        ivBackUploadSuccess = findViewById(R.id.ivBackUploadSuccess);
+        layoutStep1 = findViewById(R.id.layoutStep1);
+        layoutStep2 = findViewById(R.id.layoutStep2);
+        layoutStep3 = findViewById(R.id.layoutStep3);
 
-        cbCommitment = findViewById(R.id.cbCommitment);
-        btnSubmit = findViewById(R.id.btnSubmit);
+        tvStep1Number = findViewById(R.id.tvStep1Number);
+        tvStep2Number = findViewById(R.id.tvStep2Number);
+        tvStep3Number = findViewById(R.id.tvStep3Number);
+
+        tvStep1Label = findViewById(R.id.tvStep1Label);
+        tvStep2Label = findViewById(R.id.tvStep2Label);
+        tvStep3Label = findViewById(R.id.tvStep3Label);
+
+        viewConnector1 = findViewById(R.id.viewConnector1);
+        viewConnector2 = findViewById(R.id.viewConnector2);
     }
 
-    private void setupDropdowns() {
-        // Setup Gender Dropdown
-        String[] genderOptions = getResources().getStringArray(R.array.gender_options);
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_dropdown_item_1line,
-                genderOptions
-        );
-        actvGender.setAdapter(genderAdapter);
+    private void setupViewPager() {
+        adapter = new CccdStepAdapter(this);
+        viewPagerSteps.setAdapter(adapter);
+        viewPagerSteps.setUserInputEnabled(false); // Disable swipe, use buttons only
 
-        // Setup Nationality Dropdown
-        String[] nationalityOptions = getResources().getStringArray(R.array.nationality_options);
-        ArrayAdapter<String> nationalityAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_dropdown_item_1line,
-                nationalityOptions
-        );
-        actvNationality.setAdapter(nationalityAdapter);
-
-        // Set default nationality to Vietnam
-        actvNationality.setText("Việt Nam", false);
+        viewPagerSteps.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                currentStep = position;
+                updateStepIndicator(position);
+                updateButtons(position);
+                viewModel.setCurrentStep(position);
+            }
+        });
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            if (currentStep > 0) {
+                navigateToStep(currentStep - 1);
+            } else {
+                finish();
+            }
+        });
 
-        flFrontImage.setOnClickListener(v -> showImageSourceDialog(true));
-        flBackImage.setOnClickListener(v -> showImageSourceDialog(false));
+        btnPrevious.setOnClickListener(v -> {
+            if (currentStep > 0) {
+                saveCurrentStepData();
+                navigateToStep(currentStep - 1);
+            }
+        });
 
-        btnSubmit.setOnClickListener(v -> handleSubmit());
-    }
-
-    private void setupDatePickers() {
-        etDateOfBirth.setOnClickListener(v -> showDatePicker(etDateOfBirth));
-        etIssueDate.setOnClickListener(v -> showDatePicker(etIssueDate));
-        etExpiryDate.setOnClickListener(v -> showDatePicker(etExpiryDate));
-    }
-
-    private void showDatePicker(TextInputEditText editText) {
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this,
-                (view, year, month, dayOfMonth) -> {
-                    calendar.set(Calendar.YEAR, year);
-                    calendar.set(Calendar.MONTH, month);
-                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                    editText.setText(dateFormatter.format(calendar.getTime()));
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-        );
-        datePickerDialog.show();
-    }
-
-    private void showImageSourceDialog(boolean isFront) {
-        String title = isFront ? "Chọn nguồn hình ảnh cho mặt trước CCCD" : "Chọn nguồn hình ảnh cho m��t sau CCCD";
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setItems(new CharSequence[]{"Chụp ảnh từ camera", "Chọn từ thư viện"}, (dialog, which) -> {
-                    if (which == 0) {
-                        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
-                                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                            pendingFrontCamera = isFront;
-                            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA);
-                        } else {
-                            openCamera(isFront);
-                        }
-                    } else {
-                        openGallery(isFront);
-                    }
-                })
-                .show();
-    }
-
-    private void openCamera(boolean isFront) {
-        try {
-            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            File photoFile = createImageFile();
-            if (photoFile != null) {
-                tempCameraImageUri = FileProvider.getUriForFile(this,
-                        getApplicationContext().getPackageName() + ".fileprovider",
-                        photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempCameraImageUri);
-                if (isFront) {
-                    frontCameraLauncher.launch(takePictureIntent);
+        btnNext.setOnClickListener(v -> {
+            if (validateCurrentStep()) {
+                saveCurrentStepData();
+                if (currentStep < TOTAL_STEPS - 1) {
+                    navigateToStep(currentStep + 1);
                 } else {
-                    backCameraLauncher.launch(takePictureIntent);
+                    handleSubmit();
                 }
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error opening camera", e);
-            Toast.makeText(this, "Không thể mở camera", Toast.LENGTH_SHORT).show();
+        });
+
+        // Step indicators - allow clicking to navigate back to completed steps
+        layoutStep1.setOnClickListener(v -> {
+            if (currentStep > 0) {
+                saveCurrentStepData();
+                navigateToStep(0);
+            }
+        });
+
+        layoutStep2.setOnClickListener(v -> {
+            if (currentStep > 1) {
+                saveCurrentStepData();
+                navigateToStep(1);
+            } else if (currentStep == 0 && validateCurrentStep()) {
+                saveCurrentStepData();
+                navigateToStep(1);
+            }
+        });
+
+        layoutStep3.setOnClickListener(v -> {
+            // Only allow clicking if step 2 is completed
+            if (currentStep == 2)
+                return; // Already here
+            // Need to validate previous steps first
+        });
+    }
+
+    private void navigateToStep(int step) {
+        viewPagerSteps.setCurrentItem(step, true);
+    }
+
+    private boolean validateCurrentStep() {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + currentStep);
+        if (fragment == null) {
+            // Try alternative approach
+            fragment = adapter.createFragment(currentStep);
+        }
+
+        // Get fragment from ViewPager2
+        Fragment currentFragment = getSupportFragmentManager().findFragmentByTag("f" + viewPagerSteps.getCurrentItem());
+
+        switch (currentStep) {
+            case 0:
+                if (currentFragment instanceof CccdStep1Fragment) {
+                    return ((CccdStep1Fragment) currentFragment).validate();
+                }
+                break;
+            case 1:
+                if (currentFragment instanceof CccdStep2Fragment) {
+                    return ((CccdStep2Fragment) currentFragment).validate();
+                }
+                break;
+            case 2:
+                if (currentFragment instanceof CccdStep3Fragment) {
+                    return ((CccdStep3Fragment) currentFragment).validate();
+                }
+                break;
+        }
+        return true;
+    }
+
+    private void saveCurrentStepData() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentByTag("f" + viewPagerSteps.getCurrentItem());
+
+        switch (currentStep) {
+            case 0:
+                if (currentFragment instanceof CccdStep1Fragment) {
+                    ((CccdStep1Fragment) currentFragment).saveData();
+                }
+                break;
+            case 1:
+                if (currentFragment instanceof CccdStep2Fragment) {
+                    ((CccdStep2Fragment) currentFragment).saveData();
+                }
+                break;
         }
     }
 
-    private void openGallery(boolean isFront) {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        if (isFront) {
-            frontGalleryLauncher.launch(intent);
+    private void updateStepIndicator(int position) {
+        // Reset all steps to inactive
+        setStepState(tvStep1Number, tvStep1Label, position >= 0, position > 0);
+        setStepState(tvStep2Number, tvStep2Label, position >= 1, position > 1);
+        setStepState(tvStep3Number, tvStep3Label, position >= 2, false);
+
+        // Update connectors
+        viewConnector1.setBackgroundColor(ContextCompat.getColor(this,
+                position > 0 ? R.color.primary : R.color.divider));
+        viewConnector2.setBackgroundColor(ContextCompat.getColor(this,
+                position > 1 ? R.color.primary : R.color.divider));
+    }
+
+    private void setStepState(TextView numberView, TextView labelView, boolean isActive, boolean isCompleted) {
+        if (isCompleted) {
+            numberView.setBackgroundResource(R.drawable.bg_step_completed);
+            numberView.setText("✓");
+            numberView.setTextColor(ContextCompat.getColor(this, R.color.white));
+            labelView.setTextColor(ContextCompat.getColor(this, R.color.success));
+        } else if (isActive) {
+            numberView.setBackgroundResource(R.drawable.bg_step_active);
+            numberView.setTextColor(ContextCompat.getColor(this, R.color.white));
+            labelView.setTextColor(ContextCompat.getColor(this, R.color.primary));
         } else {
-            backGalleryLauncher.launch(intent);
+            numberView.setBackgroundResource(R.drawable.bg_step_inactive);
+            numberView.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            labelView.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
         }
     }
 
-    private File createImageFile() {
-        try {
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(System.currentTimeMillis());
-            String imageFileName = "CCCD_" + timeStamp + "_";
-            File storageDir = getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES);
-            return File.createTempFile(imageFileName, ".jpg", storageDir);
-        } catch (Exception e) {
-            Log.e(TAG, "Error creating image file", e);
-            return null;
+    private void updateButtons(int position) {
+        // Previous button
+        btnPrevious.setVisibility(position > 0 ? View.VISIBLE : View.INVISIBLE);
+
+        // Next button text
+        if (position == TOTAL_STEPS - 1) {
+            btnNext.setText("Xác thực");
+        } else {
+            btnNext.setText("Tiếp tục");
         }
     }
 
     private void handleSubmit() {
-        if (!validateInput()) {
-            return;
-        }
+        btnNext.setEnabled(false);
+        btnNext.setText("Đang xử lý...");
 
-        // Kiểm tra checkbox cam kết
-        if (!cbCommitment.isChecked()) {
-            Toast.makeText(this, "Vui lòng xác nhận cam kết thông tin chính xác", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Kiểm tra phải có ảnh (hoặc URI mới hoặc path đã có từ backend)
-        boolean hasFrontImage = (frontImageUri != null) || (frontImageUploaded && !frontImagePath.isEmpty());
-        boolean hasBackImage = (backImageUri != null) || (backImageUploaded && !backImagePath.isEmpty());
-
-        if (!hasFrontImage || !hasBackImage) {
-            Toast.makeText(this, "Vui lòng tải lên ảnh mặt trước và mặt sau CCCD", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        btnSubmit.setEnabled(false);
-        btnSubmit.setText("Đang xử lý...");
-
-        // Lấy userId từ UserManager - đây là userResponse.id (id: 9) để dùng cho entityId khi upload ảnh
-        // API updateUser sẽ dùng token từ header Authorization để xác định user
         String userId = UserManager.getInstance().getUserId();
-        Log.d(TAG, "========== VERIFY CCCD SUBMIT ==========");
-        Log.d(TAG, "UserId from UserManager: " + userId);
-
         if (userId == null || userId.isEmpty()) {
-            Log.e(TAG, "❌ UserId is NULL or EMPTY - User not logged in!");
-            Toast.makeText(this, "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Phiên đăng nhập hết hạn", Toast.LENGTH_SHORT).show();
             resetSubmitButton();
             return;
         }
@@ -368,108 +275,23 @@ public class VerifyCccdActivity extends AppCompatActivity {
         Long entityId;
         try {
             entityId = Long.parseLong(userId);
-            Log.d(TAG, "✅ EntityId for upload: " + entityId + " (from userResponse.id)");
         } catch (NumberFormatException e) {
-            Log.e(TAG, "❌ Invalid userId format: " + userId, e);
-            Toast.makeText(this, "Lỗi xác thực phiên đăng nhập. Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Lỗi xác thực phiên đăng nhập", Toast.LENGTH_SHORT).show();
             resetSubmitButton();
             return;
         }
 
-        // Nếu có ảnh mới được chọn, upload chúng. Nếu không, dùng path đã có
-        if (frontImageUri != null || backImageUri != null) {
-            // Có ít nhất một ảnh mới cần upload
+        // Upload images if needed
+        if (viewModel.getFrontImageUriValue() != null || viewModel.getBackImageUriValue() != null) {
             uploadImages(entityId);
         } else {
-            // Không có ảnh mới, chỉ cập nhật thông tin text với path ảnh đã có
             updateUserInfo();
         }
     }
 
-    private boolean validateInput() {
-        String cccdNumber = etCccdNumber.getText().toString().trim();
-        String fullName = etFullName.getText().toString().trim();
-        String gender = actvGender.getText().toString().trim();
-        String dateOfBirth = etDateOfBirth.getText().toString().trim();
-        String nationality = actvNationality.getText().toString().trim();
-        String permanentAddress = etPermanentAddress.getText().toString().trim();
-        String issueDate = etIssueDate.getText().toString().trim();
-        String issuePlace = etIssuePlace.getText().toString().trim();
-        String expiryDate = etExpiryDate.getText().toString().trim();
-
-        if (cccdNumber.isEmpty()) {
-            etCccdNumber.setError("Vui lòng nhập số CCCD");
-            etCccdNumber.requestFocus();
-            return false;
-        }
-
-        if (cccdNumber.length() != 9 && cccdNumber.length() != 12) {
-            etCccdNumber.setError("Số CCCD phải có 9 hoặc 12 số");
-            etCccdNumber.requestFocus();
-            return false;
-        }
-
-        if (fullName.isEmpty()) {
-            etFullName.setError("Vui lòng nhập họ tên");
-            etFullName.requestFocus();
-            return false;
-        }
-
-        if (gender.isEmpty()) {
-            actvGender.setError("Vui lòng chọn giới tính");
-            actvGender.requestFocus();
-            return false;
-        }
-
-        if (dateOfBirth.isEmpty()) {
-            etDateOfBirth.setError("Vui lòng chọn ngày sinh");
-            etDateOfBirth.requestFocus();
-            return false;
-        }
-
-        if (nationality.isEmpty()) {
-            actvNationality.setError("Vui lòng chọn quốc tịch");
-            actvNationality.requestFocus();
-            return false;
-        }
-
-        if (permanentAddress.isEmpty()) {
-            etPermanentAddress.setError("Vui lòng nhập địa chỉ thường trú");
-            etPermanentAddress.requestFocus();
-            return false;
-        }
-
-        if (issueDate.isEmpty()) {
-            etIssueDate.setError("Vui lòng chọn ngày cấp");
-            etIssueDate.requestFocus();
-            return false;
-        }
-
-        if (issuePlace.isEmpty()) {
-            etIssuePlace.setError("Vui lòng nhập nơi cấp");
-            etIssuePlace.requestFocus();
-            return false;
-        }
-
-        if (expiryDate.isEmpty()) {
-            etExpiryDate.setError("Vui lòng chọn ngày hết hạn");
-            etExpiryDate.requestFocus();
-            return false;
-        }
-
-        return true;
-    }
-
     private void uploadImages(Long entityId) {
-        // Kiểm tra xem ảnh nào cần upload
-        boolean needUploadFront = (frontImageUri != null);
-        boolean needUploadBack = (backImageUri != null);
-
-        if (needUploadFront) {
-            // Upload front image
-            pbFrontUpload.setVisibility(View.VISIBLE);
-
-            File frontFile = FileUtils.getFileFromUri(this, frontImageUri);
+        if (viewModel.getFrontImageUriValue() != null) {
+            File frontFile = FileUtils.getFileFromUri(this, viewModel.getFrontImageUriValue());
             if (frontFile == null) {
                 Toast.makeText(this, "Không thể đọc ảnh mặt trước", Toast.LENGTH_SHORT).show();
                 resetSubmitButton();
@@ -482,38 +304,27 @@ public class VerifyCccdActivity extends AppCompatActivity {
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     response -> {
-                                        pbFrontUpload.setVisibility(View.GONE);
-                                        ivFrontUploadSuccess.setVisibility(View.VISIBLE);
-                                        frontImageUploaded = true;
-                                        frontImagePath = response.getImagePath() != null ? response.getImagePath() : "";
-                                        Log.d(TAG, "Front image uploaded successfully: " + frontImagePath);
+                                        viewModel.setFrontImagePath(
+                                                response.getImagePath() != null ? response.getImagePath() : "");
+                                        viewModel.setFrontImageUploaded(true);
 
-                                        // Kiểm tra xem có cần upload back image không
-                                        if (needUploadBack) {
+                                        if (viewModel.getBackImageUriValue() != null) {
                                             uploadBackImage(entityId);
                                         } else {
-                                            // Không cần upload back image, cập nhật thông tin luôn
                                             updateUserInfo();
                                         }
                                     },
                                     error -> {
-                                        pbFrontUpload.setVisibility(View.GONE);
-                                        Log.e(TAG, "Error uploading front image", error);
-                                        Toast.makeText(this, "Lỗi tải lên ảnh mặt trước: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(this, "Lỗi tải ảnh mặt trước", Toast.LENGTH_SHORT).show();
                                         resetSubmitButton();
-                                    }
-                            )
-            );
-        } else if (needUploadBack) {
-            // Chỉ cần upload back image
+                                    }));
+        } else if (viewModel.getBackImageUriValue() != null) {
             uploadBackImage(entityId);
         }
     }
 
     private void uploadBackImage(Long entityId) {
-        pbBackUpload.setVisibility(View.VISIBLE);
-
-        File backFile = FileUtils.getFileFromUri(this, backImageUri);
+        File backFile = FileUtils.getFileFromUri(this, viewModel.getBackImageUriValue());
         if (backFile == null) {
             Toast.makeText(this, "Không thể đọc ảnh mặt sau", Toast.LENGTH_SHORT).show();
             resetSubmitButton();
@@ -526,46 +337,30 @@ public class VerifyCccdActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 response -> {
-                                    pbBackUpload.setVisibility(View.GONE);
-                                    ivBackUploadSuccess.setVisibility(View.VISIBLE);
-                                    backImageUploaded = true;
-                                    backImagePath = response.getImagePath() != null ? response.getImagePath() : "";
-                                    Log.d(TAG, "Back image uploaded successfully: " + backImagePath);
-
-                                    // Cả 2 ảnh đã xử lý xong, gọi API cập nhật user
+                                    viewModel.setBackImagePath(
+                                            response.getImagePath() != null ? response.getImagePath() : "");
+                                    viewModel.setBackImageUploaded(true);
                                     updateUserInfo();
                                 },
                                 error -> {
-                                    pbBackUpload.setVisibility(View.GONE);
-                                    Log.e(TAG, "Error uploading back image", error);
-                                    Toast.makeText(this, "Lỗi tải lên ảnh mặt sau: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Lỗi tải ảnh mặt sau", Toast.LENGTH_SHORT).show();
                                     resetSubmitButton();
-                                }
-                        )
-        );
+                                }));
     }
 
     private void updateUserInfo() {
         UpdateUserRequest request = new UpdateUserRequest();
-
-        // Set tất cả các trường thông tin CCCD
-        request.setIdNumber(etCccdNumber.getText().toString().trim());
-        request.setFullName(etFullName.getText().toString().trim());
-        request.setGender(actvGender.getText().toString().trim());
-        request.setDateOfBirth(convertToIso8601(etDateOfBirth.getText().toString().trim()));
-        request.setNationality(actvNationality.getText().toString().trim());
-
-        // Gửi địa chỉ thường trú vào field "address" (không phải "permanentAddress")
-        // Vì backend lưu vào userResponse.address theo swagger
-        request.setAddress(etPermanentAddress.getText().toString().trim());
-
-        request.setIssueDate(convertToIso8601(etIssueDate.getText().toString().trim()));
-        request.setIssuePlace(etIssuePlace.getText().toString().trim());
-        request.setExpiryDate(convertToIso8601(etExpiryDate.getText().toString().trim()));
-        request.setFrontIdPath(frontImagePath);
-        request.setBackIdImgPath(backImagePath);
-
-        Log.d(TAG, "Updating user info with address: " + etPermanentAddress.getText().toString().trim());
+        request.setIdNumber(viewModel.getCccdNumberValue());
+        request.setFullName(viewModel.getFullNameValue());
+        request.setGender(viewModel.getGenderValue());
+        request.setDateOfBirth(convertToIso8601(viewModel.getDateOfBirthValue()));
+        request.setNationality(viewModel.getNationalityValue());
+        request.setAddress(viewModel.getPermanentAddressValue());
+        request.setIssueDate(convertToIso8601(viewModel.getIssueDateValue()));
+        request.setIssuePlace(viewModel.getIssuePlaceValue());
+        request.setExpiryDate(convertToIso8601(viewModel.getExpiryDateValue()));
+        request.setFrontIdPath(viewModel.getFrontImagePathValue());
+        request.setBackIdImgPath(viewModel.getBackImagePathValue());
 
         compositeDisposable.add(
                 authRepository.updateUser(request)
@@ -573,33 +368,19 @@ public class VerifyCccdActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 response -> {
-                                    Log.d(TAG, "User info updated successfully");
-                                    Toast.makeText(this, "Xác thực CCCD thành công! Ví của bạn đã được kích hoạt.", Toast.LENGTH_LONG).show();
-
-                                    // Quay về ProfileActivity
+                                    Toast.makeText(this, "Xác thực CCCD thành công!", Toast.LENGTH_LONG).show();
                                     finish();
                                 },
                                 error -> {
-                                    Log.e(TAG, "Error updating user info", error);
-                                    Toast.makeText(this, "Lỗi cập nhật thông tin: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Lỗi cập nhật thông tin", Toast.LENGTH_SHORT).show();
                                     resetSubmitButton();
-                                }
-                        )
-        );
+                                }));
     }
 
-    /**
-     * Load thông tin user từ backend và pre-fill vào các trường
-     */
     private void loadUserInfo() {
         String userId = UserManager.getInstance().getUserId();
-
-        if (userId == null || userId.isEmpty()) {
-            Log.w(TAG, "UserId not found, skipping user info loading");
+        if (userId == null || userId.isEmpty())
             return;
-        }
-
-        Log.d(TAG, "Loading user info for userId: " + userId);
 
         compositeDisposable.add(
                 authRepository.getUserInfo(userId)
@@ -608,130 +389,49 @@ public class VerifyCccdActivity extends AppCompatActivity {
                         .subscribe(
                                 response -> {
                                     if (response.isSuccess() && response.getData() != null) {
-                                        Log.d(TAG, "User info loaded successfully");
                                         prefillUserData(response.getData());
-                                    } else {
-                                        Log.w(TAG, "User info response not successful or data is null");
                                     }
                                 },
-                                error -> {
-                                    Log.e(TAG, "Error loading user info", error);
-                                    // Không hiển thị lỗi cho user vì đây chỉ là pre-fill data
-                                    // User vẫn có thể nhập thủ công
-                                }
-                        )
-        );
+                                error -> Log.e(TAG, "Error loading user info", error)));
     }
 
-    /**
-     * Pre-fill dữ liệu user vào các trường
-     */
-    private void prefillUserData(UserInfoResponse.UserData userData) {
-        Log.d(TAG, "Pre-filling user data");
+    private void prefillUserData(com.parkmate.android.model.response.UserInfoResponse.UserData userData) {
+        if (userData.getIdNumber() != null)
+            viewModel.setCccdNumber(userData.getIdNumber());
+        if (userData.getFullName() != null)
+            viewModel.setFullName(userData.getFullName());
+        if (userData.getGender() != null)
+            viewModel.setGender(userData.getGender());
+        if (userData.getDateOfBirth() != null)
+            viewModel.setDateOfBirth(convertFromIso8601(userData.getDateOfBirth()));
+        if (userData.getNationality() != null)
+            viewModel.setNationality(userData.getNationality());
+        if (userData.getAddress() != null)
+            viewModel.setPermanentAddress(userData.getAddress());
+        if (userData.getIssueDate() != null)
+            viewModel.setIssueDate(convertFromIso8601(userData.getIssueDate()));
+        if (userData.getIssuePlace() != null)
+            viewModel.setIssuePlace(userData.getIssuePlace());
+        if (userData.getExpiryDate() != null)
+            viewModel.setExpiryDate(convertFromIso8601(userData.getExpiryDate()));
 
-        // Số CCCD
-        if (userData.getIdNumber() != null && !userData.getIdNumber().isEmpty()) {
-            etCccdNumber.setText(userData.getIdNumber());
-        }
-
-        // Họ tên
-        if (userData.getFullName() != null && !userData.getFullName().isEmpty()) {
-            etFullName.setText(userData.getFullName());
-        }
-
-        // Giới tính
-        if (userData.getGender() != null && !userData.getGender().isEmpty()) {
-            actvGender.setText(userData.getGender(), false);
-        }
-
-        // Ngày sinh - convert từ ISO8601 sang dd/MM/yyyy
-        if (userData.getDateOfBirth() != null && !userData.getDateOfBirth().isEmpty()) {
-            String formattedDate = convertFromIso8601(userData.getDateOfBirth());
-            etDateOfBirth.setText(formattedDate);
-        }
-
-        // Quốc tịch
-        if (userData.getNationality() != null && !userData.getNationality().isEmpty()) {
-            actvNationality.setText(userData.getNationality(), false);
-        }
-
-        // Địa chỉ thường trú
-        if (userData.getAddress() != null && !userData.getAddress().isEmpty()) {
-            etPermanentAddress.setText(userData.getAddress());
-        }
-
-        // Ngày cấp
-        if (userData.getIssueDate() != null && !userData.getIssueDate().isEmpty()) {
-            String formattedDate = convertFromIso8601(userData.getIssueDate());
-            etIssueDate.setText(formattedDate);
-        }
-
-        // Nơi cấp
-        if (userData.getIssuePlace() != null && !userData.getIssuePlace().isEmpty()) {
-            etIssuePlace.setText(userData.getIssuePlace());
-        }
-
-        // Ngày hết hạn
-        if (userData.getExpiryDate() != null && !userData.getExpiryDate().isEmpty()) {
-            String formattedDate = convertFromIso8601(userData.getExpiryDate());
-            etExpiryDate.setText(formattedDate);
-        }
-
-        // Đường dẫn ảnh mặt trước
+        // Set image paths (for re-upload)
         if (userData.getFrontIdPath() != null && !userData.getFrontIdPath().isEmpty()) {
-            frontImagePath = userData.getFrontIdPath();
-            frontImageUploaded = true;
-            ivFrontUploadSuccess.setVisibility(View.VISIBLE);
-            Log.d(TAG, "Front ID image already uploaded: " + frontImagePath);
+            viewModel.setFrontImagePath(userData.getFrontIdPath());
+            viewModel.setFrontImageUploaded(true);
         }
-
-        // Load ảnh mặt trước từ presigned URL nếu có
-        if (userData.getFrontPhotoPresignedUrl() != null && !userData.getFrontPhotoPresignedUrl().isEmpty()) {
-            Log.d(TAG, "Loading front image from URL: " + userData.getFrontPhotoPresignedUrl());
-
-            RequestOptions options = new RequestOptions()
-                    .placeholder(R.drawable.bg_image_placeholder) // placeholder khi đang load
-                    .error(R.drawable.bg_image_placeholder) // ảnh hiển thị khi lỗi
-                    .diskCacheStrategy(DiskCacheStrategy.NONE) // không cache vì URL có thời hạn
-                    .skipMemoryCache(true);
-
-            Glide.with(this)
-                    .load(userData.getFrontPhotoPresignedUrl())
-                    .apply(options)
-                    .into(ivFrontImage);
-
-            ivFrontImage.setVisibility(View.VISIBLE);
-            llFrontImagePlaceholder.setVisibility(View.GONE);
-        }
-
-        // Đường dẫn ảnh mặt sau
         if (userData.getBackIdImgPath() != null && !userData.getBackIdImgPath().isEmpty()) {
-            backImagePath = userData.getBackIdImgPath();
-            backImageUploaded = true;
-            ivBackUploadSuccess.setVisibility(View.VISIBLE);
-            Log.d(TAG, "Back ID image already uploaded: " + backImagePath);
+            viewModel.setBackImagePath(userData.getBackIdImgPath());
+            viewModel.setBackImageUploaded(true);
         }
 
-        // Load ảnh mặt sau từ presigned URL nếu có
+        // Set presigned URLs for image display (Glide will load these)
+        if (userData.getFrontPhotoPresignedUrl() != null && !userData.getFrontPhotoPresignedUrl().isEmpty()) {
+            viewModel.setFrontPhotoPresignedUrl(userData.getFrontPhotoPresignedUrl());
+        }
         if (userData.getBackPhotoPresignedUrl() != null && !userData.getBackPhotoPresignedUrl().isEmpty()) {
-            Log.d(TAG, "Loading back image from URL: " + userData.getBackPhotoPresignedUrl());
-
-            RequestOptions options = new RequestOptions()
-                    .placeholder(R.drawable.bg_image_placeholder) // placeholder khi đang load
-                    .error(R.drawable.bg_image_placeholder) // ảnh hiển thị khi lỗi
-                    .diskCacheStrategy(DiskCacheStrategy.NONE) // không cache vì URL có thời hạn
-                    .skipMemoryCache(true);
-
-            Glide.with(this)
-                    .load(userData.getBackPhotoPresignedUrl())
-                    .apply(options)
-                    .into(ivBackImage);
-
-            ivBackImage.setVisibility(View.VISIBLE);
-            llBackImagePlaceholder.setVisibility(View.GONE);
+            viewModel.setBackPhotoPresignedUrl(userData.getBackPhotoPresignedUrl());
         }
-
-        Log.d(TAG, "User data pre-filled successfully");
     }
 
     private String convertToIso8601(String dateString) {
@@ -740,35 +440,29 @@ public class VerifyCccdActivity extends AppCompatActivity {
             SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00", Locale.getDefault());
             return outputFormat.format(inputFormat.parse(dateString));
         } catch (Exception e) {
-            Log.e(TAG, "Error converting date", e);
             return dateString;
         }
     }
 
-    /**
-     * Chuyển đổi từ ISO8601 (yyyy-MM-dd'T'HH:mm:ss) sang dd/MM/yyyy
-     */
     private String convertFromIso8601(String iso8601Date) {
         try {
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
             SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             return outputFormat.format(inputFormat.parse(iso8601Date));
         } catch (Exception e) {
-            // Thử parse với format khác nếu format trên không match
             try {
-                SimpleDateFormat altInputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                SimpleDateFormat altFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                return outputFormat.format(altInputFormat.parse(iso8601Date));
+                return outputFormat.format(altFormat.parse(iso8601Date));
             } catch (Exception e2) {
-                Log.e(TAG, "Error converting date from ISO8601", e2);
                 return iso8601Date;
             }
         }
     }
 
     private void resetSubmitButton() {
-        btnSubmit.setEnabled(true);
-        btnSubmit.setText("Xác thực");
+        btnNext.setEnabled(true);
+        btnNext.setText("Xác thực");
     }
 
     @Override

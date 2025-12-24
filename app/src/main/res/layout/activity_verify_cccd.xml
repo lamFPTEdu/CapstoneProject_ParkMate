@@ -1,464 +1,214 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- CCCD Verification - Stepped Wizard Design -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
     android:background="@color/white">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- Header with Back Button and Progress -->
+    <LinearLayout
+        android:id="@+id/layoutHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="32dp">
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <!-- Back Button -->
         <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:background="@android:color/transparent"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/back"
             android:src="@drawable/ic_arrow_back_24"
-            app:tint="@color/black"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:tint="@color/text_primary" />
 
         <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="72dp"
+            android:layout_marginTop="16dp"
             android:text="@string/verify_cccd_title"
-            android:textColor="#222B45"
+            android:textColor="@color/text_primary"
             android:textSize="24sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textStyle="bold" />
 
-        <!-- Subtitle -->
-        <TextView
-            android:id="@+id/tvSubtitle"
-            android:layout_width="0dp"
+        <!-- Step Indicator -->
+        <LinearLayout
+            android:id="@+id/layoutStepIndicator"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            android:gravity="center"
-            android:text="@string/verify_cccd_subtitle"
-            android:textColor="#8F9BB3"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:gravity="center">
 
-        <!-- CCCD Number Field -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilCccdNumber"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvSubtitle">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etCccdNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/cccd_number"
-                android:inputType="number" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Full Name Field -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilFullName"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilCccdNumber">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etFullName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/full_name_cccd" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Gender Field -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilGender"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilFullName">
-
-            <AutoCompleteTextView
-                android:id="@+id/actvGender"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/gender"
-                android:inputType="none" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Date of Birth -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilDateOfBirth"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilGender"
-            app:endIconDrawable="@drawable/ic_calendar"
-            app:endIconMode="custom">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDateOfBirth"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/date_of_birth"
-                android:inputType="none"
-                android:focusable="false"
-                android:clickable="true"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Nationality Field (Dropdown) -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilNationality"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilDateOfBirth">
-
-            <AutoCompleteTextView
-                android:id="@+id/actvNationality"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/nationality"
-                android:inputType="none" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Permanent Address Field -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilPermanentAddress"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilNationality">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPermanentAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="top"
-                android:hint="@string/permanent_address"
-                android:minLines="2" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Issue Date Field -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilIssueDate"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilPermanentAddress"
-            app:endIconDrawable="@drawable/ic_calendar"
-            app:endIconMode="custom">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etIssueDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/issue_date"
-                android:inputType="none"
-                android:focusable="false"
-                android:clickable="true"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Issue Place Field -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilIssuePlace"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilIssueDate">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etIssuePlace"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/issue_place" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Expiry Date Field -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilExpiryDate"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilIssuePlace"
-            app:endIconDrawable="@drawable/ic_calendar"
-            app:endIconMode="custom">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etExpiryDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/expiry_date"
-                android:inputType="none"
-                android:focusable="false"
-                android:clickable="true"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Upload Images Section Title -->
-        <TextView
-            android:id="@+id/tvUploadTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
-            android:text="@string/upload_title"
-            android:textColor="#222B45"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilExpiryDate" />
-
-        <!-- Front Image Title -->
-        <TextView
-            android:id="@+id/tvFrontImageTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/front_image_title"
-            android:textColor="#222B45"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvUploadTitle" />
-
-        <!-- Front Image Frame -->
-        <FrameLayout
-            android:id="@+id/flFrontImage"
-            android:layout_width="0dp"
-            android:layout_height="200dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="32dp"
-            android:background="@drawable/bg_image_placeholder"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvFrontImageTitle">
-
-            <ImageView
-                android:id="@+id/ivFrontImage"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:contentDescription="@string/front_side_id" />
-
+            <!-- Step 1 -->
             <LinearLayout
-                android:id="@+id/llFrontImagePlaceholder"
-                android:layout_width="wrap_content"
+                android:id="@+id/layoutStep1"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
-
-                <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_camera"
-                    app:tint="#8F9BB3"
-                    android:contentDescription="@string/camera_icon" />
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/take_front_photo"
-                    android:textColor="#8F9BB3"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <ProgressBar
-                android:id="@+id/pbFrontUpload"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/ivFrontUploadSuccess"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="end|top"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_check_circle"
-                app:tint="#00E096"
-                android:visibility="gone"
-                android:contentDescription="@string/upload_success" />
-        </FrameLayout>
-
-        <!-- Back Image Title -->
-        <TextView
-            android:id="@+id/tvBackImageTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="24dp"
-            android:text="@string/back_image_title"
-            android:textColor="#222B45"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/flFrontImage" />
-
-        <!-- Back Image Frame -->
-        <FrameLayout
-            android:id="@+id/flBackImage"
-            android:layout_width="0dp"
-            android:layout_height="200dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="32dp"
-            android:background="@drawable/bg_image_placeholder"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvBackImageTitle">
-
-            <ImageView
-                android:id="@+id/ivBackImage"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:contentDescription="@string/back_side_id" />
-
-            <LinearLayout
-                android:id="@+id/llBackImagePlaceholder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_camera"
-                    app:tint="#8F9BB3"
-                    android:contentDescription="@string/camera_icon" />
+                    android:id="@+id/tvStep1Number"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_step_active" />
 
                 <TextView
+                    android:id="@+id/tvStep1Label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/take_back_photo"
-                    android:textColor="#8F9BB3"
-                    android:textSize="14sp" />
+                    android:layout_marginTop="4dp"
+                    android:text="Thông tin"
+                    android:textColor="@color/primary"
+                    android:textSize="11sp" />
             </LinearLayout>
 
-            <ProgressBar
-                android:id="@+id/pbBackUpload"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                android:visibility="gone" />
+            <!-- Connector 1-2 -->
+            <View
+                android:id="@+id/viewConnector1"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:layout_weight="0.5"
+                android:layout_marginBottom="16dp"
+                android:background="@color/divider" />
 
-            <ImageView
-                android:id="@+id/ivBackUploadSuccess"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="end|top"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_check_circle"
-                app:tint="#00E096"
-                android:visibility="gone"
-                android:contentDescription="@string/upload_success" />
-        </FrameLayout>
+            <!-- Step 2 -->
+            <LinearLayout
+                android:id="@+id/layoutStep2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
 
-        <!-- Commitment Checkbox -->
-        <CheckBox
-            android:id="@+id/cbCommitment"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="32dp"
-            android:text="@string/commitment_text"
-            android:textSize="14sp"
-            android:textColor="#222B45"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/flBackImage" />
+                <TextView
+                    android:id="@+id/tvStep2Number"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:gravity="center"
+                    android:text="2"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_step_inactive" />
 
-        <!-- Submit Button -->
+                <TextView
+                    android:id="@+id/tvStep2Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Chi tiết"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Connector 2-3 -->
+            <View
+                android:id="@+id/viewConnector2"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:layout_weight="0.5"
+                android:layout_marginBottom="16dp"
+                android:background="@color/divider" />
+
+            <!-- Step 3 -->
+            <LinearLayout
+                android:id="@+id/layoutStep3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/tvStep3Number"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_step_inactive" />
+
+                <TextView
+                    android:id="@+id/tvStep3Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Tải ảnh"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ViewPager for Steps -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPagerSteps"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader"
+        app:layout_constraintBottom_toTopOf="@id/layoutButtons" />
+
+    <!-- Bottom Navigation Buttons -->
+    <LinearLayout
+        android:id="@+id/layoutButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/white"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSubmit"
+            android:id="@+id/btnPrevious"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="32dp"
-            android:backgroundTint="#1947ff"
-            android:paddingVertical="12dp"
-            android:text="@string/verify_button"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            app:cornerRadius="24dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cbCommitment" />
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Quay lại"
+            android:textColor="@color/primary"
+            android:visibility="invisible"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/primary" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Tiếp tục"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

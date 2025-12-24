@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.parkmate.android.R;
 import com.parkmate.android.adapter.VehicleSelectionAdapter;
@@ -26,7 +27,9 @@ import com.parkmate.android.model.response.VehicleResponse;
 import com.parkmate.android.network.ApiClient;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -36,6 +39,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class VehicleSelectionActivity extends AppCompatActivity {
 
     private MaterialToolbar toolbar;
+    private TabLayout tabLayoutVehicleTypes;
     private TextInputEditText etReservedFrom;
     private TextInputEditText etAssumedMinutes;
     private RecyclerView rvVehicles;
@@ -49,6 +53,7 @@ public class VehicleSelectionActivity extends AppCompatActivity {
     private Long parkingLotId;
     private Long selectedVehicleId = null;
     private Calendar selectedDateTime;
+    private String currentVehicleType = null; // Current selected vehicle type filter
     private final SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
     private final SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
@@ -56,7 +61,7 @@ public class VehicleSelectionActivity extends AppCompatActivity {
     private int currentVehiclePage = 0;
     private boolean isLoadingVehicles = false;
     private boolean isLastVehiclePage = false;
-    private static final int VEHICLE_PAGE_SIZE = 4;
+    private static final int VEHICLE_PAGE_SIZE = 10;
     private final java.util.List<Vehicle> allVehicles = new java.util.ArrayList<>();
 
     @Override
@@ -78,6 +83,7 @@ public class VehicleSelectionActivity extends AppCompatActivity {
 
     private void initializeViews() {
         toolbar = findViewById(R.id.toolbar);
+        tabLayoutVehicleTypes = findViewById(R.id.tabLayoutVehicleTypes);
         etReservedFrom = findViewById(R.id.etReservedFrom);
         etAssumedMinutes = findViewById(R.id.etAssumedMinutes);
         rvVehicles = findViewById(R.id.rvVehicles);
@@ -117,7 +123,117 @@ public class VehicleSelectionActivity extends AppCompatActivity {
             }
         });
 
+        // Setup vehicle type tabs
+        setupVehicleTypeTabs();
+
         selectedDateTime = Calendar.getInstance();
+    }
+
+    /**
+     * Setup vehicle type tabs
+     */
+    private void setupVehicleTypeTabs() {
+        tabLayoutVehicleTypes.removeAllTabs();
+
+        // Add "All" tab first
+        TabLayout.Tab allTab = tabLayoutVehicleTypes.newTab();
+        allTab.setText("Tất cả");
+        allTab.setTag(null);
+        tabLayoutVehicleTypes.addTab(allTab);
+
+        // Add vehicle type tabs
+        TabLayout.Tab carTab = tabLayoutVehicleTypes.newTab();
+        carTab.setText("Ô tô");
+        carTab.setTag("CAR_UP_TO_9_SEATS");
+        tabLayoutVehicleTypes.addTab(carTab);
+
+        TabLayout.Tab motorbikeTab = tabLayoutVehicleTypes.newTab();
+        motorbikeTab.setText("Xe máy");
+        motorbikeTab.setTag("MOTORBIKE");
+        tabLayoutVehicleTypes.addTab(motorbikeTab);
+
+        TabLayout.Tab bikeTab = tabLayoutVehicleTypes.newTab();
+        bikeTab.setText("Xe đạp");
+        bikeTab.setTag("BIKE");
+        tabLayoutVehicleTypes.addTab(bikeTab);
+
+        // Tab selection listener
+        tabLayoutVehicleTypes.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                currentVehicleType = (String) tab.getTag();
+                // Reset selection when changing tab
+                selectedVehicleId = null;
+                vehicleAdapter.clearSelection();
+                checkFormValidity();
+                // Filter vehicles
+                filterVehiclesByType();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
+    }
+
+    /**
+     * Filter vehicles by current selected type
+     */
+    private void filterVehiclesByType() {
+        if (allVehicles.isEmpty()) {
+            showNoVehicles();
+            return;
+        }
+
+        if (currentVehicleType == null) {
+            // Show all vehicles
+            vehicleAdapter.updateVehicles(allVehicles);
+            if (allVehicles.isEmpty()) {
+                showNoVehicles();
+            } else {
+                tvNoVehicles.setVisibility(View.GONE);
+                rvVehicles.setVisibility(View.VISIBLE);
+            }
+        } else {
+            // Filter by vehicle type
+            List<Vehicle> filteredVehicles = new ArrayList<>();
+            for (Vehicle vehicle : allVehicles) {
+                if (currentVehicleType.equals(vehicle.getVehicleType())) {
+                    filteredVehicles.add(vehicle);
+                }
+            }
+            vehicleAdapter.updateVehicles(filteredVehicles);
+            if (filteredVehicles.isEmpty()) {
+                tvNoVehicles.setText("Không có xe " + getVehicleTypeName(currentVehicleType) + " nào");
+                tvNoVehicles.setVisibility(View.VISIBLE);
+                rvVehicles.setVisibility(View.GONE);
+            } else {
+                tvNoVehicles.setVisibility(View.GONE);
+                rvVehicles.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    /**
+     * Get display name for vehicle type
+     */
+    private String getVehicleTypeName(String vehicleType) {
+        if (vehicleType == null)
+            return "";
+        switch (vehicleType) {
+            case "CAR_UP_TO_9_SEATS":
+                return "ô tô";
+            case "MOTORBIKE":
+                return "xe máy";
+            case "BIKE":
+                return "xe đạp";
+            default:
+                return vehicleType;
+        }
     }
 
     private void setupClickListeners() {
@@ -127,7 +243,8 @@ public class VehicleSelectionActivity extends AppCompatActivity {
         // Add text watcher for etAssumedMinutes
         etAssumedMinutes.addTextChangedListener(new android.text.TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -135,7 +252,8 @@ public class VehicleSelectionActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(android.text.Editable s) {}
+            public void afterTextChanged(android.text.Editable s) {
+            }
         });
     }
 
@@ -162,27 +280,27 @@ public class VehicleSelectionActivity extends AppCompatActivity {
                             },
                             now.get(Calendar.HOUR_OF_DAY),
                             now.get(Calendar.MINUTE),
-                            true
-                    ).show();
+                            true).show();
                 },
                 now.get(Calendar.YEAR),
                 now.get(Calendar.MONTH),
-                now.get(Calendar.DAY_OF_MONTH)
-        );
+                now.get(Calendar.DAY_OF_MONTH));
 
         datePickerDialog.getDatePicker().setMinDate(now.getTimeInMillis());
         datePickerDialog.show();
     }
 
     private void loadVehicles() {
-        if (isLoadingVehicles) return;
+        if (isLoadingVehicles)
+            return;
 
         isLoadingVehicles = true;
         showLoading(true);
 
         compositeDisposable.add(
                 ApiClient.getApiService()
-                        .getVehiclesWithFilter(currentVehiclePage, VEHICLE_PAGE_SIZE, "createdAt", "asc", true, parkingLotId)
+                        .getVehiclesWithFilter(currentVehiclePage, VEHICLE_PAGE_SIZE, "createdAt", "desc", true,
+                                parkingLotId)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -193,12 +311,16 @@ public class VehicleSelectionActivity extends AppCompatActivity {
                                     if (response.isSuccess() && response.getData() != null) {
                                         VehicleResponse vehicleResponse = response.getData();
                                         android.util.Log.d("VehicleSelection", "Page " + currentVehiclePage +
-                                            " - Total elements: " + vehicleResponse.getTotalElements() +
-                                            ", Total pages: " + vehicleResponse.getTotalPages() +
-                                            ", Is last: " + vehicleResponse.isLast() +
-                                            ", Content size: " + (vehicleResponse.getContent() != null ? vehicleResponse.getContent().size() : 0));
+                                                " - Total elements: " + vehicleResponse.getTotalElements() +
+                                                ", Total pages: " + vehicleResponse.getTotalPages() +
+                                                ", Is last: " + vehicleResponse.isLast() +
+                                                ", Content size: "
+                                                + (vehicleResponse.getContent() != null
+                                                        ? vehicleResponse.getContent().size()
+                                                        : 0));
 
-                                        if (vehicleResponse.getContent() != null && !vehicleResponse.getContent().isEmpty()) {
+                                        if (vehicleResponse.getContent() != null
+                                                && !vehicleResponse.getContent().isEmpty()) {
                                             // Filter out inactive vehicles (soft deleted)
                                             java.util.List<Vehicle> activeVehicles = new java.util.ArrayList<>();
                                             for (Vehicle vehicle : vehicleResponse.getContent()) {
@@ -207,33 +329,44 @@ public class VehicleSelectionActivity extends AppCompatActivity {
                                                 }
                                             }
 
-                                            android.util.Log.d("VehicleSelection", "Active vehicles in this page: " + activeVehicles.size() +
-                                                ", Total vehicles loaded: " + (allVehicles.size() + activeVehicles.size()));
+                                            android.util.Log.d("VehicleSelection",
+                                                    "Active vehicles in this page: " + activeVehicles.size() +
+                                                            ", Total vehicles loaded: "
+                                                            + (allVehicles.size() + activeVehicles.size()));
 
                                             if (!activeVehicles.isEmpty()) {
                                                 allVehicles.addAll(activeVehicles);
-                                                vehicleAdapter.updateVehicles(allVehicles);
+                                                // Filter by current tab selection
+                                                filterVehiclesByType();
 
                                                 // Check if this is the last page
                                                 isLastVehiclePage = vehicleResponse.isLast();
 
-                                                tvNoVehicles.setVisibility(View.GONE);
-                                                rvVehicles.setVisibility(View.VISIBLE);
-
-                                                // Auto-load next page if total vehicles < 5 (not enough to fill screen and enable scroll)
+                                                // Auto-load next page if total vehicles < 5 (not enough to fill screen
+                                                // and enable scroll)
                                                 if (allVehicles.size() < 5 && !isLastVehiclePage) {
-                                                    android.util.Log.d("VehicleSelection", "Auto-loading next page because only " + allVehicles.size() + " vehicles loaded");
+                                                    android.util.Log.d("VehicleSelection",
+                                                            "Auto-loading next page because only " + allVehicles.size()
+                                                                    + " vehicles loaded");
                                                     // Post delayed to avoid blocking UI
                                                     rvVehicles.postDelayed(() -> loadMoreVehicles(), 300);
                                                 }
-                                            } else if (currentVehiclePage == 0) {
-                                                showNoVehicles();
+                                            } else if (currentVehiclePage == 0 && allVehicles.isEmpty()) {
+                                                // Only show no vehicles if we've loaded first page and still have no
+                                                // active vehicles
+                                                // Keep loading next pages to find active vehicles
+                                                if (!isLastVehiclePage) {
+                                                    loadMoreVehicles();
+                                                } else {
+                                                    showNoVehicles();
+                                                }
                                             }
                                         } else if (currentVehiclePage == 0) {
                                             showNoVehicles();
                                         }
                                     } else {
-                                        showError(response.getError() != null ? response.getError() : "Failed to load vehicles");
+                                        showError(response.getError() != null ? response.getError()
+                                                : "Failed to load vehicles");
                                     }
                                 },
                                 throwable -> {
@@ -241,9 +374,7 @@ public class VehicleSelectionActivity extends AppCompatActivity {
                                     showLoading(false);
                                     android.util.Log.e("VehicleSelection", "Error loading vehicles", throwable);
                                     showError("Network error: " + throwable.getMessage());
-                                }
-                        )
-        );
+                                }));
     }
 
     private void loadMoreVehicles() {
@@ -257,8 +388,8 @@ public class VehicleSelectionActivity extends AppCompatActivity {
         // Check if vehicle is disabled
         if (vehicle.isHasSubscriptionInThisParkingLot() || vehicle.isInReservation()) {
             String message = vehicle.isHasSubscriptionInThisParkingLot()
-                ? "Xe này đã có vé tháng tại bãi xe này"
-                : "Xe này đang trong phiên đặt chỗ khác";
+                    ? "Xe này đã có vé tháng tại bãi xe này"
+                    : "Xe này đang trong phiên đặt chỗ khác";
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -325,9 +456,7 @@ public class VehicleSelectionActivity extends AppCompatActivity {
                                     showLoading(false);
                                     android.util.Log.e("VehicleSelection", "Error getting vehicle", throwable);
                                     showError("Network error: " + throwable.getMessage());
-                                }
-                        )
-        );
+                                }));
     }
 
     private void checkAvailableSpotsWithVehicle(Vehicle vehicle, String reservedFrom, int assumedMinutes) {
@@ -342,16 +471,15 @@ public class VehicleSelectionActivity extends AppCompatActivity {
                                     if (response.isSuccess() && response.getData() != null) {
                                         handleAvailableSpotResponse(response.getData());
                                     } else {
-                                        showError(response.getError() != null ? response.getError() : "Failed to check availability");
+                                        showError(response.getError() != null ? response.getError()
+                                                : "Failed to check availability");
                                     }
                                 },
                                 throwable -> {
                                     showLoading(false);
                                     android.util.Log.e("VehicleSelection", "Error checking spots", throwable);
                                     showError("Network error: " + throwable.getMessage());
-                                }
-                        )
-        );
+                                }));
     }
 
     private void handleAvailableSpotResponse(AvailableSpotResponse.Data data) {
@@ -403,4 +531,3 @@ public class VehicleSelectionActivity extends AppCompatActivity {
         compositeDisposable.clear();
     }
 }
-

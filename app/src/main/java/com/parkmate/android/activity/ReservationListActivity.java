@@ -157,56 +157,54 @@ public class ReservationListActivity extends AppCompatActivity {
     }
 
     private void loadReservations() {
-        if (isLoading) return;
+        if (isLoading)
+            return;
 
         isLoading = true;
         showLoading(true);
 
         compositeDisposable.add(
-            reservationRepository.getMyReservations(currentPage, PAGE_SIZE)
-                .subscribe(
-                    response -> {
-                        isLoading = false;
-                        showLoading(false);
-                        swipeRefreshLayout.setRefreshing(false);
+                reservationRepository.getMyReservations(currentPage, PAGE_SIZE)
+                        .subscribe(
+                                response -> {
+                                    isLoading = false;
+                                    showLoading(false);
+                                    swipeRefreshLayout.setRefreshing(false);
 
-                        if (response.isSuccess() && response.getData() != null) {
-                            // Lấy content từ PageResponse
-                            if (response.getData().getContent() != null) {
-                                List<Reservation> newReservations = response.getData().getContent();
+                                    if (response.isSuccess() && response.getData() != null) {
+                                        // Lấy content từ PageResponse
+                                        if (response.getData().getContent() != null) {
+                                            List<Reservation> newReservations = response.getData().getContent();
 
-                                if (currentPage == 0) {
-                                    reservationList.clear();
-                                }
+                                            if (currentPage == 0) {
+                                                reservationList.clear();
+                                            }
 
-                                reservationList.addAll(newReservations);
+                                            reservationList.addAll(newReservations);
 
-                                // Check if this is the last page
-                                isLastPage = response.getData().isLast();
+                                            // Check if this is the last page
+                                            isLastPage = response.getData().isLast();
 
+                                            adapter.notifyDataSetChanged();
 
-                                adapter.notifyDataSetChanged();
-
-                                // Hiển thị empty state nếu không có data
-                                if (reservationList.isEmpty()) {
-                                    tvEmptyState.setVisibility(View.VISIBLE);
-                                    rvReservations.setVisibility(View.GONE);
-                                } else {
-                                    tvEmptyState.setVisibility(View.GONE);
-                                    rvReservations.setVisibility(View.VISIBLE);
-                                }
-                            }
-                        }
-                    },
-                    error -> {
-                        isLoading = false;
-                        showLoading(false);
-                        swipeRefreshLayout.setRefreshing(false);
-                        Log.e(TAG, "Lỗi tải danh sách: " + error.getMessage(), error);
-                        Toast.makeText(this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                )
-        );
+                                            // Hiển thị empty state nếu không có data
+                                            if (reservationList.isEmpty()) {
+                                                tvEmptyState.setVisibility(View.VISIBLE);
+                                                rvReservations.setVisibility(View.GONE);
+                                            } else {
+                                                tvEmptyState.setVisibility(View.GONE);
+                                                rvReservations.setVisibility(View.VISIBLE);
+                                            }
+                                        }
+                                    }
+                                },
+                                error -> {
+                                    isLoading = false;
+                                    showLoading(false);
+                                    swipeRefreshLayout.setRefreshing(false);
+                                    Log.e(TAG, "Lỗi tải danh sách: " + error.getMessage(), error);
+                                    Toast.makeText(this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                }));
     }
 
     private void loadMoreReservations() {
@@ -225,85 +223,95 @@ public class ReservationListActivity extends AppCompatActivity {
         int refundMinutes = policy != null ? policy.getRefundWindowMinutes() : 30;
 
         String parkingLotName = reservation.getParkingLotName() != null
-            ? reservation.getParkingLotName()
-            : "Bãi đỗ xe";
+                ? reservation.getParkingLotName()
+                : "Bãi đỗ xe";
 
         String timeInfo = reservation.getReservedFrom() != null
-            ? reservation.getReservedFrom()
-            : "";
+                ? reservation.getReservedFrom()
+                : "";
 
         int fee = reservation.getInitialFee() != null ? reservation.getInitialFee() : 0;
 
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("⚠️ Xác nhận hủy đặt chỗ")
-            .setMessage(String.format(
-                "Bạn có chắc muốn hủy đặt chỗ này?\n\n" +
-                "📍 Bãi: %s\n" +
-                "⏰ Thời gian: %s\n" +
-                "💰 Phí cọc: %,dđ\n\n" +
-                "💡 Hủy trước %d phút để được hoàn tiền cọc.",
-                parkingLotName,
-                timeInfo,
-                fee,
-                refundMinutes
-            ))
-            .setPositiveButton("Xác nhận hủy", (dialog, which) -> {
-                cancelReservation(reservation);
-            })
-            .setNegativeButton("Đóng", null)
-            .show();
+        // Create custom dialog
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_cancel_reservation, null);
+        builder.setView(dialogView);
+
+        android.app.AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // Bind data to views
+        android.widget.TextView tvParkingLotName = dialogView.findViewById(R.id.tvParkingLotName);
+        android.widget.TextView tvTimeInfo = dialogView.findViewById(R.id.tvTimeInfo);
+        android.widget.TextView tvDepositFee = dialogView.findViewById(R.id.tvDepositFee);
+        android.widget.TextView tvRefundNote = dialogView.findViewById(R.id.tvRefundNote);
+        com.google.android.material.button.MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
+        com.google.android.material.button.MaterialButton btnConfirm = dialogView.findViewById(R.id.btnConfirm);
+
+        tvParkingLotName.setText(parkingLotName);
+        tvTimeInfo.setText(timeInfo);
+        tvDepositFee.setText(String.format("%,dđ", fee));
+        tvRefundNote.setText(String.format("Hủy trước %d phút để được hoàn tiền cọc", refundMinutes));
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnConfirm.setOnClickListener(v -> {
+            dialog.dismiss();
+            cancelReservation(reservation);
+        });
+
+        dialog.show();
     }
 
     private void cancelReservation(Reservation reservation) {
         progressBar.setVisibility(View.VISIBLE);
 
         compositeDisposable.add(
-            reservationRepository.cancelReservation(reservation.getId())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> {
-                        progressBar.setVisibility(View.GONE);
-                        if (response.isSuccess()) {
-                            Toast.makeText(this, "✅ Đã hủy đặt chỗ thành công!", Toast.LENGTH_SHORT).show();
-                            // Reload danh sách
-                            currentPage = 0;
-                            isLastPage = false;
-                            reservationList.clear();
-                            loadReservations();
-                        } else {
-                            String errorMsg = response.getMessage() != null
-                                ? response.getMessage()
-                                : "Không thể hủy đặt chỗ";
-                            Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    error -> {
-                        progressBar.setVisibility(View.GONE);
-                        Log.e(TAG, "Error cancelling reservation", error);
+                reservationRepository.cancelReservation(reservation.getId())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    if (response.isSuccess()) {
+                                        Toast.makeText(this, "✅ Đã hủy đặt chỗ thành công!", Toast.LENGTH_SHORT).show();
+                                        // Reload danh sách
+                                        currentPage = 0;
+                                        isLastPage = false;
+                                        reservationList.clear();
+                                        loadReservations();
+                                    } else {
+                                        String errorMsg = response.getMessage() != null
+                                                ? response.getMessage()
+                                                : "Không thể hủy đặt chỗ";
+                                        Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                                    }
+                                },
+                                error -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    Log.e(TAG, "Error cancelling reservation", error);
 
-                        String errorMsg = "Không thể hủy đặt chỗ";
-                        if (error.getMessage() != null) {
-                            if (error.getMessage().contains("404")) {
-                                errorMsg = "Không tìm thấy đặt chỗ này";
-                            } else if (error.getMessage().contains("403")) {
-                                errorMsg = "Bạn không có quyền hủy đặt chỗ này";
-                            } else if (error.getMessage().contains("400")) {
-                                errorMsg = "Không thể hủy đặt chỗ đã hoàn thành hoặc đã hủy";
-                            } else if (error.getMessage().contains("409")) {
-                                errorMsg = "Đặt chỗ đã quá hạn để hủy hoặc đang được xử lý";
-                            }
-                        }
-                        Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
-                    }
-                )
-        );
+                                    String errorMsg = "Không thể hủy đặt chỗ";
+                                    if (error.getMessage() != null) {
+                                        if (error.getMessage().contains("404")) {
+                                            errorMsg = "Không tìm thấy đặt chỗ này";
+                                        } else if (error.getMessage().contains("403")) {
+                                            errorMsg = "Bạn không có quyền hủy đặt chỗ này";
+                                        } else if (error.getMessage().contains("400")) {
+                                            errorMsg = "Không thể hủy đặt chỗ đã hoàn thành hoặc đã hủy";
+                                        } else if (error.getMessage().contains("409")) {
+                                            errorMsg = "Đặt chỗ đã quá hạn để hủy hoặc đang được xử lý";
+                                        }
+                                    }
+                                    Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                                }));
     }
 
     private void showRatingDialog(Reservation reservation) {
         String parkingLotName = reservation.getParkingLotName() != null
-            ? reservation.getParkingLotName()
-            : "Bãi đỗ xe";
+                ? reservation.getParkingLotName()
+                : "Bãi đỗ xe";
 
         RatingDialog dialog = new RatingDialog(this, parkingLotName, (rating, title, comment) -> {
             // Submit rating to API
@@ -351,37 +359,35 @@ public class ReservationListActivity extends AppCompatActivity {
 
         // Call API
         compositeDisposable.add(
-            ApiClient.getApiService().createRating(parkingLotId, request)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> {
-                        progressBar.setVisibility(View.GONE);
-                        if (response.isSuccess()) {
-                            Toast.makeText(this, "Cảm ơn bạn đã đánh giá!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            String errorMsg = response.getMessage() != null
-                                ? response.getMessage()
-                                : "Không thể gửi đánh giá";
-                            Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    error -> {
-                        progressBar.setVisibility(View.GONE);
-                        Log.e(TAG, "Error submitting rating: " + error.getMessage());
+                ApiClient.getApiService().createRating(parkingLotId, request)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    if (response.isSuccess()) {
+                                        Toast.makeText(this, "Cảm ơn bạn đã đánh giá!", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        String errorMsg = response.getMessage() != null
+                                                ? response.getMessage()
+                                                : "Không thể gửi đánh giá";
+                                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                                    }
+                                },
+                                error -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    Log.e(TAG, "Error submitting rating: " + error.getMessage());
 
-                        String errorMsg = "Không thể gửi đánh giá";
-                        if (error.getMessage() != null) {
-                            if (error.getMessage().contains("409")) {
-                                errorMsg = "Bạn đã đánh giá bãi đỗ xe này rồi";
-                            } else if (error.getMessage().contains("404")) {
-                                errorMsg = "Không tìm thấy bãi đỗ xe";
-                            }
-                        }
-                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
-                    }
-                )
-        );
+                                    String errorMsg = "Không thể gửi đánh giá";
+                                    if (error.getMessage() != null) {
+                                        if (error.getMessage().contains("409")) {
+                                            errorMsg = "Bạn đã đánh giá bãi đỗ xe này rồi";
+                                        } else if (error.getMessage().contains("404")) {
+                                            errorMsg = "Không tìm thấy bãi đỗ xe";
+                                        }
+                                    }
+                                    Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                                }));
     }
 
     @Override

@@ -31,6 +31,7 @@ import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
 import com.parkmate.android.repository.VehicleRepository;
 import com.parkmate.android.utils.FileUtils;
+import com.parkmate.android.utils.validation.VehicleValidator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -219,35 +220,71 @@ public class AddVehicleActivity extends AppCompatActivity {
         String color = etColor.getText().toString().trim();
         boolean isElectric = switchElectric.isChecked();
 
-        // Validate
-        if (vehicleTypeDisplay.isEmpty()) {
-            Toast.makeText(this, "Vui lòng chọn loại xe", Toast.LENGTH_SHORT).show();
+        // Get TextInputLayout references
+        com.google.android.material.textfield.TextInputLayout tilVehicleType = findViewById(R.id.tilVehicleType);
+        com.google.android.material.textfield.TextInputLayout tilLicensePlate = findViewById(R.id.tilLicensePlate);
+        com.google.android.material.textfield.TextInputLayout tilBrand = findViewById(R.id.tilBrand);
+        com.google.android.material.textfield.TextInputLayout tilModel = findViewById(R.id.tilModel);
+        com.google.android.material.textfield.TextInputLayout tilColor = findViewById(R.id.tilColor);
+
+        // Clear previous errors
+        tilVehicleType.setError(null);
+        tilLicensePlate.setError(null);
+        tilBrand.setError(null);
+        tilModel.setError(null);
+        tilColor.setError(null);
+
+        boolean isValid = true;
+
+        // Validate vehicle type
+        VehicleValidator.ValidationResult vehicleTypeResult = VehicleValidator.validateVehicleType(vehicleTypeDisplay);
+        if (!vehicleTypeResult.isValid()) {
+            tilVehicleType.setError(vehicleTypeResult.getErrorMessage());
+            isValid = false;
+        }
+
+        // Validate license plate
+        VehicleValidator.ValidationResult licensePlateResult = VehicleValidator.validateLicensePlate(licensePlate);
+        if (!licensePlateResult.isValid()) {
+            tilLicensePlate.setError(licensePlateResult.getErrorMessage());
+            if (isValid)
+                etLicensePlate.requestFocus();
+            isValid = false;
+        }
+
+        // Validate brand
+        VehicleValidator.ValidationResult brandResult = VehicleValidator.validateBrand(brand);
+        if (!brandResult.isValid()) {
+            tilBrand.setError(brandResult.getErrorMessage());
+            if (isValid)
+                etBrand.requestFocus();
+            isValid = false;
+        }
+
+        // Validate model
+        VehicleValidator.ValidationResult modelResult = VehicleValidator.validateModel(model);
+        if (!modelResult.isValid()) {
+            tilModel.setError(modelResult.getErrorMessage());
+            if (isValid)
+                etModel.requestFocus();
+            isValid = false;
+        }
+
+        // Validate color
+        VehicleValidator.ValidationResult colorResult = VehicleValidator.validateColor(color);
+        if (!colorResult.isValid()) {
+            tilColor.setError(colorResult.getErrorMessage());
+            if (isValid)
+                etColor.requestFocus();
+            isValid = false;
+        }
+
+        if (!isValid) {
             return;
         }
 
-        if (licensePlate.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập biển số xe", Toast.LENGTH_SHORT).show();
-            etLicensePlate.requestFocus();
-            return;
-        }
-
-        if (brand.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập hãng xe", Toast.LENGTH_SHORT).show();
-            etBrand.requestFocus();
-            return;
-        }
-
-        if (model.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập model xe", Toast.LENGTH_SHORT).show();
-            etModel.requestFocus();
-            return;
-        }
-
-        if (color.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập màu xe", Toast.LENGTH_SHORT).show();
-            etColor.requestFocus();
-            return;
-        }
+        // Format license plate (uppercase, add dash if needed)
+        String formattedLicensePlate = VehicleValidator.formatLicensePlate(licensePlate);
 
         // Convert vehicle type từ display name sang API value
         String vehicleType = vehicleTypeMap.get(vehicleTypeDisplay);
@@ -255,19 +292,19 @@ public class AddVehicleActivity extends AppCompatActivity {
             vehicleType = "MOTORBIKE"; // Default
         }
 
-        // Tạo request - TẠM THỜI KHÔNG GỬI ẢNH vì backend chưa hỗ trợ
+        // Tạo request
         AddVehicleRequest request = new AddVehicleRequest(
-                licensePlate,
-                brand,
-                model,
-                color,
+                formattedLicensePlate,
+                brand.trim(),
+                model.trim(),
+                color.trim(),
                 vehicleType,
                 null, // Tạm thời gửi null thay vì base64 image
                 isElectric);
 
         // Log request để debug
         android.util.Log.d("AddVehicle", "Request: " +
-                "licensePlate=" + licensePlate +
+                "licensePlate=" + formattedLicensePlate +
                 ", brand=" + brand +
                 ", model=" + model +
                 ", color=" + color +
