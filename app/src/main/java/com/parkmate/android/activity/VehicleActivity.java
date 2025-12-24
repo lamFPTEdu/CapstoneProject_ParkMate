@@ -50,7 +50,7 @@ public class VehicleActivity extends AppCompatActivity {
 
     // Pagination variables
     private int currentPage = 0;
-    private final int pageSize = 10;
+    private final int pageSize = 50;
     private boolean isLoading = false;
     private boolean isLastPage = false;
     private LinearLayoutManager layoutManager;

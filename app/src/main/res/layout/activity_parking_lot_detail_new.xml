@@ -317,6 +317,45 @@
                     tools:itemCount="3"
                     tools:listitem="@layout/item_available_spot" />
 
+                <!-- Empty state for no available spots -->
+                <LinearLayout
+                    android:id="@+id/layoutNoAvailableSpots"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="24dp"
+                    android:background="@drawable/bg_rounded_gray"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_parking_full"
+                        app:tint="@color/text_secondary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Hiện tại bãi xe đã hết chỗ"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Vui lòng quay lại sau hoặc chọn bãi xe khác"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="12sp"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"

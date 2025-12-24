@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardVehicle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="6dp"
-    app:cardCornerRadius="8dp"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/gray_200"
+    app:cardBackgroundColor="@color/white"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
@@ -15,55 +18,72 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp">
+        android:padding="14dp"
+        android:gravity="center_vertical">
 
+        <!-- Radio Button -->
         <RadioButton
             android:id="@+id/radioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
             android:buttonTint="@color/primary"
             android:clickable="false"
             android:focusable="false" />
 
+        <!-- Vehicle Info -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="10dp"
             android:orientation="vertical">
 
+            <!-- License Plate -->
             <TextView
                 android:id="@+id/tvLicensePlate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="51H-12345"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary" />
 
+            <!-- Brand & Model -->
             <TextView
-                android:id="@+id/tvVehicleType"
+                android:id="@+id/tvVehicleInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Xe máy"
+                android:layout_marginTop="2dp"
+                android:text="Honda - Wave"
                 android:textSize="13sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginTop="2dp" />
+                android:textColor="@color/text_secondary" />
 
+            <!-- Warning Message -->
             <TextView
                 android:id="@+id/tvWarning"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Đã có vé tháng"
-                android:textSize="11sp"
-                android:textColor="@color/red"
-                android:layout_marginTop="2dp"
+                android:textSize="12sp"
+                android:textColor="@color/error"
+                android:layout_marginTop="4dp"
                 android:visibility="gone" />
 
         </LinearLayout>
 
+        <!-- Vehicle Type Badge (on the right) -->
+        <TextView
+            android:id="@+id/tvVehicleType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:background="@drawable/bg_vehicle_type_car"
+            android:text="Ô tô"
+            android:textSize="11sp"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
-
+</com.google.android.material.card.MaterialCardView>

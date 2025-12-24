@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -48,6 +49,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private TextInputEditText etFirstName;
     private TextInputEditText etLastName;
     private TextInputEditText etPhone;
+    private TextView tvEmail;
     private Button btnSave;
 
     private AuthRepository authRepository;
@@ -65,8 +67,7 @@ public class EditProfileActivity extends AppCompatActivity {
                     hasImageChanged = true;
                     displaySelectedImage();
                 }
-            }
-    );
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +91,7 @@ public class EditProfileActivity extends AppCompatActivity {
         etFirstName = findViewById(R.id.etFirstName);
         etLastName = findViewById(R.id.etLastName);
         etPhone = findViewById(R.id.etPhone);
+        tvEmail = findViewById(R.id.tvEmail);
         btnSave = findViewById(R.id.btnSave);
     }
 
@@ -146,9 +148,7 @@ public class EditProfileActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 this::handleUserInfoLoaded,
-                                this::handleLoadUserInfoError
-                        )
-        );
+                                this::handleLoadUserInfoError));
     }
 
     private void handleUserInfoLoaded(UserInfoResponse response) {
@@ -167,6 +167,17 @@ public class EditProfileActivity extends AppCompatActivity {
             }
             if (userData.getPhone() != null) {
                 etPhone.setText(userData.getPhone());
+            }
+
+            // Set email (read-only) - try account first, then direct field
+            String email = null;
+            if (userData.getAccount() != null && userData.getAccount().getEmail() != null) {
+                email = userData.getAccount().getEmail();
+            } else if (userData.getEmail() != null) {
+                email = userData.getEmail();
+            }
+            if (email != null && !email.isEmpty()) {
+                tvEmail.setText(email);
             }
 
             // Load profile image
@@ -251,9 +262,7 @@ public class EditProfileActivity extends AppCompatActivity {
                                         handleSaveSuccess();
                                     }
                                 },
-                                this::handleSaveError
-                        )
-        );
+                                this::handleSaveError));
     }
 
     private void uploadProfileImage() {
@@ -283,11 +292,10 @@ public class EditProfileActivity extends AppCompatActivity {
                                 },
                                 error -> {
                                     Log.e(TAG, "Error uploading profile image", error);
-                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng thông tin đã được lưu", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Lỗi tải ảnh lên, nhưng thông tin đã được lưu",
+                                            Toast.LENGTH_SHORT).show();
                                     handleSaveSuccess();
-                                }
-                        )
-        );
+                                }));
     }
 
     private void handleSaveSuccess() {
@@ -314,4 +322,3 @@ public class EditProfileActivity extends AppCompatActivity {
         compositeDisposable.clear();
     }
 }
-

@@ -7,18 +7,14 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.card.MaterialCardView;
 import com.parkmate.android.R;
 import com.parkmate.android.model.Vehicle;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter mới riêng cho việc chọn xe khi đặt chỗ
- * Check 3 điều kiện disable:
- * 1. hasSubscriptionInThisParkingLot = true (đã có vé tháng)
- * 2. inReservation = true (đang trong phiên đặt chỗ)
- * 3. supported = false (loại xe không được hỗ trợ)
- * Chỉ cần 1 trong 3 là true/false thì sẽ disable xe đó
+ * Adapter cho việc chọn xe khi đặt chỗ
  */
 public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelectionAdapter.VehicleViewHolder> {
 
@@ -38,12 +34,10 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
         this.vehicleList.clear();
 
         if (vehicles != null) {
-            // Sắp xếp: xe có thể chọn lên đầu, xe disable xuống dưới
             List<Vehicle> availableVehicles = new ArrayList<>();
             List<Vehicle> disabledVehicles = new ArrayList<>();
 
             for (Vehicle vehicle : vehicles) {
-                // Check điều kiện disable: hasSubscriptionInThisParkingLot, inReservation, hoặc !supported
                 boolean isDisabled = vehicle.isHasSubscriptionInThisParkingLot()
                         || vehicle.isInReservation()
                         || !vehicle.isSupported();
@@ -55,13 +49,20 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
                 }
             }
 
-            // Ghép: available trước, disabled sau
             this.vehicleList.addAll(availableVehicles);
             this.vehicleList.addAll(disabledVehicles);
         }
 
         this.selectedPosition = -1;
         notifyDataSetChanged();
+    }
+
+    public void clearSelection() {
+        int oldPosition = selectedPosition;
+        selectedPosition = -1;
+        if (oldPosition >= 0) {
+            notifyItemChanged(oldPosition);
+        }
     }
 
     public Vehicle getSelectedVehicle() {
@@ -91,10 +92,11 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
     }
 
     class VehicleViewHolder extends RecyclerView.ViewHolder {
-        private com.google.android.material.card.MaterialCardView cardVehicle;
+        private MaterialCardView cardVehicle;
         private RadioButton rbSelectVehicle;
         private TextView tvVehiclePlate;
         private TextView tvVehicleDesc;
+        private TextView tvVehicleType;
         private TextView tvVehicleStatus;
 
         public VehicleViewHolder(@NonNull View itemView) {
@@ -103,18 +105,19 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
             rbSelectVehicle = itemView.findViewById(R.id.rbSelectVehicle);
             tvVehiclePlate = itemView.findViewById(R.id.tvVehiclePlate);
             tvVehicleDesc = itemView.findViewById(R.id.tvVehicleDesc);
+            tvVehicleType = itemView.findViewById(R.id.tvVehicleType);
             tvVehicleStatus = itemView.findViewById(R.id.tvVehicleStatus);
         }
 
         public void bind(Vehicle vehicle, int position) {
-            // Check nếu xe bị disable: hasSubscriptionInThisParkingLot, inReservation, hoặc !supported
             boolean isDisabled = vehicle.isHasSubscriptionInThisParkingLot()
                     || vehicle.isInReservation()
                     || !vehicle.isSupported();
 
-            // Hiển thị thông tin xe
+            // License plate
             tvVehiclePlate.setText(vehicle.getLicensePlate() != null ? vehicle.getLicensePlate() : "N/A");
 
+            // Brand & Model
             String desc = "";
             if (vehicle.getBrand() != null && !vehicle.getBrand().isEmpty()) {
                 desc = vehicle.getBrand();
@@ -123,11 +126,17 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
                 desc += (desc.isEmpty() ? "" : " - ") + vehicle.getModel();
             }
             if (desc.isEmpty()) {
-                desc = vehicle.getVehicleType() != null ? vehicle.getVehicleType() : "Xe";
+                desc = "Không có thông tin";
             }
             tvVehicleDesc.setText(desc);
 
-            // Hiển thị trạng thái disable
+            // Vehicle type badge - đồng bộ với trang quản lý xe
+            if (tvVehicleType != null) {
+                tvVehicleType.setText(getDisplayVehicleType(vehicle.getVehicleType()));
+                tvVehicleType.setBackgroundResource(getVehicleTypeBackground(vehicle.getVehicleType()));
+            }
+
+            // Warning status for disabled vehicles
             if (isDisabled) {
                 tvVehicleStatus.setVisibility(View.VISIBLE);
                 if (!vehicle.isSupported()) {
@@ -141,46 +150,84 @@ public class VehicleSelectionAdapter extends RecyclerView.Adapter<VehicleSelecti
                 tvVehicleStatus.setVisibility(View.GONE);
             }
 
-            // Set trạng thái radio button
+            // Radio button state
             rbSelectVehicle.setChecked(position == selectedPosition);
             rbSelectVehicle.setEnabled(!isDisabled);
 
-            // Set stroke color cho card khi được chọn
+            // Card stroke
             if (position == selectedPosition && !isDisabled) {
                 cardVehicle.setStrokeColor(itemView.getContext().getColor(R.color.primary));
-                cardVehicle.setStrokeWidth(4);
+                cardVehicle.setStrokeWidth(6);
             } else {
-                cardVehicle.setStrokeColor(itemView.getContext().getColor(R.color.gray_300));
-                cardVehicle.setStrokeWidth(2);
+                cardVehicle.setStrokeColor(itemView.getContext().getColor(R.color.gray_200));
+                cardVehicle.setStrokeWidth(3);
             }
 
-            // Set alpha cho item bị disable
+            // Alpha for disabled
             itemView.setAlpha(isDisabled ? 0.5f : 1.0f);
 
-            // Handle click
+            // Click handling
             if (!isDisabled) {
                 itemView.setOnClickListener(v -> {
                     int oldPosition = selectedPosition;
                     selectedPosition = getAdapterPosition();
 
-                    // Notify changes
                     if (oldPosition >= 0) {
                         notifyItemChanged(oldPosition);
                     }
                     notifyItemChanged(selectedPosition);
 
-                    // Callback
                     if (listener != null) {
                         listener.onVehicleSelected(vehicle, selectedPosition);
                     }
                 });
-
                 rbSelectVehicle.setOnClickListener(v -> itemView.performClick());
             } else {
                 itemView.setOnClickListener(null);
                 rbSelectVehicle.setOnClickListener(null);
             }
         }
+
+        /**
+         * Đồng bộ với VehicleAdapter - getDisplayVehicleType
+         */
+        private String getDisplayVehicleType(String vehicleType) {
+            if (vehicleType == null)
+                return "";
+
+            String upperType = vehicleType.toUpperCase().trim();
+
+            if (upperType.contains("CAR_UP_TO_9") || upperType.contains("CAR UP TO 9")) {
+                return "Ô tô";
+            } else if (upperType.contains("MOTORBIKE") || upperType.equals("XE MÁY")) {
+                return "Xe máy";
+            } else if (upperType.equals("CAR") || upperType.equals("Ô TÔ")) {
+                return "Ô tô";
+            } else if (upperType.contains("BICYCLE") || upperType.contains("BIKE") || upperType.equals("XE ĐẠP")) {
+                return "Xe đạp";
+            }
+
+            return vehicleType;
+        }
+
+        /**
+         * Đồng bộ với VehicleAdapter - getVehicleTypeBackground
+         */
+        private int getVehicleTypeBackground(String vehicleType) {
+            if (vehicleType == null)
+                return R.drawable.bg_vehicle_type_other;
+
+            String upperType = vehicleType.toUpperCase().trim();
+
+            if (upperType.contains("MOTORBIKE") || upperType.contains("XE MÁY")) {
+                return R.drawable.bg_vehicle_type_motorbike; // Xanh lá
+            } else if (upperType.contains("CAR") || upperType.contains("Ô TÔ")) {
+                return R.drawable.bg_vehicle_type_car; // Xanh dương
+            } else if (upperType.contains("BICYCLE") || upperType.contains("BIKE") || upperType.contains("XE ĐẠP")) {
+                return R.drawable.bg_vehicle_type_bicycle; // Vàng
+            } else {
+                return R.drawable.bg_vehicle_type_other; // Tím
+            }
+        }
     }
 }
-

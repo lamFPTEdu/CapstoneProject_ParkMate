@@ -32,6 +32,9 @@ public class UserInfoResponse {
         @SerializedName("id")
         private Long id;
 
+        @SerializedName("account")
+        private Account account;
+
         @SerializedName("email")
         private String email;
 
@@ -176,6 +179,49 @@ public class UserInfoResponse {
         public String getRole() {
             return role;
         }
+
+        public Account getAccount() {
+            return account;
+        }
+    }
+
+    /**
+     * Nested Account class to match API response structure
+     */
+    public static class Account {
+        @SerializedName("id")
+        private Long id;
+
+        @SerializedName("email")
+        private String email;
+
+        @SerializedName("status")
+        private String status;
+
+        @SerializedName("role")
+        private String role;
+
+        @SerializedName("isIdVerified")
+        private boolean isIdVerified;
+
+        public Long getId() {
+            return id;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public boolean isIdVerified() {
+            return isIdVerified;
+        }
     }
 }
-

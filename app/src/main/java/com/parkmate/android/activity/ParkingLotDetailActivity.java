@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,6 +57,7 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
     private TextView tvTotalFloors;
     private TextView tv24Hour;
     private RecyclerView rvAvailableSpots;
+    private LinearLayout layoutNoAvailableSpots;
     private TabLayout tabLayoutVehicleTypes;
     private RecyclerView rvSubscriptionPackages;
     private RecyclerView rvPricingRules;
@@ -149,6 +151,7 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
         tvTotalFloors = findViewById(R.id.tvTotalFloors);
         tv24Hour = findViewById(R.id.tv24Hour);
         rvAvailableSpots = findViewById(R.id.rvAvailableSpots);
+        layoutNoAvailableSpots = findViewById(R.id.layoutNoAvailableSpots);
         tabLayoutVehicleTypes = findViewById(R.id.tabLayoutVehicleTypes);
         rvSubscriptionPackages = findViewById(R.id.rvSubscriptionPackages);
         rvPricingRules = findViewById(R.id.rvPricingRules);
@@ -400,7 +403,34 @@ public class ParkingLotDetailActivity extends AppCompatActivity {
 
             // Display available spots
             if (parkingLotDetail.getAvailableSpots() != null && !parkingLotDetail.getAvailableSpots().isEmpty()) {
+                // Check if any spots are actually available (capacity > 0)
+                boolean hasAvailableSpots = false;
+                for (ParkingLotDetailResponse.AvailableSpot spot : parkingLotDetail.getAvailableSpots()) {
+                    if (spot.getTotalCapacity() > 0) {
+                        hasAvailableSpots = true;
+                        break;
+                    }
+                }
+
                 availableSpotsAdapter.submitList(parkingLotDetail.getAvailableSpots());
+
+                if (hasAvailableSpots) {
+                    rvAvailableSpots.setVisibility(View.VISIBLE);
+                    if (layoutNoAvailableSpots != null) {
+                        layoutNoAvailableSpots.setVisibility(View.GONE);
+                    }
+                } else {
+                    rvAvailableSpots.setVisibility(View.GONE);
+                    if (layoutNoAvailableSpots != null) {
+                        layoutNoAvailableSpots.setVisibility(View.VISIBLE);
+                    }
+                }
+            } else {
+                // No spots data - show empty state
+                rvAvailableSpots.setVisibility(View.GONE);
+                if (layoutNoAvailableSpots != null) {
+                    layoutNoAvailableSpots.setVisibility(View.VISIBLE);
+                }
             }
 
             // Setup Vehicle Type Tabs

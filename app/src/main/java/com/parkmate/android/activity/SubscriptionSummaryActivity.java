@@ -2,15 +2,18 @@ package com.parkmate.android.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.parkmate.android.R;
 import com.parkmate.android.model.UserSubscription;
@@ -18,6 +21,7 @@ import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.utils.SubscriptionHoldManager;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -26,16 +30,19 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class SubscriptionSummaryActivity extends AppCompatActivity {
 
-    private MaterialToolbar toolbar;
+    private ImageButton btnBack;
     private TextView tvSpotName;
     private TextView tvStartDate;
     private TextView tvPackageInfo;
     private TextView tvPrice;
     private MaterialButton btnConfirm;
     private ProgressBar progressBar;
+    private LinearLayout llCountdown;
+    private TextView tvCountdown;
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private SubscriptionHoldManager holdManager;
+    private CountDownTimer countDownTimer;
 
     private long parkingLotId;
     private long vehicleId;
@@ -90,13 +97,15 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         }
 
         initializeViews();
-        setupToolbar();
         setupBackPressHandler();
         displaySummary();
 
         // Hold spot chỉ khi subscription yêu cầu spot (car)
         if (requiresSpot) {
             holdSpot();
+        } else {
+            // Start countdown timer immediately for non-spot subscriptions
+            startCountdownTimer();
         }
     }
 
@@ -110,9 +119,7 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     response -> holdManager.clearHeldSpot(),
-                                    throwable -> holdManager.clearHeldSpot()
-                            )
-            );
+                                    throwable -> holdManager.clearHeldSpot()));
         }
     }
 
@@ -120,30 +127,23 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                releaseSpotAndFinish();
+                handleBackPress();
             }
         });
     }
 
     private void initializeViews() {
-        toolbar = findViewById(R.id.toolbar);
+        btnBack = findViewById(R.id.btnBack);
         tvSpotName = findViewById(R.id.tvSpotName);
         tvStartDate = findViewById(R.id.tvStartDate);
         tvPackageInfo = findViewById(R.id.tvPackageInfo);
         tvPrice = findViewById(R.id.tvPrice);
         btnConfirm = findViewById(R.id.btnConfirm);
         progressBar = findViewById(R.id.progressBar);
-    }
+        llCountdown = findViewById(R.id.llCountdown);
+        tvCountdown = findViewById(R.id.tvCountdown);
 
-    private void setupToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Xác nhận đăng ký");
-        }
-        toolbar.setNavigationOnClickListener(v -> {
-            releaseSpotAndFinish();
-        });
+        btnBack.setOnClickListener(v -> handleBackPress());
     }
 
     private void displaySummary() {
@@ -196,8 +196,12 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
                                         isSpotHeld = true;
                                         holdManager.setHeldSpot(spotId);
                                         Toast.makeText(this, "Đã giữ chỗ thành công", Toast.LENGTH_SHORT).show();
+                                        // Start countdown after successful hold
+                                        startCountdownTimer();
                                     } else {
-                                        showError("Không thể giữ chỗ: " + (response.getError() != null ? response.getError() : "Unknown error"));
+                                        showError("Không thể giữ chỗ: "
+                                                + (response.getError() != null ? response.getError()
+                                                        : "Unknown error"));
                                         finish();
                                     }
                                 },
@@ -205,9 +209,64 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
                                     showLoading(false);
                                     showError("Lỗi: " + throwable.getMessage());
                                     finish();
-                                }
-                        )
-        );
+                                }));
+    }
+
+    /**
+     * Start 15-minute countdown timer
+     */
+    private void startCountdownTimer() {
+        llCountdown.setVisibility(View.VISIBLE);
+
+        // Default 15 minutes
+        long countdownMillis = 15 * 60 * 1000;
+
+        countDownTimer = new CountDownTimer(countdownMillis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long minutes = millisUntilFinished / 60000;
+                long seconds = (millisUntilFinished % 60000) / 1000;
+                String timeText = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
+                tvCountdown.setText(timeText);
+
+                // Change color when less than 2 minutes
+                if (millisUntilFinished < 2 * 60 * 1000) {
+                    llCountdown.setBackgroundResource(R.drawable.bg_countdown_urgent);
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                tvCountdown.setText("00:00");
+                showHoldExpiredDialog();
+            }
+        };
+        countDownTimer.start();
+    }
+
+    private void showHoldExpiredDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Hết thời gian giữ chỗ")
+                .setMessage("Thời gian giữ chỗ đã hết. Vui lòng thực hiện lại đăng ký.")
+                .setPositiveButton("Đóng", (dialog, which) -> {
+                    releaseSpotAndFinish();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void handleBackPress() {
+        new AlertDialog.Builder(this)
+                .setTitle("Hủy đăng ký")
+                .setMessage("Bạn có chắc chắn muốn hủy? Chỗ đang giữ sẽ được giải phóng.")
+                .setPositiveButton("Có", (dialog, which) -> {
+                    if (countDownTimer != null) {
+                        countDownTimer.cancel();
+                    }
+                    releaseSpotAndFinish();
+                })
+                .setNegativeButton("Không", null)
+                .show();
     }
 
     private void createSubscription() {
@@ -244,18 +303,22 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
                                         UserSubscription subscription = response.getData();
                                         navigateToSuccess(subscription);
                                     } else {
-                                        showError(response.getError() != null ? response.getError() : "Không thể tạo đăng ký");
+                                        showError(response.getError() != null ? response.getError()
+                                                : "Không thể tạo đăng ký");
                                     }
                                 },
                                 throwable -> {
                                     showLoading(false);
                                     showError("Lỗi: " + throwable.getMessage());
-                                }
-                        )
-        );
+                                }));
     }
 
     private void releaseSpotAndFinish() {
+        // Cancel countdown
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
         // Chỉ release spot nếu có spot và đã được held
         if (requiresSpot && isSpotHeld && spotId != null) {
             compositeDisposable.add(
@@ -271,15 +334,18 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
                                     throwable -> {
                                         holdManager.clearHeldSpot();
                                         finish();
-                                    }
-                            )
-            );
+                                    }));
         } else {
             finish();
         }
     }
 
     private void navigateToSuccess(UserSubscription subscription) {
+        // Stop countdown
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
         // Clear held spot since subscription is created successfully
         holdManager.clearHeldSpot();
 
@@ -299,10 +365,15 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // Cancel countdown timer
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
         compositeDisposable.clear();
 
         // Release held spot if activity is destroyed without completing subscription
@@ -317,8 +388,7 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
                             .releaseHoldSpot(spotId)
                             .blockingSubscribe(
                                     response -> holdManager.clearHeldSpot(),
-                                    throwable -> holdManager.clearHeldSpot()
-                            );
+                                    throwable -> holdManager.clearHeldSpot());
                 } catch (Exception e) {
                     // Ignore errors, will be cleaned up on next app start
                 }
@@ -326,4 +396,3 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         }
     }
 }
-

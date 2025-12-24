@@ -32,6 +32,7 @@ import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.network.ApiService;
 import com.parkmate.android.repository.VehicleRepository;
 import com.parkmate.android.utils.FileUtils;
+import com.parkmate.android.utils.validation.VehicleValidator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -303,20 +304,81 @@ public class EditVehicleActivity extends AppCompatActivity {
         String color = etColor.getText().toString().trim();
         boolean isElectric = switchElectric.isChecked();
 
-        if (vehicleTypeDisplay.isEmpty() || licensePlate.isEmpty() || brand.isEmpty() ||
-                model.isEmpty() || color.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+        // Get TextInputLayout references
+        com.google.android.material.textfield.TextInputLayout tilVehicleType = findViewById(R.id.tilVehicleType);
+        com.google.android.material.textfield.TextInputLayout tilLicensePlate = findViewById(R.id.tilLicensePlate);
+        com.google.android.material.textfield.TextInputLayout tilBrand = findViewById(R.id.tilBrand);
+        com.google.android.material.textfield.TextInputLayout tilModel = findViewById(R.id.tilModel);
+        com.google.android.material.textfield.TextInputLayout tilColor = findViewById(R.id.tilColor);
+
+        // Clear previous errors
+        tilVehicleType.setError(null);
+        tilLicensePlate.setError(null);
+        tilBrand.setError(null);
+        tilModel.setError(null);
+        tilColor.setError(null);
+
+        boolean isValid = true;
+
+        // Validate vehicle type
+        VehicleValidator.ValidationResult vehicleTypeResult = VehicleValidator.validateVehicleType(vehicleTypeDisplay);
+        if (!vehicleTypeResult.isValid()) {
+            tilVehicleType.setError(vehicleTypeResult.getErrorMessage());
+            isValid = false;
+        }
+
+        // Validate license plate
+        VehicleValidator.ValidationResult licensePlateResult = VehicleValidator.validateLicensePlate(licensePlate);
+        if (!licensePlateResult.isValid()) {
+            tilLicensePlate.setError(licensePlateResult.getErrorMessage());
+            if (isValid)
+                etLicensePlate.requestFocus();
+            isValid = false;
+        }
+
+        // Validate brand
+        VehicleValidator.ValidationResult brandResult = VehicleValidator.validateBrand(brand);
+        if (!brandResult.isValid()) {
+            tilBrand.setError(brandResult.getErrorMessage());
+            if (isValid)
+                etBrand.requestFocus();
+            isValid = false;
+        }
+
+        // Validate model
+        VehicleValidator.ValidationResult modelResult = VehicleValidator.validateModel(model);
+        if (!modelResult.isValid()) {
+            tilModel.setError(modelResult.getErrorMessage());
+            if (isValid)
+                etModel.requestFocus();
+            isValid = false;
+        }
+
+        // Validate color
+        VehicleValidator.ValidationResult colorResult = VehicleValidator.validateColor(color);
+        if (!colorResult.isValid()) {
+            tilColor.setError(colorResult.getErrorMessage());
+            if (isValid)
+                etColor.requestFocus();
+            isValid = false;
+        }
+
+        if (!isValid) {
             return;
         }
 
+        // Format license plate
+        String formattedLicensePlate = VehicleValidator.formatLicensePlate(licensePlate);
+
         String vehicleType = vehicleTypeMap.get(vehicleTypeDisplay);
         if (vehicleType == null) {
-            Toast.makeText(this, "Loại xe không hợp lệ", Toast.LENGTH_SHORT).show();
+            tilVehicleType.setError("Loại xe không hợp lệ");
             return;
         }
 
         // Không gửi licenseImage trong request, sẽ upload riêng sau
-        AddVehicleRequest request = new AddVehicleRequest(licensePlate, brand, model, color, vehicleType, null,
+        AddVehicleRequest request = new AddVehicleRequest(formattedLicensePlate, brand.trim(), model.trim(),
+                color.trim(), vehicleType, null,
                 isElectric);
         updateVehicle(request);
     }

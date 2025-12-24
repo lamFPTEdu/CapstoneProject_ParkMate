@@ -7,9 +7,9 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.parkmate.android.R;
 import com.parkmate.android.model.Vehicle;
 
@@ -52,13 +52,11 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
     }
 
     public void updateVehicles(List<Vehicle> newVehicles) {
-        // Sắp xếp: xe có thể chọn lên đầu, xe disable xuống dưới
         List<Vehicle> sortedVehicles = new ArrayList<>();
         List<Vehicle> availableVehicles = new ArrayList<>();
         List<Vehicle> disabledVehicles = new ArrayList<>();
 
         for (Vehicle vehicle : newVehicles) {
-            // Check điều kiện disable: hasSubscriptionInThisParkingLot, inReservation, hoặc !supported
             boolean isDisabled = vehicle.isHasSubscriptionInThisParkingLot()
                     || vehicle.isInReservation()
                     || !vehicle.isSupported();
@@ -70,7 +68,6 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
             }
         }
 
-        // Ghép: available trước, disabled sau
         sortedVehicles.addAll(availableVehicles);
         sortedVehicles.addAll(disabledVehicles);
 
@@ -79,8 +76,9 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private final CardView cardView;
+        private final MaterialCardView cardView;
         private final TextView tvLicensePlate;
+        private final TextView tvVehicleInfo;
         private final TextView tvVehicleType;
         private final TextView tvWarning;
         private final RadioButton radioButton;
@@ -89,14 +87,32 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
             super(itemView);
             cardView = itemView.findViewById(R.id.cardVehicle);
             tvLicensePlate = itemView.findViewById(R.id.tvLicensePlate);
+            tvVehicleInfo = itemView.findViewById(R.id.tvVehicleInfo);
             tvVehicleType = itemView.findViewById(R.id.tvVehicleType);
             tvWarning = itemView.findViewById(R.id.tvWarning);
             radioButton = itemView.findViewById(R.id.radioButton);
         }
 
         void bind(Vehicle vehicle, int position) {
+            // License plate
             tvLicensePlate.setText(vehicle.getLicensePlate());
-            tvVehicleType.setText(getVehicleTypeDisplay(vehicle.getVehicleType()));
+
+            // Brand & Model - đồng bộ với VehicleSelectionAdapter
+            String desc = "";
+            if (vehicle.getBrand() != null && !vehicle.getBrand().isEmpty()) {
+                desc = vehicle.getBrand();
+            }
+            if (vehicle.getModel() != null && !vehicle.getModel().isEmpty()) {
+                desc += (desc.isEmpty() ? "" : " - ") + vehicle.getModel();
+            }
+            if (desc.isEmpty()) {
+                desc = "Không có thông tin";
+            }
+            tvVehicleInfo.setText(desc);
+
+            // Vehicle type badge - đồng bộ với VehicleAdapter
+            tvVehicleType.setText(getDisplayVehicleType(vehicle.getVehicleType()));
+            tvVehicleType.setBackgroundResource(getVehicleTypeBackground(vehicle.getVehicleType()));
 
             // Check if vehicle can be selected
             boolean isDisabled = vehicle.isHasSubscriptionInThisParkingLot()
@@ -108,6 +124,8 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
                 cardView.setAlpha(0.5f);
                 radioButton.setEnabled(false);
                 radioButton.setChecked(false);
+                cardView.setStrokeColor(itemView.getContext().getColor(R.color.gray_200));
+                cardView.setStrokeWidth(3);
 
                 tvWarning.setVisibility(View.VISIBLE);
                 if (!vehicle.isSupported()) {
@@ -125,6 +143,15 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
 
                 radioButton.setChecked(selectedPosition == position);
 
+                // Card stroke - đồng bộ với VehicleSelectionAdapter
+                if (selectedPosition == position) {
+                    cardView.setStrokeColor(itemView.getContext().getColor(R.color.primary));
+                    cardView.setStrokeWidth(6);
+                } else {
+                    cardView.setStrokeColor(itemView.getContext().getColor(R.color.gray_200));
+                    cardView.setStrokeWidth(3);
+                }
+
                 itemView.setOnClickListener(v -> {
                     int oldPosition = selectedPosition;
                     selectedPosition = position;
@@ -141,19 +168,46 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
             }
         }
 
-        private String getVehicleTypeDisplay(String vehicleType) {
-            if (vehicleType == null) return "N/A";
-            switch (vehicleType) {
-                case "MOTORBIKE":
-                    return "Xe máy";
-                case "CAR_UP_TO_9_SEATS":
-                    return "Ô tô (≤9 chỗ)";
-                case "BIKE":
-                    return "Xe đạp";
-                default:
-                    return vehicleType;
+        /**
+         * Đồng bộ với VehicleAdapter - getDisplayVehicleType
+         */
+        private String getDisplayVehicleType(String vehicleType) {
+            if (vehicleType == null)
+                return "";
+
+            String upperType = vehicleType.toUpperCase().trim();
+
+            if (upperType.contains("CAR_UP_TO_9") || upperType.contains("CAR UP TO 9")) {
+                return "Ô tô";
+            } else if (upperType.contains("MOTORBIKE") || upperType.equals("XE MÁY")) {
+                return "Xe máy";
+            } else if (upperType.equals("CAR") || upperType.equals("Ô TÔ")) {
+                return "Ô tô";
+            } else if (upperType.contains("BICYCLE") || upperType.contains("BIKE") || upperType.equals("XE ĐẠP")) {
+                return "Xe đạp";
+            }
+
+            return vehicleType;
+        }
+
+        /**
+         * Đồng bộ với VehicleAdapter - getVehicleTypeBackground
+         */
+        private int getVehicleTypeBackground(String vehicleType) {
+            if (vehicleType == null)
+                return R.drawable.bg_vehicle_type_other;
+
+            String upperType = vehicleType.toUpperCase().trim();
+
+            if (upperType.contains("MOTORBIKE") || upperType.contains("XE MÁY")) {
+                return R.drawable.bg_vehicle_type_motorbike;
+            } else if (upperType.contains("CAR") || upperType.contains("Ô TÔ")) {
+                return R.drawable.bg_vehicle_type_car;
+            } else if (upperType.contains("BICYCLE") || upperType.contains("BIKE") || upperType.contains("XE ĐẠP")) {
+                return R.drawable.bg_vehicle_type_bicycle;
+            } else {
+                return R.drawable.bg_vehicle_type_other;
             }
         }
     }
 }
-

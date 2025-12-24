@@ -23,6 +23,7 @@
 
     <!-- Transaction status colors -->
     <color name="success_green">#16A34A</color>
+    <color name="success">#00E096</color>
     <color name="error_red">#DC2626</color>
     <color name="warning_yellow">#D97706</color>
     <color name="bottom_nav_text_active">#0F1A2E</color>
@@ -38,11 +39,13 @@
     <color name="divider">#E4E7EC</color>
 
     <!-- Additional colors for vehicle selection -->
+    <color name="gray_200">#E5E7EB</color>
     <color name="gray_300">#D1D5DB</color>
     <color name="gray_600">#4B5563</color>
     <color name="red_500">#EF4444</color>
     <color name="red">#EF4444</color>
     <color name="green">#16A34A</color>
+    <color name="error">#DC2626</color>
 
     <!-- BLE Activity colors -->
     <color name="light_primary">#E8EEFF</color>

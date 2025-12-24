@@ -176,7 +176,7 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
 
             // Rút gọn các tên loại xe dài
             if (upperType.contains("CAR_UP_TO_9") || upperType.contains("CAR UP TO 9")) {
-                return "Car ≤ 9";
+                return "Ô tô";
             } else if (upperType.contains("MOTORBIKE") || upperType.equals("XE MÁY")) {
                 return "Xe máy";
             } else if (upperType.equals("CAR") || upperType.equals("Ô TÔ")) {

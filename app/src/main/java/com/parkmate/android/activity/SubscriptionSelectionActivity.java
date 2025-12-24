@@ -107,7 +107,8 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
         }, parkingLot.getId());
 
         // Set horizontal layout manager for packages
-        LinearLayoutManager packagesLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        LinearLayoutManager packagesLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,
+                false);
         rvPackages.setLayoutManager(packagesLayoutManager);
         rvPackages.setAdapter(packageAdapter);
 
@@ -143,9 +144,16 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-        );
+                calendar.get(Calendar.DAY_OF_MONTH));
+
+        // Set minimum date to today
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+
+        // Set maximum date to 30 days from today
+        Calendar maxDate = Calendar.getInstance();
+        maxDate.add(Calendar.DAY_OF_MONTH, 30);
+        datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
+
         datePickerDialog.show();
     }
 
@@ -207,9 +215,7 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
                                 throwable -> {
                                     showLoading(false);
                                     showError("Lỗi tải danh sách xe: " + throwable.getMessage());
-                                }
-                        )
-        );
+                                }));
     }
 
     private void checkFormValidity() {
@@ -248,8 +254,8 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
     private void navigateToFloorSelection() {
         // Check vehicle type - nếu xe máy/xe đạp thì skip location selection
         if (selectedPackage != null &&
-            (selectedPackage.getVehicleType().equals("MOTORBIKE") ||
-             selectedPackage.getVehicleType().equals("BIKE"))) {
+                (selectedPackage.getVehicleType().equals("MOTORBIKE") ||
+                        selectedPackage.getVehicleType().equals("BIKE"))) {
             // Skip location selection, go directly to summary
             Intent intent = new Intent(this, SubscriptionSummaryActivity.class);
             intent.putExtra("PARKING_LOT_ID", parkingLot.getId());
@@ -287,7 +293,7 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
         }
 
         // Add tabs in order: CAR -> MOTORBIKE -> BIKE
-        String[] orderedTypes = {"CAR_UP_TO_9_SEATS", "MOTORBIKE", "BIKE"};
+        String[] orderedTypes = { "CAR_UP_TO_9_SEATS", "MOTORBIKE", "BIKE" };
         for (String type : orderedTypes) {
             if (availableTypes.contains(type)) {
                 TabLayout.Tab tab = tabLayoutVehicleTypes.newTab();
@@ -328,10 +334,12 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
         });
     }
 
@@ -339,7 +347,8 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
      * Get display name for vehicle type tab
      */
     private String getVehicleTypeTabName(String vehicleType) {
-        if (vehicleType == null) return "";
+        if (vehicleType == null)
+            return "";
         switch (vehicleType) {
             case "CAR_UP_TO_9_SEATS":
                 return "🚗 Ô tô";
@@ -409,4 +418,3 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
         compositeDisposable.clear();
     }
 }
-
