@@ -120,7 +120,8 @@ public class LoginActivity extends AppCompatActivity {
                         }
 
                         if (email == null || email.isEmpty()) {
-                            Toast.makeText(LoginActivity.this, "Không thể đăng nhập. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Không thể đăng nhập. Vui lòng thử lại.",
+                                    Toast.LENGTH_SHORT).show();
                             return;
                         }
 
@@ -492,68 +493,54 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleLoginError(Throwable t) {
-        // Xử lý timeout
-        if (t instanceof java.util.concurrent.TimeoutException) {
-            Toast.makeText(this, "Kết nối quá chậm, vui lòng kiểm tra mạng và thử lại", Toast.LENGTH_LONG).show();
+        // Use centralized ApiErrorHandler
+        String errorCode = com.parkmate.android.utils.ApiErrorHandler.getErrorCode(t);
+        String errorMessage = com.parkmate.android.utils.ApiErrorHandler.parseError(t);
+
+        // Parse response to get BE message if available
+        ErrorResponse er = com.parkmate.android.utils.ApiErrorHandler.parseErrorResponse(t);
+        if (er != null && er.getMessage() != null && !er.getMessage().isEmpty()) {
+            // Use BE message directly (contains details like lock duration)
+            errorMessage = er.getMessage();
+        }
+
+        // Handle account locked - show dialog instead of toast
+        if ("ACCOUNT_TEMPORARILY_LOCKED".equals(errorCode)) {
+            showAccountLockedDialog(errorMessage);
             return;
         }
 
-        if (t instanceof java.net.SocketTimeoutException) {
-            Toast.makeText(this, "Không thể kết nối đến máy chủ, vui lòng thử lại", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (t instanceof java.net.UnknownHostException || t instanceof java.net.ConnectException) {
-            Toast.makeText(this, "Không có kết nối mạng, vui lòng kiểm tra và thử lại", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (t instanceof HttpException) {
-            HttpException http = (HttpException) t;
-            try {
-                String body = http.response() != null && http.response().errorBody() != null
-                        ? http.response().errorBody().string()
-                        : null;
-                if (body != null && !body.isEmpty()) {
-                    ErrorResponse er = new Gson().fromJson(body, ErrorResponse.class);
-                    if (er != null && er.getError() != null) {
-                        // Field errors
-                        if (er.getError().getFieldErrors() != null) {
-                            for (ErrorResponse.FieldError fe : er.getError().getFieldErrors()) {
-                                applyFieldError(fe);
-                            }
-                        }
-                        String code = er.getError().getCode();
-                        String msg = er.getError().getMessage();
-                        if (code != null) {
-                            switch (code) {
-                                case "INVALID_CREDENTIALS":
-                                case "BAD_CREDENTIALS":
-                                    if (etPassword != null)
-                                        etPassword.setError(msg != null ? msg : "Sai email hoặc mật khẩu");
-                                    Toast.makeText(this, msg != null ? msg : "Sai email hoặc mật khẩu",
-                                            Toast.LENGTH_LONG).show();
-                                    return;
-                                case "ACCOUNT_NOT_ACTIVE":
-                                    Toast.makeText(this, msg != null ? msg : "Tài khoản chưa kích hoạt",
-                                            Toast.LENGTH_LONG).show();
-                                    return;
-                                default:
-                                    break;
-                            }
-                        }
-                        if (msg != null && !msg.isEmpty()) {
-                            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    }
-                }
-            } catch (Exception ignored) {
+        // Special handling for login: UNCATEGORIZED_EXCEPTION usually means wrong
+        // credentials
+        if ("UNCATEGORIZED_EXCEPTION".equals(errorCode) ||
+                "PASSWORD_MISMATCH".equals(errorCode) ||
+                "PASSWORD_MISMATCH_WITH_ATTEMPTS".equals(errorCode)) {
+            errorMessage = "Sai email hoặc mật khẩu";
+            if (etPassword != null) {
+                etPassword.setError(errorMessage);
             }
-            Toast.makeText(this, "Đăng nhập thất bại (" + http.code() + ")", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, t.getMessage() != null ? t.getMessage() : "Lỗi đăng nhập", Toast.LENGTH_LONG).show();
         }
+
+        // Apply field errors if any
+        if (er != null && er.getError() != null && er.getError().getFieldErrors() != null) {
+            for (ErrorResponse.FieldError fe : er.getError().getFieldErrors()) {
+                applyFieldError(fe);
+            }
+        }
+
+        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * Show dialog when account is temporarily locked
+     */
+    private void showAccountLockedDialog(String message) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Tài khoản bị khóa")
+                .setMessage(message)
+                .setPositiveButton("Đã hiểu", null)
+                .setCancelable(true)
+                .show();
     }
 
     private void applyFieldError(ErrorResponse.FieldError fe) {

@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +20,7 @@ import com.parkmate.android.activity.SubscriptionLocationSelectionActivity;
 import com.parkmate.android.adapter.SubscriptionFloorAdapter;
 import com.parkmate.android.model.ParkingFloor;
 import com.parkmate.android.network.ApiClient;
+import com.parkmate.android.viewmodel.SubscriptionLocationViewModel;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * Fragment để chọn tầng (Floor)
+ * Sử dụng ViewModel để share data với Activity và các Fragments khác
  */
 public class SubscriptionFloorFragment extends Fragment {
 
@@ -36,17 +39,22 @@ public class SubscriptionFloorFragment extends Fragment {
     private TextView tvNoFloors;
 
     private SubscriptionFloorAdapter floorAdapter;
+    private SubscriptionLocationViewModel viewModel;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_subscription_floor, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Initialize ViewModel from Activity scope
+        viewModel = new ViewModelProvider(requireActivity()).get(SubscriptionLocationViewModel.class);
 
         initializeViews(view);
         loadFloors();
@@ -58,6 +66,7 @@ public class SubscriptionFloorFragment extends Fragment {
         tvNoFloors = view.findViewById(R.id.tvNoFloors);
 
         floorAdapter = new SubscriptionFloorAdapter(floor -> {
+            // Notify Activity của selection
             SubscriptionLocationSelectionActivity activity = (SubscriptionLocationSelectionActivity) getActivity();
             if (activity != null) {
                 activity.onFloorSelected(floor.getId());
@@ -69,21 +78,22 @@ public class SubscriptionFloorFragment extends Fragment {
     }
 
     private void loadFloors() {
-        SubscriptionLocationSelectionActivity activity = (SubscriptionLocationSelectionActivity) getActivity();
-        if (activity == null) return;
+        // Get data từ ViewModel
+        Long parkingLotId = viewModel.getParkingLotIdValue();
+        Long vehicleId = viewModel.getVehicleIdValue();
+        Long packageId = viewModel.getPackageIdValue();
+        String startDate = viewModel.getFormattedStartDate();
+
+        if (parkingLotId == null || vehicleId == null || packageId == null || startDate == null) {
+            showNoFloors();
+            return;
+        }
 
         showLoading(true);
 
-        String formattedStartDate = activity.getStartDate() + "T00:00:00";
-
         compositeDisposable.add(
                 ApiClient.getApiService()
-                        .getAvailableFloors(
-                                activity.getParkingLotId(),
-                                activity.getVehicleId(),
-                                activity.getPackageId(),
-                                formattedStartDate
-                        )
+                        .getAvailableFloors(parkingLotId, vehicleId, packageId, startDate)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -101,16 +111,15 @@ public class SubscriptionFloorFragment extends Fragment {
                                         }
                                     } else {
                                         showNoFloors();
-                                        showError(response.getError() != null ? response.getError() : "Không thể tải danh sách tầng");
+                                        showError(response.getError() != null ? response.getError()
+                                                : "Không thể tải danh sách tầng");
                                     }
                                 },
                                 throwable -> {
                                     showLoading(false);
                                     showNoFloors();
                                     showError("Lỗi: " + throwable.getMessage());
-                                }
-                        )
-        );
+                                }));
     }
 
     private void showNoFloors() {
@@ -134,4 +143,3 @@ public class SubscriptionFloorFragment extends Fragment {
         compositeDisposable.clear();
     }
 }
-

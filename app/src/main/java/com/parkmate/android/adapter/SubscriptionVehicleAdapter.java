@@ -120,12 +120,18 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
                     || !vehicle.isSupported();
 
             if (isDisabled) {
+                // Disabled state - always same styling
                 cardView.setEnabled(false);
-                cardView.setAlpha(0.5f);
+                cardView.setAlpha(0.6f);
+                cardView.setCardBackgroundColor(itemView.getContext().getColor(R.color.background));
                 radioButton.setEnabled(false);
                 radioButton.setChecked(false);
                 cardView.setStrokeColor(itemView.getContext().getColor(R.color.gray_200));
-                cardView.setStrokeWidth(3);
+                cardView.setStrokeWidth(1);
+                // Clear click listener to prevent any interaction
+                itemView.setOnClickListener(null);
+                itemView.setClickable(false);
+                cardView.setClickable(false);
 
                 tvWarning.setVisibility(View.VISIBLE);
                 if (!vehicle.isSupported()) {
@@ -136,33 +142,48 @@ public class SubscriptionVehicleAdapter extends RecyclerView.Adapter<Subscriptio
                     tvWarning.setText("Đang trong phiên đặt chỗ");
                 }
             } else {
+                // Enabled state
                 cardView.setEnabled(true);
                 cardView.setAlpha(1.0f);
+                cardView.setCardBackgroundColor(itemView.getContext().getColor(R.color.white));
                 radioButton.setEnabled(true);
                 tvWarning.setVisibility(View.GONE);
+                itemView.setClickable(true);
+                cardView.setClickable(true);
 
-                radioButton.setChecked(selectedPosition == position);
+                boolean isSelected = selectedPosition == position;
+                radioButton.setChecked(isSelected);
 
-                // Card stroke - đồng bộ với VehicleSelectionAdapter
-                if (selectedPosition == position) {
+                // Card stroke based on selection
+                if (isSelected) {
                     cardView.setStrokeColor(itemView.getContext().getColor(R.color.primary));
                     cardView.setStrokeWidth(6);
                 } else {
                     cardView.setStrokeColor(itemView.getContext().getColor(R.color.gray_200));
-                    cardView.setStrokeWidth(3);
+                    cardView.setStrokeWidth(1);
                 }
 
                 itemView.setOnClickListener(v -> {
                     int oldPosition = selectedPosition;
-                    selectedPosition = position;
 
-                    if (oldPosition != -1) {
-                        notifyItemChanged(oldPosition);
-                    }
-                    notifyItemChanged(selectedPosition);
+                    // Toggle: if clicking same item, deselect
+                    if (selectedPosition == position) {
+                        selectedPosition = -1;
+                        notifyItemChanged(position);
+                        if (listener != null) {
+                            listener.onVehicleSelected(null); // Pass null to indicate deselection
+                        }
+                    } else {
+                        selectedPosition = position;
 
-                    if (listener != null) {
-                        listener.onVehicleSelected(vehicle);
+                        if (oldPosition != -1) {
+                            notifyItemChanged(oldPosition);
+                        }
+                        notifyItemChanged(position);
+
+                        if (listener != null) {
+                            listener.onVehicleSelected(vehicle);
+                        }
                     }
                 });
             }

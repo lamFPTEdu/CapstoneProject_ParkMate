@@ -6,8 +6,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.parkmate.android.R;
 import com.parkmate.android.model.SubscriptionPackage;
 
@@ -24,6 +26,7 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
 
     private List<SubscriptionPackage> packages = new ArrayList<>();
     private OnPackageClickListener listener;
+    private int selectedPosition = -1;
 
     // Constructor without listener (for detail display)
     public SubscriptionPackageAdapter() {
@@ -37,6 +40,7 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
 
     public void submitList(List<SubscriptionPackage> newPackages) {
         packages.clear();
+        selectedPosition = -1; // Reset selection when list changes
         if (newPackages != null) {
             // Chỉ thêm package active
             for (SubscriptionPackage pkg : newPackages) {
@@ -63,7 +67,7 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(packages.get(position), listener);
+        holder.bind(packages.get(position), position);
     }
 
     @Override
@@ -71,7 +75,8 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
         return packages.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
+        private final MaterialCardView cardView;
         private final TextView tvPackageName;
         private final TextView tvPackageDesc;
         private final TextView tvPackagePrice;
@@ -80,6 +85,7 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardView = (MaterialCardView) itemView;
             tvPackageName = itemView.findViewById(R.id.tvPackageName);
             tvPackageDesc = itemView.findViewById(R.id.tvPackageDesc);
             tvPackagePrice = itemView.findViewById(R.id.tvPackagePrice);
@@ -87,7 +93,7 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
             tvDuration = itemView.findViewById(R.id.tvDuration);
         }
 
-        void bind(SubscriptionPackage pkg, OnPackageClickListener clickListener) {
+        void bind(SubscriptionPackage pkg, int position) {
             tvPackageName.setText(pkg.getName());
             tvPackageDesc.setText(pkg.getDescription());
 
@@ -102,9 +108,40 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
             // Duration
             tvDuration.setText(getDurationDisplay(pkg.getDurationType(), pkg.getDurationValue()));
 
-            // Click listener
-            if (clickListener != null) {
-                itemView.setOnClickListener(v -> clickListener.onPackageClick(pkg));
+            // Selection state - visual feedback
+            boolean isSelected = selectedPosition == position;
+            if (isSelected) {
+                cardView.setStrokeColor(ContextCompat.getColor(itemView.getContext(), R.color.primary));
+                cardView.setStrokeWidth(6);
+                cardView.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.primary_light));
+            } else {
+                cardView.setStrokeColor(ContextCompat.getColor(itemView.getContext(), R.color.border_color));
+                cardView.setStrokeWidth(2);
+                cardView.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.white));
+            }
+
+            // Click listener with toggle support
+            if (listener != null) {
+                itemView.setOnClickListener(v -> {
+                    int oldPosition = selectedPosition;
+
+                    // Toggle: if clicking same item, deselect
+                    if (selectedPosition == position) {
+                        selectedPosition = -1;
+                        notifyItemChanged(position);
+                        listener.onPackageClick(null); // Pass null to indicate deselection
+                    } else {
+                        selectedPosition = position;
+
+                        // Update old and new positions
+                        if (oldPosition != -1) {
+                            notifyItemChanged(oldPosition);
+                        }
+                        notifyItemChanged(position);
+
+                        listener.onPackageClick(pkg);
+                    }
+                });
             } else {
                 itemView.setOnClickListener(null);
                 itemView.setClickable(false);
@@ -112,7 +149,8 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
         }
 
         private String getVehicleTypeDisplay(String vehicleType) {
-            if (vehicleType == null) return "";
+            if (vehicleType == null)
+                return "";
             switch (vehicleType) {
                 case "CAR_UP_TO_9_SEATS":
                     return "🚗 Ô tô";
@@ -126,7 +164,8 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
         }
 
         private String getDurationDisplay(String durationType, Integer durationValue) {
-            if (durationType == null || durationValue == null) return "";
+            if (durationType == null || durationValue == null)
+                return "";
 
             switch (durationType) {
                 case "MONTHLY":
@@ -159,4 +198,3 @@ public class SubscriptionPackageAdapter extends RecyclerView.Adapter<Subscriptio
         }
     }
 }
-

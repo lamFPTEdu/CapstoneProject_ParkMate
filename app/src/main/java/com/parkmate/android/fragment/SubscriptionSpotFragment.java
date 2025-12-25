@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
@@ -22,6 +23,7 @@ import com.parkmate.android.model.ParkingFloor;
 import com.parkmate.android.model.ParkingSpot;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.view.EnhancedParkingMapView;
+import com.parkmate.android.viewmodel.SubscriptionLocationViewModel;
 
 import java.util.List;
 
@@ -33,6 +35,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 /**
  * Fragment để chọn chỗ đỗ (Spot) với bản đồ trực quan HOÀN CHỈNH
  * Hiển thị Floor (nền) + Areas (khu vực) + Spots (chỗ đỗ)
+ * Sử dụng ViewModel để share data với Activity và các Fragments khác
  */
 public class SubscriptionSpotFragment extends Fragment {
     private static final String TAG = "SubscriptionSpotFragment";
@@ -43,6 +46,7 @@ public class SubscriptionSpotFragment extends Fragment {
     private TextView tvSelectedSpotName;
     private MaterialButton btnConfirmSpot;
 
+    private SubscriptionLocationViewModel viewModel;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ParkingSpot selectedSpot;
     private Long heldSpotId = null;
@@ -53,13 +57,17 @@ public class SubscriptionSpotFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_subscription_spot, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Initialize ViewModel from Activity scope
+        viewModel = new ViewModelProvider(requireActivity()).get(SubscriptionLocationViewModel.class);
 
         initializeViews(view);
         setupListeners();
@@ -68,6 +76,11 @@ public class SubscriptionSpotFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Clear previous selection UI when returning from Summary
+        selectedSpot = null;
+        if (cardSelectedSpot != null) {
+            cardSelectedSpot.setVisibility(View.GONE);
+        }
         loadCompleteMap();
     }
 
@@ -95,7 +108,7 @@ public class SubscriptionSpotFragment extends Fragment {
         parkingMapView.setOnSpotClickListener(spot -> {
             // Chỉ lưu selectedSpot, KHÔNG hold ở đây
             selectedSpot = spot;
-            tvSelectedSpotName.setText("Chỗ đỗ: " + spot.getName()); // Hiển thị tên đầy đủ trong card
+            tvSelectedSpotName.setText("Chỗ đỗ: " + spot.getName());
             cardSelectedSpot.setVisibility(View.VISIBLE);
 
             Log.d(TAG, "Spot selected: " + spot.getName() + " (will hold at Summary)");
@@ -115,19 +128,21 @@ public class SubscriptionSpotFragment extends Fragment {
      * Load toàn bộ map: Floor + Areas + Spots
      */
     private void loadCompleteMap() {
-        SubscriptionLocationSelectionActivity activity = (SubscriptionLocationSelectionActivity) getActivity();
-        if (activity == null || activity.getSelectedFloorId() == null || activity.getSelectedAreaId() == null) {
+        Long floorId = viewModel.getSelectedFloorIdValue();
+        Long areaId = viewModel.getSelectedAreaIdValue();
+
+        if (floorId == null || areaId == null) {
             return;
         }
 
         showLoading(true);
 
-        String formattedStartDate = activity.getStartDate() + "T00:00:00";
+        String formattedStartDate = viewModel.getFormattedStartDate();
 
         // Load cả 3 API song song: Floor + Areas + Spots
-        Single<ParkingFloor> floorSingle = loadFloorData(activity);
-        Single<List<ParkingArea>> areasSingle = loadAreasData(activity, formattedStartDate);
-        Single<List<ParkingSpot>> spotsSingle = loadSpotsData(activity, formattedStartDate);
+        Single<ParkingFloor> floorSingle = loadFloorData();
+        Single<List<ParkingArea>> areasSingle = loadAreasData(formattedStartDate);
+        Single<List<ParkingSpot>> spotsSingle = loadSpotsData(formattedStartDate);
 
         // Combine tất cả kết quả
         compositeDisposable.add(
@@ -187,24 +202,22 @@ public class SubscriptionSpotFragment extends Fragment {
                                     showLoading(false);
                                     showError("Lỗi tải bản đồ: " + throwable.getMessage());
                                     Log.e(TAG, "Error loading map", throwable);
-                                }
-                        )
-        );
+                                }));
     }
 
-    private Single<ParkingFloor> loadFloorData(SubscriptionLocationSelectionActivity activity) {
+    private Single<ParkingFloor> loadFloorData() {
+        Long parkingLotId = viewModel.getParkingLotIdValue();
+        Long vehicleId = viewModel.getVehicleIdValue();
+        Long packageId = viewModel.getPackageIdValue();
+        String startDate = viewModel.getFormattedStartDate();
+        Long selectedFloorId = viewModel.getSelectedFloorIdValue();
+
         return ApiClient.getApiService()
-                .getAvailableFloors(
-                        activity.getParkingLotId(),
-                        activity.getVehicleId(),
-                        activity.getPackageId(),
-                        activity.getStartDate() + "T00:00:00"
-                )
+                .getAvailableFloors(parkingLotId, vehicleId, packageId, startDate)
                 .map(response -> {
                     if (response.isSuccess() && response.getData() != null) {
-                        // Tìm floor theo ID
                         for (ParkingFloor floor : response.getData()) {
-                            if (floor.getId() == activity.getSelectedFloorId()) {
+                            if (selectedFloorId != null && floor.getId() == selectedFloorId) {
                                 return floor;
                             }
                         }
@@ -213,28 +226,26 @@ public class SubscriptionSpotFragment extends Fragment {
                 });
     }
 
-    private Single<List<ParkingArea>> loadAreasData(SubscriptionLocationSelectionActivity activity, String startDate) {
+    private Single<List<ParkingArea>> loadAreasData(String startDate) {
+        Long floorId = viewModel.getSelectedFloorIdValue();
+        Long vehicleId = viewModel.getVehicleIdValue();
+        Long packageId = viewModel.getPackageIdValue();
+        Long selectedAreaId = viewModel.getSelectedAreaIdValue();
+
         return ApiClient.getApiService()
-                .getAvailableAreas(
-                        activity.getSelectedFloorId(),
-                        activity.getVehicleId(),
-                        activity.getPackageId(),
-                        startDate
-                )
+                .getAvailableAreas(floorId, vehicleId, packageId, startDate)
                 .map(response -> {
                     if (response.isSuccess() && response.getData() != null) {
                         List<ParkingArea> areas = response.getData();
 
                         // LỌC CHỈ LẤY AREA ĐƯỢC CHỌN
-                        Long selectedAreaId = activity.getSelectedAreaId();
                         for (ParkingArea area : areas) {
-                            if (area.getId() == selectedAreaId) {
-                                // Trả về list chỉ có 1 area duy nhất
+                            if (selectedAreaId != null && area.getId() == selectedAreaId) {
                                 List<ParkingArea> filteredAreas = new java.util.ArrayList<>();
                                 filteredAreas.add(area);
                                 Log.d(TAG, "Filtered area: " + area.getName() +
-                                      " at (" + area.getAreaTopLeftX() + ", " + area.getAreaTopLeftY() + ")" +
-                                      " size: " + area.getAreaWidth() + "x" + area.getAreaHeight());
+                                        " at (" + area.getAreaTopLeftX() + ", " + area.getAreaTopLeftY() + ")" +
+                                        " size: " + area.getAreaWidth() + "x" + area.getAreaHeight());
                                 return filteredAreas;
                             }
                         }
@@ -244,19 +255,17 @@ public class SubscriptionSpotFragment extends Fragment {
                 });
     }
 
-    private Single<List<ParkingSpot>> loadSpotsData(SubscriptionLocationSelectionActivity activity, String startDate) {
+    private Single<List<ParkingSpot>> loadSpotsData(String startDate) {
+        Long areaId = viewModel.getSelectedAreaIdValue();
+        Long vehicleId = viewModel.getVehicleIdValue();
+        Long packageId = viewModel.getPackageIdValue();
+
         return ApiClient.getApiService()
-                .getAvailableSpots(
-                        activity.getSelectedAreaId(),
-                        activity.getVehicleId(),
-                        activity.getPackageId(),
-                        startDate
-                )
+                .getAvailableSpots(areaId, vehicleId, packageId, startDate)
                 .map(response -> {
                     if (response.isSuccess() && response.getData() != null) {
                         List<ParkingSpot> spots = response.getData();
                         // GÁN AREA ID cho mỗi spot để biết spot thuộc area nào
-                        Long areaId = activity.getSelectedAreaId();
                         for (ParkingSpot spot : spots) {
                             spot.setAreaId(areaId);
                         }
@@ -279,13 +288,12 @@ public class SubscriptionSpotFragment extends Fragment {
                                         heldSpotId = spot.getId();
 
                                         // Notify Activity về held spot
-                                        SubscriptionLocationSelectionActivity activity =
-                                            (SubscriptionLocationSelectionActivity) getActivity();
+                                        SubscriptionLocationSelectionActivity activity = (SubscriptionLocationSelectionActivity) getActivity();
                                         if (activity != null) {
                                             activity.setHeldSpotId(spot.getId());
                                         }
 
-                                        tvSelectedSpotName.setText("Chỗ đỗ: " + spot.getName()); // Hiển thị tên đầy đủ
+                                        tvSelectedSpotName.setText("Chỗ đỗ: " + spot.getName());
                                         cardSelectedSpot.setVisibility(View.VISIBLE);
 
                                         Log.d(TAG, "Spot held successfully: " + spot.getName());
@@ -293,9 +301,7 @@ public class SubscriptionSpotFragment extends Fragment {
                                         showError("Không thể giữ chỗ này: " + response.getError());
                                     }
                                 },
-                                throwable -> showError("Lỗi khi giữ chỗ: " + throwable.getMessage())
-                        )
-        );
+                                throwable -> showError("Lỗi khi giữ chỗ: " + throwable.getMessage())));
     }
 
     private void releaseHoldSpot(Long spotId) {
@@ -306,17 +312,13 @@ public class SubscriptionSpotFragment extends Fragment {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 response -> Log.d(TAG, "Previous spot released: " + spotId),
-                                throwable -> Log.e(TAG, "Error releasing spot: " + throwable.getMessage())
-                        )
-        );
+                                throwable -> Log.e(TAG, "Error releasing spot: " + throwable.getMessage())));
     }
 
     /**
      * Public method để Activity có thể gọi release từ bên ngoài
-     * KHÔNG CẦN NỮA - Hold/Release được xử lý ở SummaryActivity
      */
     public void releaseCurrentHeldSpot() {
-        // Do nothing - no spot held at Fragment level
         selectedSpot = null;
         cardSelectedSpot.setVisibility(View.GONE);
     }
@@ -334,7 +336,6 @@ public class SubscriptionSpotFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Không cần release spot ở đây nữa - SummaryActivity sẽ xử lý
         compositeDisposable.clear();
     }
 
@@ -353,4 +354,3 @@ public class SubscriptionSpotFragment extends Fragment {
         }
     }
 }
-

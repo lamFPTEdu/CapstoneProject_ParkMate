@@ -42,10 +42,12 @@ public class VehicleSelectionActivity extends AppCompatActivity {
     private TabLayout tabLayoutVehicleTypes;
     private TextInputEditText etReservedFrom;
     private TextInputEditText etAssumedMinutes;
+    private TextView tvSelectedDateTime;
     private RecyclerView rvVehicles;
     private TextView tvNoVehicles;
     private MaterialButton btnCheckAvailability;
     private ProgressBar progressBar;
+    private androidx.core.widget.NestedScrollView nestedScrollView;
 
     private VehicleSelectionAdapter vehicleAdapter;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -86,10 +88,12 @@ public class VehicleSelectionActivity extends AppCompatActivity {
         tabLayoutVehicleTypes = findViewById(R.id.tabLayoutVehicleTypes);
         etReservedFrom = findViewById(R.id.etReservedFrom);
         etAssumedMinutes = findViewById(R.id.etAssumedMinutes);
+        tvSelectedDateTime = findViewById(R.id.tvSelectedDateTime);
         rvVehicles = findViewById(R.id.rvVehicles);
         tvNoVehicles = findViewById(R.id.tvNoVehicles);
         btnCheckAvailability = findViewById(R.id.btnCheckAvailability);
         progressBar = findViewById(R.id.progressBar);
+        nestedScrollView = findViewById(R.id.nestedScrollView);
 
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -102,23 +106,21 @@ public class VehicleSelectionActivity extends AppCompatActivity {
         rvVehicles.setLayoutManager(layoutManager);
         rvVehicles.setAdapter(vehicleAdapter);
 
-        // Add infinite scroll listener for vehicles (vertical scroll)
-        rvVehicles.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
+        // Add infinite scroll listener to NestedScrollView (not RecyclerView)
+        // Because RecyclerView inside NestedScrollView doesn't trigger its own scroll
+        // events
+        nestedScrollView.setOnScrollChangeListener((androidx.core.widget.NestedScrollView.OnScrollChangeListener) (v,
+                scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            // Check if scrolled to bottom
+            if (!isLoadingVehicles && !isLastVehiclePage) {
+                int childHeight = v.getChildAt(0).getMeasuredHeight();
+                int scrollViewHeight = v.getMeasuredHeight();
+                int scrollableHeight = childHeight - scrollViewHeight;
 
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
-                // Load more when user scrolled to last 2 items
-                if (!isLoadingVehicles && !isLastVehiclePage && dy > 0) {
-                    if ((visibleItemCount + firstVisibleItemPosition + 2) >= totalItemCount
-                            && firstVisibleItemPosition >= 0) {
-                        android.util.Log.d("VehicleSelection", "Loading more vehicles...");
-                        loadMoreVehicles();
-                    }
+                // Load more when within 200dp of bottom
+                if (scrollY >= scrollableHeight - 200) {
+                    android.util.Log.d("VehicleSelection", "NestedScrollView near bottom, loading more vehicles...");
+                    loadMoreVehicles();
                 }
             }
         });
@@ -237,6 +239,14 @@ public class VehicleSelectionActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
+        // Date card click
+        View cardDatePicker = findViewById(R.id.cardDatePicker);
+        if (cardDatePicker != null) {
+            cardDatePicker.setOnClickListener(v -> showDateTimePicker());
+        }
+        if (tvSelectedDateTime != null) {
+            tvSelectedDateTime.setOnClickListener(v -> showDateTimePicker());
+        }
         etReservedFrom.setOnClickListener(v -> showDateTimePicker());
         btnCheckAvailability.setOnClickListener(v -> checkAvailableSpots());
 
@@ -275,7 +285,11 @@ public class VehicleSelectionActivity extends AppCompatActivity {
                                 selectedDateTime.set(Calendar.MINUTE, minute);
                                 selectedDateTime.set(Calendar.SECOND, 0);
 
-                                etReservedFrom.setText(displayDateFormat.format(selectedDateTime.getTime()));
+                                String formattedDate = displayDateFormat.format(selectedDateTime.getTime());
+                                etReservedFrom.setText(formattedDate);
+                                if (tvSelectedDateTime != null) {
+                                    tvSelectedDateTime.setText(formattedDate);
+                                }
                                 checkFormValidity();
                             },
                             now.get(Calendar.HOUR_OF_DAY),

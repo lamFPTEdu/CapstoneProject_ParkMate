@@ -65,4 +65,8 @@
 
     <!-- Semi-transparent overlay for loading/dialogs -->
     <color name="overlay_dark">#80000000</color>
+
+    <!-- Semi-transparent white for step indicators -->
+    <color name="white_50">#80FFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
 </resources>
