@@ -2,13 +2,17 @@ package com.parkmate.android.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -19,11 +23,18 @@ import com.parkmate.android.R;
 import com.parkmate.android.fragment.SubscriptionAreaFragment;
 import com.parkmate.android.fragment.SubscriptionFloorFragment;
 import com.parkmate.android.fragment.SubscriptionSpotFragment;
+import com.parkmate.android.model.SubscriptionPackage;
 import com.parkmate.android.utils.SubscriptionHoldManager;
+import com.parkmate.android.viewmodel.SubscriptionLocationViewModel;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * Activity chính để chọn vị trí đỗ xe cho subscription
  * Gồm 3 tab: Floor → Area → Spot
+ * Sử dụng ViewModel để share data giữa các Fragments
  */
 public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
 
@@ -31,30 +42,51 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private SubscriptionHoldManager holdManager;
+    private SubscriptionLocationViewModel viewModel;
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    private long parkingLotId;
-    private long vehicleId;
-    private long packageId;
-    private String startDate;
-    private com.parkmate.android.model.SubscriptionPackage subscriptionPackage;
-
-    private Long selectedFloorId;
-    private Long selectedAreaId;
-    private Long selectedSpotId;
-    private Long heldSpotId; // Track held spot để release khi cần
+    // Step indicator views
+    private View step1Container, step2Container, step3Container;
+    private View step1Circle, step2Circle, step3Circle;
+    private TextView step1Number, step2Number, step3Number;
+    private TextView step1Label, step2Label, step3Label;
+    private View connector1, connector2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subscription_location_selection);
 
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(SubscriptionLocationViewModel.class);
         holdManager = new SubscriptionHoldManager(this);
 
-        parkingLotId = getIntent().getLongExtra("PARKING_LOT_ID", -1);
-        vehicleId = getIntent().getLongExtra("VEHICLE_ID", -1);
-        packageId = getIntent().getLongExtra("PACKAGE_ID", -1);
-        startDate = getIntent().getStringExtra("START_DATE");
-        subscriptionPackage = (com.parkmate.android.model.SubscriptionPackage) getIntent().getSerializableExtra("PACKAGE");
+        // Only load intent data if ViewModel is empty (fresh start)
+        if (viewModel.getParkingLotIdValue() == null) {
+            loadIntentData();
+        }
+
+        initializeViews();
+        setupToolbar();
+        setupViewPager();
+        setupBackPressedHandler();
+        observeViewModel();
+        updateStepIndicators(0);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Clear spot to allow fresh selection (but keep floor/area)
+        viewModel.clearSpotSelection();
+    }
+
+    private void loadIntentData() {
+        long parkingLotId = getIntent().getLongExtra("PARKING_LOT_ID", -1);
+        long vehicleId = getIntent().getLongExtra("VEHICLE_ID", -1);
+        long packageId = getIntent().getLongExtra("PACKAGE_ID", -1);
+        String startDate = getIntent().getStringExtra("START_DATE");
+        SubscriptionPackage subscriptionPackage = (SubscriptionPackage) getIntent().getSerializableExtra("PACKAGE");
 
         if (parkingLotId == -1 || vehicleId == -1 || packageId == -1 || startDate == null) {
             Toast.makeText(this, "Thông tin không hợp lệ", Toast.LENGTH_SHORT).show();
@@ -62,16 +94,36 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
             return;
         }
 
-        initializeViews();
-        setupToolbar();
-        setupViewPager();
-        setupBackPressedHandler();
+        // Store in ViewModel
+        viewModel.setParkingLotId(parkingLotId);
+        viewModel.setVehicleId(vehicleId);
+        viewModel.setPackageId(packageId);
+        viewModel.setStartDate(startDate);
+        viewModel.setSubscriptionPackage(subscriptionPackage);
     }
 
     private void initializeViews() {
         toolbar = findViewById(R.id.toolbar);
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
+
+        // Step containers (for pill background)
+        step1Container = findViewById(R.id.step1Container);
+        step2Container = findViewById(R.id.step2Container);
+        step3Container = findViewById(R.id.step3Container);
+
+        // Step circles and numbers
+        step1Circle = findViewById(R.id.step1Circle);
+        step2Circle = findViewById(R.id.step2Circle);
+        step3Circle = findViewById(R.id.step3Circle);
+        step1Number = findViewById(R.id.step1Number);
+        step2Number = findViewById(R.id.step2Number);
+        step3Number = findViewById(R.id.step3Number);
+        step1Label = findViewById(R.id.step1Label);
+        step2Label = findViewById(R.id.step2Label);
+        step3Label = findViewById(R.id.step3Label);
+        connector1 = findViewById(R.id.connector1);
+        connector2 = findViewById(R.id.connector2);
     }
 
     private void setupToolbar() {
@@ -103,27 +155,85 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
                             tab.setText("3. Chỗ đỗ");
                             break;
                     }
-                }
-        ).attach();
+                }).attach();
 
-        // Initially disable tabs 2 and 3
-        TabLayout.Tab tab1 = tabLayout.getTabAt(1);
-        TabLayout.Tab tab2 = tabLayout.getTabAt(2);
-        if (tab1 != null) tab1.view.setEnabled(false);
-        if (tab2 != null) tab2.view.setEnabled(false);
-
-        // Detect tab changes to release held spot when going back
+        // Detect tab changes
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
+                viewModel.setCurrentStep(position);
+                updateStepIndicators(position);
 
-                // Nếu user back về tab trước (không phải tab Spot) thì release held spot
-                if (position < 2) { // Tab 0 (Floor) hoặc Tab 1 (Area)
+                // Release held spot when going back
+                if (position < 2) {
                     releaseHeldSpot();
                 }
             }
         });
+    }
+
+    private void updateStepIndicators(int currentStep) {
+        // Step 1 - always active since we start here
+        if (currentStep >= 0) {
+            step1Container.setBackgroundResource(R.drawable.bg_step_pill_active);
+            step1Circle.setBackgroundResource(R.drawable.bg_circle_white);
+            step1Number.setTextColor(ContextCompat.getColor(this, R.color.primary));
+            step1Label.setTextColor(ContextCompat.getColor(this, R.color.white));
+        }
+
+        // Step 2
+        if (currentStep >= 1) {
+            step2Container.setBackgroundResource(R.drawable.bg_step_pill_active);
+            step2Circle.setBackgroundResource(R.drawable.bg_circle_white);
+            step2Number.setTextColor(ContextCompat.getColor(this, R.color.primary));
+            step2Label.setTextColor(ContextCompat.getColor(this, R.color.white));
+            connector1.setBackgroundColor(ContextCompat.getColor(this, R.color.primary));
+        } else {
+            step2Container.setBackgroundResource(R.drawable.bg_step_pill_inactive);
+            step2Circle.setBackgroundResource(R.drawable.bg_circle_gray);
+            step2Number.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            step2Label.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            connector1.setBackgroundColor(ContextCompat.getColor(this, R.color.border_color));
+        }
+
+        // Step 3
+        if (currentStep >= 2) {
+            step3Container.setBackgroundResource(R.drawable.bg_step_pill_active);
+            step3Circle.setBackgroundResource(R.drawable.bg_circle_white);
+            step3Number.setTextColor(ContextCompat.getColor(this, R.color.primary));
+            step3Label.setTextColor(ContextCompat.getColor(this, R.color.white));
+            connector2.setBackgroundColor(ContextCompat.getColor(this, R.color.primary));
+        } else {
+            step3Container.setBackgroundResource(R.drawable.bg_step_pill_inactive);
+            step3Circle.setBackgroundResource(R.drawable.bg_circle_gray);
+            step3Number.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            step3Label.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            connector2.setBackgroundColor(ContextCompat.getColor(this, R.color.border_color));
+        }
+    }
+
+    private void observeViewModel() {
+        // Observe floor selection to enable Area tab
+        viewModel.getSelectedFloorId().observe(this, floorId -> {
+            if (floorId != null) {
+                TabLayout.Tab tab = tabLayout.getTabAt(1);
+                if (tab != null) {
+                    tab.view.setEnabled(true);
+                }
+            }
+        });
+
+        // Observe area selection to enable Spot tab
+        viewModel.getSelectedAreaId().observe(this, areaId -> {
+            if (areaId != null) {
+                TabLayout.Tab tab = tabLayout.getTabAt(2);
+                if (tab != null) {
+                    tab.view.setEnabled(true);
+                }
+            }
+        });
+        // Note: Spot selection navigation is handled directly in onSpotSelected()
     }
 
     private void setupBackPressedHandler() {
@@ -134,15 +244,12 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
 
                 if (currentItem == 0) {
                     // Đang ở tab Floor, back ra ngoài Activity
-                    // Release held spot trước khi finish (nếu có)
                     releaseHeldSpot();
-                    // Disable this callback and let the system handle back press
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
                 } else {
                     // Đang ở tab Area hoặc Spot, back về tab trước
                     if (currentItem == 2) {
-                        // Từ Spot về Area - release held spot
                         releaseHeldSpot();
                     }
                     viewPager.setCurrentItem(currentItem - 1, true);
@@ -152,52 +259,44 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
     }
 
     /**
-     * Được gọi khi user chọn floor
+     * Được gọi từ FloorFragment khi user chọn floor
      */
     public void onFloorSelected(Long floorId) {
-        this.selectedFloorId = floorId;
-
-        // Enable Area tab and move to it
-        TabLayout.Tab tab = tabLayout.getTabAt(1);
-        if (tab != null) {
-            tab.view.setEnabled(true);
-            viewPager.setCurrentItem(1, true);
-        }
+        viewModel.setSelectedFloorId(floorId);
+        viewPager.setCurrentItem(1, true);
     }
 
     /**
-     * Được gọi khi user chọn area
+     * Được gọi từ AreaFragment khi user chọn area
      */
     public void onAreaSelected(Long areaId) {
-        this.selectedAreaId = areaId;
-
-        // Enable Spot tab and move to it
-        TabLayout.Tab tab = tabLayout.getTabAt(2);
-        if (tab != null) {
-            tab.view.setEnabled(true);
-            viewPager.setCurrentItem(2, true);
-        }
+        viewModel.setSelectedAreaId(areaId);
+        viewPager.setCurrentItem(2, true);
     }
 
     /**
-     * Được gọi khi user chọn spot
+     * Được gọi từ SpotFragment khi user chọn spot
      */
     public void onSpotSelected(Long spotId, String spotName) {
-        this.selectedSpotId = spotId;
+        viewModel.setSelectedSpot(spotId, spotName);
+        // Navigate directly instead of using observer to avoid timing issues
+        navigateToSummary();
+    }
 
-        // Navigate to summary với đầy đủ thông tin
+    private void navigateToSummary() {
         Intent intent = new Intent(this, SubscriptionSummaryActivity.class);
-        intent.putExtra("PARKING_LOT_ID", parkingLotId);
-        intent.putExtra("VEHICLE_ID", vehicleId);
-        intent.putExtra("PACKAGE_ID", packageId);
-        intent.putExtra("START_DATE", startDate);
-        intent.putExtra("SPOT_ID", selectedSpotId);
-        intent.putExtra("SPOT_NAME", spotName != null ? spotName : "");
+        intent.putExtra("PARKING_LOT_ID", viewModel.getParkingLotIdValue());
+        intent.putExtra("VEHICLE_ID", viewModel.getVehicleIdValue());
+        intent.putExtra("PACKAGE_ID", viewModel.getPackageIdValue());
+        intent.putExtra("START_DATE", viewModel.getStartDateValue());
+        intent.putExtra("SPOT_ID", viewModel.getSelectedSpotIdValue());
+        intent.putExtra("SPOT_NAME",
+                viewModel.getSelectedSpotNameValue() != null ? viewModel.getSelectedSpotNameValue() : "");
 
-        // Truyền thông tin package - null-safe
-        if (subscriptionPackage != null) {
-            intent.putExtra("PACKAGE_NAME", subscriptionPackage.getName());
-            intent.putExtra("PACKAGE_PRICE", subscriptionPackage.getPrice());
+        SubscriptionPackage pkg = viewModel.getSubscriptionPackageValue();
+        if (pkg != null) {
+            intent.putExtra("PACKAGE_NAME", pkg.getName());
+            intent.putExtra("PACKAGE_PRICE", pkg.getPrice());
         } else {
             intent.putExtra("PACKAGE_NAME", "");
             intent.putExtra("PACKAGE_PRICE", 0L);
@@ -206,37 +305,11 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // Getters for fragments
-    public long getParkingLotId() {
-        return parkingLotId;
-    }
-
-    public long getVehicleId() {
-        return vehicleId;
-    }
-
-    public long getPackageId() {
-        return packageId;
-    }
-
-    public String getStartDate() {
-        return startDate;
-    }
-
-    public Long getSelectedFloorId() {
-        return selectedFloorId;
-    }
-
-    public Long getSelectedAreaId() {
-        return selectedAreaId;
-    }
-
     /**
-     * Được gọi từ Fragment khi spot được hold thành công
+     * Được gọi từ SpotFragment khi spot được hold thành công
      */
     public void setHeldSpotId(Long spotId) {
-        this.heldSpotId = spotId;
-        // Save to SharedPreferences for persistence
+        viewModel.setHeldSpotId(spotId);
         if (spotId != null) {
             holdManager.setHeldSpot(spotId);
         }
@@ -246,51 +319,74 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
      * Release held spot nếu có
      */
     private void releaseHeldSpot() {
+        Long heldSpotId = viewModel.getHeldSpotIdValue();
         if (heldSpotId != null) {
-            // Tìm Fragment hiện tại
-            Fragment currentFragment = getSupportFragmentManager().findFragmentByTag("f" + viewPager.getCurrentItem());
-
-            // Nếu không tìm thấy, thử tìm fragment ở position 2 (Spot tab)
-            if (!(currentFragment instanceof SubscriptionSpotFragment)) {
-                currentFragment = getSupportFragmentManager().findFragmentByTag("f2");
-            }
-
-            // Gọi Fragment để release
-            if (currentFragment instanceof SubscriptionSpotFragment) {
-                ((SubscriptionSpotFragment) currentFragment).releaseCurrentHeldSpot();
+            // Tìm và gọi SpotFragment để release
+            Fragment spotFragment = getSupportFragmentManager().findFragmentByTag("f2");
+            if (spotFragment instanceof SubscriptionSpotFragment) {
+                ((SubscriptionSpotFragment) spotFragment).releaseCurrentHeldSpot();
             } else {
-                // Fallback: Gọi API trực tiếp nếu không tìm thấy Fragment
+                // Fallback: release trực tiếp
                 releaseHeldSpotDirectly(heldSpotId);
             }
-
-            heldSpotId = null;
+            viewModel.clearHeldSpotId();
         }
     }
 
-    /**
-     * Fallback method để release spot trực tiếp từ Activity
-     */
     private void releaseHeldSpotDirectly(Long spotId) {
-        com.parkmate.android.network.ApiClient.getApiService()
-                .releaseHoldSpot(spotId)
-                .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
-                .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
-                .subscribe(
-                        response -> {
-                            android.util.Log.d("SubscriptionLocation", "Spot released directly: " + spotId);
-                            holdManager.clearHeldSpot();
-                        },
-                        throwable -> {
-                            android.util.Log.e("SubscriptionLocation", "Error releasing spot: " + throwable.getMessage());
-                            holdManager.clearHeldSpot();
-                        }
-                );
+        compositeDisposable.add(
+                com.parkmate.android.network.ApiClient.getApiService()
+                        .releaseHoldSpot(spotId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    android.util.Log.d("SubscriptionLocation", "Spot released: " + spotId);
+                                    holdManager.clearHeldSpot();
+                                },
+                                throwable -> {
+                                    android.util.Log.e("SubscriptionLocation", "Error releasing spot", throwable);
+                                    holdManager.clearHeldSpot();
+                                }));
+    }
+
+    // ========== Getter methods cho Fragments (backward compatibility) ==========
+
+    public SubscriptionLocationViewModel getViewModel() {
+        return viewModel;
+    }
+
+    public long getParkingLotId() {
+        Long value = viewModel.getParkingLotIdValue();
+        return value != null ? value : -1;
+    }
+
+    public long getVehicleId() {
+        Long value = viewModel.getVehicleIdValue();
+        return value != null ? value : -1;
+    }
+
+    public long getPackageId() {
+        Long value = viewModel.getPackageIdValue();
+        return value != null ? value : -1;
+    }
+
+    public String getStartDate() {
+        return viewModel.getStartDateValue();
+    }
+
+    public Long getSelectedFloorId() {
+        return viewModel.getSelectedFloorIdValue();
+    }
+
+    public Long getSelectedAreaId() {
+        return viewModel.getSelectedAreaIdValue();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Release held spot khi activity bị destroy
+        compositeDisposable.clear();
         releaseHeldSpot();
     }
 
@@ -324,4 +420,3 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
         }
     }
 }
-

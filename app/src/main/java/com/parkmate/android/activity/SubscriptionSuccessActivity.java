@@ -78,6 +78,10 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
         initializeViews();
         setupToolbar();
         setupBackPressHandler();
+
+        // Set max brightness for easier QR scanning
+        com.parkmate.android.utils.QrCodeHelper.setMaxBrightness(this);
+
         displaySubscriptionData();
     }
 
@@ -241,6 +245,9 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
                         ivQrCode.setImageBitmap(qrCodeBitmap);
                         ivQrCode.setVisibility(View.VISIBLE);
                         progressBar.setVisibility(View.GONE);
+                        // Setup tap to show fullscreen QR
+                        ivQrCode.setOnClickListener(v -> com.parkmate.android.utils.QrCodeHelper
+                                .showFullscreenQrDialog(SubscriptionSuccessActivity.this, qrCodeBitmap));
                     } else {
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(this, "Không thể tải mã QR", Toast.LENGTH_SHORT).show();
@@ -351,5 +358,12 @@ public class SubscriptionSuccessActivity extends AppCompatActivity {
         // Start Profile, then immediately start List
         startActivities(new Intent[] { profileIntent, listIntent });
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Restore original brightness
+        com.parkmate.android.utils.QrCodeHelper.restoreBrightness(this);
     }
 }

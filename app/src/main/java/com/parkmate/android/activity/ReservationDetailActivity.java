@@ -89,6 +89,9 @@ public class ReservationDetailActivity extends AppCompatActivity {
         initViews();
         setupToolbar();
 
+        // Set max brightness for easier QR scanning
+        com.parkmate.android.utils.QrCodeHelper.setMaxBrightness(this);
+
         // API response đã bao gồm đầy đủ thông tin
         displayReservationInfo();
         displayQrCode();
@@ -230,6 +233,9 @@ public class ReservationDetailActivity extends AppCompatActivity {
 
                 if (qrCodeBitmap != null) {
                     ivQrCode.setImageBitmap(qrCodeBitmap);
+                    // Setup tap to show fullscreen QR
+                    ivQrCode.setOnClickListener(v -> com.parkmate.android.utils.QrCodeHelper
+                            .showFullscreenQrDialog(ReservationDetailActivity.this, qrCodeBitmap));
                     Log.d(TAG, "QR code hiển thị thành công");
                 } else {
                     Toast.makeText(this, "Không thể hiển thị QR code", Toast.LENGTH_SHORT).show();
@@ -397,6 +403,8 @@ public class ReservationDetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Restore original brightness
+        com.parkmate.android.utils.QrCodeHelper.restoreBrightness(this);
         if (compositeDisposable != null && !compositeDisposable.isDisposed()) {
             compositeDisposable.dispose();
         }

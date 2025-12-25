@@ -190,7 +190,7 @@
     <string name="vehicle_selection_placeholder_desc">Honda - Wave</string>
     <string name="vehicle_selection_title">Chọn xe đặt chỗ</string>
     <string name="vehicle_selection_reserved_from_hint">Thời gian đặt chỗ</string>
-    <string name="vehicle_selection_assumed_minutes_hint">Thời gian dự kiến (phút)</string>
+    <string name="vehicle_selection_assumed_minutes_hint">Thời gian đỗ xe dự kiến (phút)</string>
     <string name="vehicle_selection_choose_vehicle">Chọn xe</string>
     <string name="vehicle_selection_description">Chọn xe để đặt chỗ. Xe không khả dụng sẽ bị vô hiệu hóa.</string>
     <string name="vehicle_selection_no_vehicles">Bạn chưa có xe nào</string>

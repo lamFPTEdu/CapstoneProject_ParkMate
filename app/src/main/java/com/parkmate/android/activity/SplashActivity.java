@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -43,10 +42,9 @@ public class SplashActivity extends AppCompatActivity {
         // Khởi tạo TokenManager (idempotent – chỉ thực hiện lần đầu)
         TokenManager.init(getApplicationContext());
 
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_splash);
 
-        // Setup edge-to-edge display
+        // Setup edge-to-edge display (use only our helper, not AndroidX EdgeToEdge)
         com.parkmate.android.utils.EdgeToEdgeHelper.setupEdgeToEdge(this);
 
         // Request notification permission for Android 13+
@@ -64,10 +62,10 @@ public class SplashActivity extends AppCompatActivity {
      */
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        new String[] { Manifest.permission.POST_NOTIFICATIONS },
                         NOTIFICATION_PERMISSION_REQUEST_CODE);
             }
         }

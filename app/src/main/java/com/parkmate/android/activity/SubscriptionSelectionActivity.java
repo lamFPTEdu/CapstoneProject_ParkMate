@@ -42,10 +42,12 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
     private RecyclerView rvPackages;
     private RecyclerView rvVehicles;
     private TextInputEditText etStartDate;
+    private TextView tvSelectedDate;
     private MaterialButton btnContinue;
     private ProgressBar progressBar;
     private TextView tvNoPackages;
     private TextView tvNoVehicles;
+    private androidx.core.widget.NestedScrollView nestedScrollView;
 
     private SubscriptionPackageAdapter packageAdapter;
     private SubscriptionVehicleAdapter vehicleAdapter;
@@ -60,6 +62,12 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
     private Long selectedVehicleId = null;
     private String selectedStartDate = null;
     private String currentVehicleType = null; // Current selected vehicle type from tab
+
+    // Pagination for vehicles
+    private int currentVehiclePage = 0;
+    private boolean isLoadingVehicles = false;
+    private boolean isLastVehiclePage = false;
+    private static final int VEHICLE_PAGE_SIZE = 10;
 
     private final SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     private final SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -89,20 +97,38 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
         rvPackages = findViewById(R.id.rvPackages);
         rvVehicles = findViewById(R.id.rvVehicles);
         etStartDate = findViewById(R.id.etStartDate);
+        tvSelectedDate = findViewById(R.id.tvSelectedDate);
         btnContinue = findViewById(R.id.btnContinue);
         progressBar = findViewById(R.id.progressBar);
         tvNoPackages = findViewById(R.id.tvNoPackages);
         tvNoVehicles = findViewById(R.id.tvNoVehicles);
+        nestedScrollView = findViewById(R.id.nestedScrollView);
 
         packageAdapter = new SubscriptionPackageAdapter(pkg -> {
-            selectedPackageId = pkg.getId();
-            selectedPackage = pkg; // Store package object
-            filterVehiclesByPackage(pkg);
+            if (pkg != null) {
+                selectedPackageId = pkg.getId();
+                selectedPackage = pkg;
+                filterVehiclesByPackage(pkg);
+            } else {
+                // Deselected - reset package and hide vehicles
+                selectedPackageId = null;
+                selectedPackage = null;
+                selectedVehicleId = null; // Also reset vehicle selection
+                vehicleAdapter.updateVehicles(new java.util.ArrayList<>()); // Clear list
+                rvVehicles.setVisibility(View.GONE);
+                tvNoVehicles.setVisibility(View.VISIBLE);
+                tvNoVehicles.setText("Vui lòng chọn gói đăng ký trước");
+            }
             checkFormValidity();
         });
 
         vehicleAdapter = new SubscriptionVehicleAdapter(vehicle -> {
-            selectedVehicleId = vehicle.getId();
+            if (vehicle != null) {
+                selectedVehicleId = vehicle.getId();
+            } else {
+                // Deselected
+                selectedVehicleId = null;
+            }
             checkFormValidity();
         }, parkingLot.getId());
 
@@ -116,6 +142,26 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
         LinearLayoutManager vehiclesLayoutManager = new LinearLayoutManager(this);
         rvVehicles.setLayoutManager(vehiclesLayoutManager);
         rvVehicles.setAdapter(vehicleAdapter);
+
+        // Add infinite scroll listener to NestedScrollView
+        if (nestedScrollView != null) {
+            nestedScrollView
+                    .setOnScrollChangeListener((androidx.core.widget.NestedScrollView.OnScrollChangeListener) (v,
+                            scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                        // Check if scrolled to bottom
+                        if (!isLoadingVehicles && !isLastVehiclePage) {
+                            int childHeight = v.getChildAt(0).getMeasuredHeight();
+                            int scrollViewHeight = v.getMeasuredHeight();
+                            int scrollableHeight = childHeight - scrollViewHeight;
+
+                            // Load more when within 200dp of bottom
+                            if (scrollY >= scrollableHeight - 200) {
+                                android.util.Log.d("SubscriptionSelection", "Near bottom, loading more vehicles...");
+                                loadMoreVehicles();
+                            }
+                        }
+                    });
+        }
     }
 
     private void setupToolbar() {
@@ -128,6 +174,12 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
+        // Date card click - use the card directly
+        View cardDatePicker = findViewById(R.id.cardDatePicker);
+        if (cardDatePicker != null) {
+            cardDatePicker.setOnClickListener(v -> showDatePicker());
+        }
+        tvSelectedDate.setOnClickListener(v -> showDatePicker());
         etStartDate.setOnClickListener(v -> showDatePicker());
         btnContinue.setOnClickListener(v -> navigateToFloorSelection());
     }
@@ -139,7 +191,9 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
                 (view, year, month, dayOfMonth) -> {
                     calendar.set(year, month, dayOfMonth);
                     selectedStartDate = apiDateFormat.format(calendar.getTime());
-                    etStartDate.setText(displayDateFormat.format(calendar.getTime()));
+                    String displayText = displayDateFormat.format(calendar.getTime());
+                    etStartDate.setText(displayText);
+                    tvSelectedDate.setText(displayText);
                     checkFormValidity();
                 },
                 calendar.get(Calendar.YEAR),
@@ -181,15 +235,23 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
     }
 
     private void loadVehicles() {
+        if (isLoadingVehicles)
+            return;
+
+        isLoadingVehicles = true;
         showLoading(true);
+
         compositeDisposable.add(
                 ApiClient.getApiService()
-                        .getVehiclesWithFilter(0, 100, "createdAt", "asc", true, parkingLot.getId())
+                        .getVehiclesWithFilter(currentVehiclePage, VEHICLE_PAGE_SIZE, "createdAt", "asc", true,
+                                parkingLot.getId())
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 response -> {
+                                    isLoadingVehicles = false;
                                     showLoading(false);
+
                                     if (response.isSuccess() && response.getData() != null) {
                                         VehicleResponse vehicleResponse = response.getData();
                                         List<Vehicle> vehicles = vehicleResponse.getContent();
@@ -202,20 +264,41 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
                                             }
                                         }
 
-                                        allVehicles = activeVehicles;
+                                        allVehicles.addAll(activeVehicles);
+                                        isLastVehiclePage = vehicleResponse.isLast();
+
+                                        android.util.Log.d("SubscriptionSelection",
+                                                "Page " + currentVehiclePage + " loaded, total vehicles: "
+                                                        + allVehicles.size() +
+                                                        ", isLast: " + isLastVehiclePage);
 
                                         // Initially hide vehicle list until package is selected
-                                        rvVehicles.setVisibility(View.GONE);
-                                        tvNoVehicles.setVisibility(View.VISIBLE);
-                                        tvNoVehicles.setText("Vui lòng chọn gói đăng ký trước");
+                                        if (currentVehiclePage == 0) {
+                                            rvVehicles.setVisibility(View.GONE);
+                                            tvNoVehicles.setVisibility(View.VISIBLE);
+                                            tvNoVehicles.setText("Vui lòng chọn gói đăng ký trước");
+                                        }
+
+                                        // Auto-load more if not enough vehicles
+                                        if (allVehicles.size() < 5 && !isLastVehiclePage) {
+                                            loadMoreVehicles();
+                                        }
                                     } else {
                                         showNoVehiclesError();
                                     }
                                 },
                                 throwable -> {
+                                    isLoadingVehicles = false;
                                     showLoading(false);
                                     showError("Lỗi tải danh sách xe: " + throwable.getMessage());
                                 }));
+    }
+
+    private void loadMoreVehicles() {
+        if (!isLoadingVehicles && !isLastVehiclePage) {
+            currentVehiclePage++;
+            loadVehicles();
+        }
     }
 
     private void checkFormValidity() {
