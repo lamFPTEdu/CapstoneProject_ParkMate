@@ -66,6 +66,10 @@ public class AccountQrActivity extends AppCompatActivity {
 
         initViews();
         setupClickListeners();
+
+        // Set max brightness for easier QR scanning
+        com.parkmate.android.utils.QrCodeHelper.setMaxBrightness(this);
+
         loadUserProfile();
     }
 
@@ -105,14 +109,12 @@ public class AccountQrActivity extends AppCompatActivity {
         showLoading(true);
 
         compositeDisposable.add(
-            ApiClient.getApiService().getCurrentUserProfile()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    this::handleUserProfileSuccess,
-                    this::handleUserProfileError
-                )
-        );
+                ApiClient.getApiService().getCurrentUserProfile()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                this::handleUserProfileSuccess,
+                                this::handleUserProfileError));
     }
 
     private void handleUserProfileSuccess(ApiResponse<UserProfileResponse> response) {
@@ -164,6 +166,9 @@ public class AccountQrActivity extends AppCompatActivity {
 
             if (qrCodeBitmap != null && ivQrCode != null) {
                 ivQrCode.setImageBitmap(qrCodeBitmap);
+                // Setup tap to show fullscreen QR
+                ivQrCode.setOnClickListener(v -> com.parkmate.android.utils.QrCodeHelper
+                        .showFullscreenQrDialog(AccountQrActivity.this, qrCodeBitmap));
             } else {
                 Toast.makeText(this, "Không thể hiển thị mã QR", Toast.LENGTH_SHORT).show();
             }
@@ -181,10 +186,10 @@ public class AccountQrActivity extends AppCompatActivity {
 
         // Check permission for Android 10 and below
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
                         REQUEST_STORAGE_PERMISSION);
                 return;
             }
@@ -288,7 +293,7 @@ public class AccountQrActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_STORAGE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -302,9 +307,10 @@ public class AccountQrActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Restore original brightness
+        com.parkmate.android.utils.QrCodeHelper.restoreBrightness(this);
         if (compositeDisposable != null && !compositeDisposable.isDisposed()) {
             compositeDisposable.dispose();
         }
     }
 }
-
