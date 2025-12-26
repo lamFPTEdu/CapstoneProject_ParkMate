@@ -108,6 +108,12 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
                 // Click vào button gia hạn -> show renewal confirmation dialog
                 showRenewalConfirmDialog(subscription);
             }
+
+            @Override
+            public void onCancelClick(UserSubscription subscription) {
+                // Click vào button hủy đăng ký -> show cancel confirmation dialog
+                showCancelConfirmDialog(subscription);
+            }
         });
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -136,7 +142,8 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
     }
 
     private void loadSubscriptions(int page) {
-        if (isLoading) return;
+        if (isLoading)
+            return;
 
         isLoading = true;
         showLoading(page == 0);
@@ -170,9 +177,7 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
                                     if (page == 0) {
                                         showEmptyState();
                                     }
-                                }
-                        )
-        );
+                                }));
     }
 
     private void handleSubscriptionsResponse(UserSubscriptionResponse response, int page) {
@@ -221,8 +226,8 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
 
     private void showRatingDialog(UserSubscription subscription) {
         String parkingLotName = subscription.getParkingLotName() != null
-            ? subscription.getParkingLotName()
-            : "Bãi đỗ xe";
+                ? subscription.getParkingLotName()
+                : "Bãi đỗ xe";
 
         RatingDialog dialog = new RatingDialog(this, parkingLotName, (rating, title, comment) -> {
             // Submit rating to API
@@ -233,19 +238,19 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
 
     private void showRenewalConfirmDialog(UserSubscription subscription) {
         RenewalConfirmDialog dialog = new RenewalConfirmDialog(this, subscription,
-            new RenewalConfirmDialog.OnRenewalConfirmListener() {
-                @Override
-                public void onConfirm() {
-                    // User confirmed renewal
-                    renewSubscription(subscription);
-                }
+                new RenewalConfirmDialog.OnRenewalConfirmListener() {
+                    @Override
+                    public void onConfirm() {
+                        // User confirmed renewal
+                        renewSubscription(subscription);
+                    }
 
-                @Override
-                public void onCancel() {
-                    // User cancelled - do nothing
-                    Log.d(TAG, "User cancelled renewal");
-                }
-            });
+                    @Override
+                    public void onCancel() {
+                        // User cancelled - do nothing
+                        Log.d(TAG, "User cancelled renewal");
+                    }
+                });
         dialog.show();
     }
 
@@ -259,45 +264,43 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
         Log.d(TAG, "Renewing subscription ID: " + subscription.getId());
 
         compositeDisposable.add(
-            ApiClient.getApiService()
-                .renewUserSubscription(subscription.getId(), requestBody)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> {
-                        progressBar.setVisibility(View.GONE);
-                        if (response.isSuccess()) {
-                            Toast.makeText(this, "✅ Gia hạn thành công!", Toast.LENGTH_SHORT).show();
-                            // Reload list to get updated data
-                            currentPage = 0;
-                            isLastPage = false;
-                            adapter.clearSubscriptions();
-                            loadSubscriptions(currentPage);
-                        } else {
-                            String errorMsg = response.getMessage() != null
-                                ? response.getMessage()
-                                : "Không thể gia hạn gói đăng ký";
-                            Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    error -> {
-                        progressBar.setVisibility(View.GONE);
-                        Log.e(TAG, "Error renewing subscription", error);
+                ApiClient.getApiService()
+                        .renewUserSubscription(subscription.getId(), requestBody)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    if (response.isSuccess()) {
+                                        Toast.makeText(this, "✅ Gia hạn thành công!", Toast.LENGTH_SHORT).show();
+                                        // Reload list to get updated data
+                                        currentPage = 0;
+                                        isLastPage = false;
+                                        adapter.clearSubscriptions();
+                                        loadSubscriptions(currentPage);
+                                    } else {
+                                        String errorMsg = response.getMessage() != null
+                                                ? response.getMessage()
+                                                : "Không thể gia hạn gói đăng ký";
+                                        Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                                    }
+                                },
+                                error -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    Log.e(TAG, "Error renewing subscription", error);
 
-                        String errorMsg = "Không thể gia hạn";
-                        if (error.getMessage() != null) {
-                            if (error.getMessage().contains("401")) {
-                                errorMsg = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại";
-                            } else if (error.getMessage().contains("404")) {
-                                errorMsg = "Không tìm thấy gói đăng ký";
-                            } else if (error.getMessage().contains("403")) {
-                                errorMsg = "Bạn không có quyền gia hạn gói này";
-                            }
-                        }
-                        Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
-                    }
-                )
-        );
+                                    String errorMsg = "Không thể gia hạn";
+                                    if (error.getMessage() != null) {
+                                        if (error.getMessage().contains("401")) {
+                                            errorMsg = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại";
+                                        } else if (error.getMessage().contains("404")) {
+                                            errorMsg = "Không tìm thấy gói đăng ký";
+                                        } else if (error.getMessage().contains("403")) {
+                                            errorMsg = "Bạn không có quyền gia hạn gói này";
+                                        }
+                                    }
+                                    Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                                }));
     }
 
     private void submitRating(UserSubscription subscription, int rating, String title, String comment) {
@@ -327,37 +330,104 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
 
         // Call API
         compositeDisposable.add(
-            ApiClient.getApiService().createRating(parkingLotId, request)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    response -> {
-                        progressBar.setVisibility(View.GONE);
-                        if (response.isSuccess()) {
-                            Toast.makeText(this, "Cảm ơn bạn đã đánh giá!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            String errorMsg = response.getMessage() != null
-                                ? response.getMessage()
-                                : "Không thể gửi đánh giá";
-                            Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    error -> {
-                        progressBar.setVisibility(View.GONE);
-                        Log.e(TAG, "Error submitting rating: " + error.getMessage());
+                ApiClient.getApiService().createRating(parkingLotId, request)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    if (response.isSuccess()) {
+                                        Toast.makeText(this, "Cảm ơn bạn đã đánh giá!", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        String errorMsg = response.getMessage() != null
+                                                ? response.getMessage()
+                                                : "Không thể gửi đánh giá";
+                                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                                    }
+                                },
+                                error -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    Log.e(TAG, "Error submitting rating: " + error.getMessage());
 
-                        String errorMsg = "Không thể gửi đánh giá";
-                        if (error.getMessage() != null) {
-                            if (error.getMessage().contains("409")) {
-                                errorMsg = "Bạn đã đánh giá bãi đỗ xe này rồi";
-                            } else if (error.getMessage().contains("404")) {
-                                errorMsg = "Không tìm thấy bãi đỗ xe";
-                            }
-                        }
-                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                                    String errorMsg = "Không thể gửi đánh giá";
+                                    if (error.getMessage() != null) {
+                                        if (error.getMessage().contains("409")) {
+                                            errorMsg = "Bạn đã đánh giá bãi đỗ xe này rồi";
+                                        } else if (error.getMessage().contains("404")) {
+                                            errorMsg = "Không tìm thấy bãi đỗ xe";
+                                        }
+                                    }
+                                    Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                                }));
+    }
+
+    private void showCancelConfirmDialog(UserSubscription subscription) {
+        com.parkmate.android.dialog.CancelSubscriptionDialog dialog = new com.parkmate.android.dialog.CancelSubscriptionDialog(
+                this,
+                subscription,
+                new com.parkmate.android.dialog.CancelSubscriptionDialog.OnCancelSubscriptionListener() {
+                    @Override
+                    public void onConfirmCancel(String reason) {
+                        cancelSubscription(subscription, reason);
                     }
-                )
-        );
+
+                    @Override
+                    public void onBack() {
+                        // User cancelled - do nothing
+                        Log.d(TAG, "User cancelled subscription cancellation");
+                    }
+                });
+        dialog.show();
+    }
+
+    private void cancelSubscription(UserSubscription subscription, String reason) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        com.parkmate.android.model.request.CancelSubscriptionRequest request = new com.parkmate.android.model.request.CancelSubscriptionRequest(
+                reason);
+
+        Log.d(TAG, "Cancelling subscription ID: " + subscription.getId());
+
+        compositeDisposable.add(
+                ApiClient.getApiService()
+                        .cancelUserSubscription(subscription.getId(), request)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    if (response.isSuccess()) {
+                                        // Reload list to get updated data (no toast - push notification will be
+                                        // received)
+                                        currentPage = 0;
+                                        isLastPage = false;
+                                        adapter.clearSubscriptions();
+                                        loadSubscriptions(currentPage);
+                                    } else {
+                                        String errorMsg = response.getMessage() != null
+                                                ? response.getMessage()
+                                                : "Không thể hủy đăng ký";
+                                        Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                                    }
+                                },
+                                error -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    Log.e(TAG, "Error cancelling subscription", error);
+
+                                    String errorMsg = "Không thể hủy đăng ký";
+                                    if (error.getMessage() != null) {
+                                        if (error.getMessage().contains("401")) {
+                                            errorMsg = "Phiên đăng nhập hết hạn";
+                                        } else if (error.getMessage().contains("404")) {
+                                            errorMsg = "Không tìm thấy đăng ký";
+                                        } else if (error.getMessage().contains("403")) {
+                                            errorMsg = "Bạn không có quyền hủy đăng ký này";
+                                        } else if (error.getMessage().contains("400")) {
+                                            errorMsg = "Đăng ký đã hết hạn hoặc đã bị hủy";
+                                        }
+                                    }
+                                    Toast.makeText(this, "❌ " + errorMsg, Toast.LENGTH_SHORT).show();
+                                }));
     }
 
     @Override
@@ -366,4 +436,3 @@ public class UserSubscriptionListActivity extends AppCompatActivity {
         compositeDisposable.clear();
     }
 }
-

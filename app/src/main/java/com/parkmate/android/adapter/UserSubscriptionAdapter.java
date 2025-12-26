@@ -26,8 +26,12 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
 
     public interface OnSubscriptionClickListener {
         void onSubscriptionClick(UserSubscription subscription);
+
         void onRateClick(UserSubscription subscription);
+
         void onRenewClick(UserSubscription subscription);
+
+        void onCancelClick(UserSubscription subscription);
     }
 
     private List<UserSubscription> subscriptions = new ArrayList<>();
@@ -84,6 +88,8 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
         private final MaterialButton btnRate;
         private final LinearLayout layoutRenewalButton;
         private final MaterialButton btnRenew;
+        private final LinearLayout layoutCancelButton;
+        private final MaterialButton btnCancel;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -100,6 +106,8 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
             btnRate = itemView.findViewById(R.id.btnRate);
             layoutRenewalButton = itemView.findViewById(R.id.layoutRenewalButton);
             btnRenew = itemView.findViewById(R.id.btnRenew);
+            layoutCancelButton = itemView.findViewById(R.id.layoutCancelButton);
+            btnCancel = itemView.findViewById(R.id.btnCancel);
         }
 
         void bind(UserSubscription subscription) {
@@ -176,6 +184,19 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
                 layoutRenewalButton.setVisibility(View.GONE);
             }
 
+            // Show cancel button for ACTIVE or INACTIVE subscriptions (not EXPIRED,
+            // CANCELLED, or PENDING_PAYMENT)
+            if ("ACTIVE".equals(status) || "INACTIVE".equals(status)) {
+                layoutCancelButton.setVisibility(View.VISIBLE);
+                btnCancel.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onCancelClick(subscription);
+                    }
+                });
+            } else {
+                layoutCancelButton.setVisibility(View.GONE);
+            }
+
             // Click listener
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
@@ -214,7 +235,8 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
         }
 
         private String getStatusDisplay(String status) {
-            if (status == null) return "";
+            if (status == null)
+                return "";
             switch (status) {
                 case "PENDING_PAYMENT":
                     return "Chờ thanh toán";
@@ -232,7 +254,8 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
         }
 
         private String getVehicleTypeDisplay(String vehicleType) {
-            if (vehicleType == null) return "";
+            if (vehicleType == null)
+                return "";
             switch (vehicleType) {
                 case "CAR_UP_TO_9_SEATS":
                     return "Ô tô";
@@ -261,4 +284,3 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
         }
     }
 }
-
