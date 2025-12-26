@@ -184,9 +184,8 @@ public class UserSubscriptionAdapter extends RecyclerView.Adapter<UserSubscripti
                 layoutRenewalButton.setVisibility(View.GONE);
             }
 
-            // Show cancel button for ACTIVE or INACTIVE subscriptions (not EXPIRED,
-            // CANCELLED, or PENDING_PAYMENT)
-            if ("ACTIVE".equals(status) || "INACTIVE".equals(status)) {
+            // Show cancel button only for INACTIVE subscriptions (not in parking lot)
+            if ("INACTIVE".equals(status)) {
                 layoutCancelButton.setVisibility(View.VISIBLE);
                 btnCancel.setOnClickListener(v -> {
                     if (listener != null) {
