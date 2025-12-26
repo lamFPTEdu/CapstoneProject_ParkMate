@@ -38,6 +38,7 @@ public class ReservationConfirmActivity extends AppCompatActivity {
     private TextView tvAvailableCapacity;
     private TextView tvTotalCapacity;
     private TextView tvInitialCharge;
+    private TextView tvInitialChargeNote;
     private TextView tvStepRate;
     private TextView tvEstimatedTotal;
     private LinearLayout llCountdown;
@@ -111,6 +112,7 @@ public class ReservationConfirmActivity extends AppCompatActivity {
         tvAvailableCapacity = findViewById(R.id.tvAvailableCapacity);
         tvTotalCapacity = findViewById(R.id.tvTotalCapacity);
         tvInitialCharge = findViewById(R.id.tvInitialCharge);
+        tvInitialChargeNote = findViewById(R.id.tvInitialChargeNote);
         tvStepRate = findViewById(R.id.tvStepRate);
         tvEstimatedTotal = findViewById(R.id.tvEstimatedTotal);
         llCountdown = findViewById(R.id.llCountdown);
@@ -135,9 +137,15 @@ public class ReservationConfirmActivity extends AppCompatActivity {
         tvTotalCapacity.setText(String.valueOf(spotData.getTotalCapacity()));
 
         AvailableSpotResponse.Pricing pricing = spotData.getPricing();
-        tvInitialCharge.setText(formatter.format(pricing.getInitialCharge()) + " VNĐ ("
-                + pricing.getInitialDurationMinute() + " phút đầu)");
-        tvStepRate.setText(formatter.format(pricing.getStepRate()) + " VNĐ (mỗi " + pricing.getStepMinute() + " phút)");
+
+        // Display initial charge prominently
+        tvInitialCharge.setText(formatter.format(pricing.getInitialCharge()) + " VNĐ");
+        tvInitialChargeNote.setText("(Phí " + pricing.getInitialDurationMinute() + " phút đầu tiên)");
+
+        // Display step rate
+        tvStepRate.setText(formatter.format(pricing.getStepRate()) + " VNĐ / " + pricing.getStepMinute() + " phút");
+
+        // Display estimated total
         tvEstimatedTotal.setText(formatter.format(pricing.getEstimateTotalFee()) + " VNĐ");
     }
 

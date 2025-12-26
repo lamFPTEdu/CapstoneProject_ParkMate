@@ -159,7 +159,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Pricing Card -->
+            <!-- Pricing Card - Redesigned -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -176,52 +176,58 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Thông tin giá"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="12dp" />
-
-                    <!-- Initial Charge -->
+                    <!-- Highlighted Section: Amount to be deducted immediately -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_highlight_blue"
+                        android:padding="16dp"
+                        android:layout_marginBottom="16dp">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Phí ban đầu:"
+                            android:text="Số tiền sẽ trừ ngay"
                             android:textSize="14sp"
-                            android:textColor="@color/text_secondary" />
+                            android:textColor="@color/primary"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="8dp" />
 
                         <TextView
                             android:id="@+id/tvInitialCharge"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 VNĐ"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_primary" />
+                            android:text="10.000 VNĐ"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary"
+                            android:layout_gravity="center_horizontal" />
+
+                        <TextView
+                            android:id="@+id/tvInitialChargeNote"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="(Phí 1 phút đầu tiên)"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginTop="4dp" />
 
                     </LinearLayout>
 
-                    <!-- Step Rate -->
+                    <!-- Step Rate Info -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="12dp">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Phí tiếp theo:"
+                            android:text="Phí các phút tiếp theo:"
                             android:textSize="14sp"
                             android:textColor="@color/text_secondary" />
 
@@ -229,7 +235,7 @@
                             android:id="@+id/tvStepRate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 VNĐ"
+                            android:text="0 VNĐ / phút"
                             android:textSize="14sp"
                             android:textColor="@color/text_primary" />
 
@@ -240,31 +246,31 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="@color/divider"
-                        android:layout_marginVertical="8dp" />
+                        android:layout_marginBottom="12dp" />
 
-                    <!-- Estimated Total -->
+                    <!-- Estimated Total (Secondary) -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Tổng dự kiến:"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/text_primary" />
+                            android:text="Tổng dự kiến theo thời gian đặt"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginBottom="4dp" />
 
                         <TextView
                             android:id="@+id/tvEstimatedTotal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0 VNĐ"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/primary" />
+                            android:textColor="@color/text_secondary" />
 
                     </LinearLayout>
 

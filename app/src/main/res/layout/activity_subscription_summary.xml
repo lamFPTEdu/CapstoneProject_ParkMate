@@ -80,15 +80,182 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Card 1: Parking Spot Location - Highlighted -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSpotInfo"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Thông tin đăng ký"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="16dp" />
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/primary"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Vị trí đỗ xe của bạn"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvSpotName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Area 2 - S4"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 2: Registration Details -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/border_color"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chi tiết đăng ký"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Parking Lot Name -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Bãi đỗ xe"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvParkingLotName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ParkMate Lot"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
+
+                    <!-- Package Name -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Gói dịch vụ"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvPackageInfo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gói theo tháng"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
+
+                    <!-- Duration -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Thời hạn"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvStartDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="26/12/2025 → 25/01/2026"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
+
+                    <!-- Vehicle Info -->
+                    <LinearLayout
+                        android:id="@+id/layoutVehicleInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Xe đăng ký"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvVehicleInfo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="51H-00000"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 3: Payment - Highlighted -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -105,61 +272,39 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tvSpotName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Chỗ: A-01"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="12dp" />
-
-                    <TextView
-                        android:id="@+id/tvStartDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Ngày bắt đầu: 01/01/2025"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="12dp" />
-
-                    <TextView
-                        android:id="@+id/tvPackageInfo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Gói: Tháng"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="12dp" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/border_color"
-                        android:layout_marginVertical="8dp" />
-
+                    <!-- Highlighted Payment Section -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_highlight_blue"
+                        android:padding="16dp"
+                        android:gravity="center">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Tổng tiền:"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/text_primary" />
+                            android:text="Số tiền thanh toán"
+                            android:textSize="14sp"
+                            android:textColor="@color/primary"
+                            android:layout_marginBottom="8dp" />
 
                         <TextView
                             android:id="@+id/tvPrice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="500,000đ"
-                            android:textSize="20sp"
+                            android:text="1.500.000 VNĐ"
+                            android:textSize="28sp"
                             android:textStyle="bold"
                             android:textColor="@color/primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sẽ trừ từ ví khi xác nhận"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginTop="8dp" />
 
                     </LinearLayout>
 
@@ -184,8 +329,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/primary"
-                app:cornerRadius="12dp"
-                android:layout_marginTop="8dp" />
+                app:cornerRadius="12dp" />
 
         </LinearLayout>
 
