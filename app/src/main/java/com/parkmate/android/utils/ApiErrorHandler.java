@@ -128,6 +128,9 @@ public class ApiErrorHandler {
             put("USER_SUBSCRIPTION_ALREADY_USED", "Gói đăng ký đã được sử dụng");
             put("USER_SUBSCRIPTION_EXPIRED", "Gói đăng ký đã hết hạn");
             put("INVALID_USER_SUBSCRIPTION_DATA", "Thông tin gói đăng ký không hợp lệ");
+            put("USER_SUBSCRIPTION_NOT_BELONG_TO_USER", "Gói đăng ký không thuộc về bạn");
+            put("USER_SUBSCRIPTION_ALREADY_CANCELLED", "Gói đăng ký đã bị hủy trước đó");
+            put("USER_SUBSCRIPTION_CANCEL_FAILED", "Không thể hủy gói đăng ký, vui lòng thử lại");
 
             // ===================================================================
             // PARKING-LOT-SERVICE

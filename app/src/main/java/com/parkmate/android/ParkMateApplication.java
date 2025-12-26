@@ -1,12 +1,19 @@
 package com.parkmate.android;
 
+import android.app.Activity;
 import android.app.Application;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.parkmate.android.activity.BaseActivity;
 import com.parkmate.android.network.ApiClient;
 import com.parkmate.android.utils.BLEBeaconTransmitter;
+import com.parkmate.android.utils.EdgeToEdgeHelper;
 import com.parkmate.android.utils.ReservationHoldManager;
 import com.parkmate.android.utils.SubscriptionHoldManager;
 import com.parkmate.android.utils.TokenManager;
@@ -25,6 +32,10 @@ public class ParkMateApplication extends Application {
         super.onCreate();
         instance = this;
 
+        // Register ActivityLifecycleCallbacks để tự động apply Edge-to-Edge cho tất cả
+        // Activities
+        registerEdgeToEdgeCallbacks();
+
         // Khởi tạo TokenManager và UserManager bất đồng bộ để tránh ANR
         // Sử dụng Handler để post lên main thread nhưng không block
         new Handler(Looper.getMainLooper()).post(() -> {
@@ -37,6 +48,49 @@ public class ParkMateApplication extends Application {
 
             // Khởi động BLE nếu user đã bật trước đó
             initBeaconIfEnabled();
+        });
+    }
+
+    /**
+     * Đăng ký ActivityLifecycleCallbacks để tự động apply Edge-to-Edge
+     * cho tất cả Activities không phải BaseActivity (vì BaseActivity đã tự xử lý
+     * navbar insets)
+     */
+    private void registerEdgeToEdgeCallbacks() {
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+                // Chỉ apply Edge-to-Edge cho Activities KHÔNG phải BaseActivity
+                // BaseActivity đã tự xử lý insets cho toolbar và bottom navigation
+                if (!(activity instanceof BaseActivity)) {
+                    EdgeToEdgeHelper.setupEdgeToEdge(activity);
+                    Log.d(TAG, "Applied Edge-to-Edge to: " + activity.getClass().getSimpleName());
+                }
+            }
+
+            @Override
+            public void onActivityStarted(@NonNull Activity activity) {
+            }
+
+            @Override
+            public void onActivityResumed(@NonNull Activity activity) {
+            }
+
+            @Override
+            public void onActivityPaused(@NonNull Activity activity) {
+            }
+
+            @Override
+            public void onActivityStopped(@NonNull Activity activity) {
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+            }
+
+            @Override
+            public void onActivityDestroyed(@NonNull Activity activity) {
+            }
         });
     }
 
@@ -73,8 +127,7 @@ public class ParkMateApplication extends Application {
                                 Log.e(TAG, "Error releasing held spot: " + heldSpotId, throwable);
                                 // Clear from SharedPreferences even on error
                                 holdManager.clearHeldSpot();
-                            }
-                    );
+                            });
         }
     }
 
@@ -111,8 +164,7 @@ public class ParkMateApplication extends Application {
                                 Log.e(TAG, "Error releasing held reservation: " + holdId, throwable);
                                 // Clear from SharedPreferences even on error
                                 holdManager.clearHoldId();
-                            }
-                    );
+                            });
         }
     }
 
@@ -131,4 +183,3 @@ public class ParkMateApplication extends Application {
         return instance;
     }
 }
-

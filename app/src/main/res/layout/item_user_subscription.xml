@@ -279,6 +279,30 @@
 
             </LinearLayout>
 
+            <!-- Cancel Button (for ACTIVE/INACTIVE subscriptions) -->
+            <LinearLayout
+                android:id="@+id/layoutCancelButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="Hủy đăng ký"
+                    android:textSize="13sp"
+                    android:textColor="@color/error"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/error_light"
+                    app:strokeWidth="0dp"
+                    app:cornerRadius="10dp"
+                    style="@style/Widget.Material3.Button" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
     </LinearLayout>

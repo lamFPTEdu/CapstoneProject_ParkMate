@@ -46,6 +46,7 @@
     <color name="red">#EF4444</color>
     <color name="green">#16A34A</color>
     <color name="error">#DC2626</color>
+    <color name="error_light">#FEE2E2</color>
 
     <!-- BLE Activity colors -->
     <color name="light_primary">#E8EEFF</color>

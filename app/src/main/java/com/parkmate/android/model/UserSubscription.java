@@ -79,6 +79,12 @@ public class UserSubscription implements Serializable {
     @SerializedName("needRenewalDecision")
     private boolean needRenewalDecision;
 
+    @SerializedName("passedHalfPeriod")
+    private boolean passedHalfPeriod;
+
+    @SerializedName("hasBeenUsed")
+    private boolean hasBeenUsed;
+
     // Getters and Setters
     public long getId() {
         return id;
@@ -279,5 +285,20 @@ public class UserSubscription implements Serializable {
     public void setNeedRenewalDecision(boolean needRenewalDecision) {
         this.needRenewalDecision = needRenewalDecision;
     }
-}
 
+    public boolean isPassedHalfPeriod() {
+        return passedHalfPeriod;
+    }
+
+    public void setPassedHalfPeriod(boolean passedHalfPeriod) {
+        this.passedHalfPeriod = passedHalfPeriod;
+    }
+
+    public boolean isHasBeenUsed() {
+        return hasBeenUsed;
+    }
+
+    public void setHasBeenUsed(boolean hasBeenUsed) {
+        this.hasBeenUsed = hasBeenUsed;
+    }
+}
