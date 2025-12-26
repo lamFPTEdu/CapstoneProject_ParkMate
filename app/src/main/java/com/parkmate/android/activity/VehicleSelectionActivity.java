@@ -424,6 +424,7 @@ public class VehicleSelectionActivity extends AppCompatActivity {
     }
 
     private void checkAvailableSpots() {
+        // Validate assumed minutes
         String assumedMinutesStr = etAssumedMinutes.getText() != null ? etAssumedMinutes.getText().toString() : "";
         if (TextUtils.isEmpty(assumedMinutesStr)) {
             Toast.makeText(this, "Vui lòng nhập thời gian dự kiến", Toast.LENGTH_SHORT).show();
@@ -434,11 +435,26 @@ public class VehicleSelectionActivity extends AppCompatActivity {
         try {
             assumedMinutes = Integer.parseInt(assumedMinutesStr);
             if (assumedMinutes <= 0) {
-                Toast.makeText(this, "Thời gian phải lớn hơn 0", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Thời gian đỗ phải lớn hơn 0 phút", Toast.LENGTH_SHORT).show();
                 return;
             }
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Thời gian không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validate reservation time (must be at least 5 minutes in the future)
+        Calendar now = Calendar.getInstance();
+        long diffMs = selectedDateTime.getTimeInMillis() - now.getTimeInMillis();
+        long diffMinutes = diffMs / (1000 * 60);
+
+        if (diffMinutes < 0) {
+            Toast.makeText(this, "Thời gian đặt chỗ đã qua. Vui lòng chọn lại", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (diffMinutes < 5) {
+            Toast.makeText(this, "Thời gian đặt chỗ phải cách hiện tại ít nhất 5 phút", Toast.LENGTH_SHORT).show();
             return;
         }
 

@@ -60,6 +60,7 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
     private Long selectedPackageId = null;
     private SubscriptionPackage selectedPackage = null; // Store selected package object
     private Long selectedVehicleId = null;
+    private String selectedVehiclePlate = null; // Store selected vehicle plate number
     private String selectedStartDate = null;
     private String currentVehicleType = null; // Current selected vehicle type from tab
 
@@ -125,9 +126,11 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
         vehicleAdapter = new SubscriptionVehicleAdapter(vehicle -> {
             if (vehicle != null) {
                 selectedVehicleId = vehicle.getId();
+                selectedVehiclePlate = vehicle.getLicensePlate();
             } else {
                 // Deselected
                 selectedVehicleId = null;
+                selectedVehiclePlate = null;
             }
             checkFormValidity();
         }, parkingLot.getId());
@@ -342,7 +345,9 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
             // Skip location selection, go directly to summary
             Intent intent = new Intent(this, SubscriptionSummaryActivity.class);
             intent.putExtra("PARKING_LOT_ID", parkingLot.getId());
+            intent.putExtra("PARKING_LOT_NAME", parkingLot.getName());
             intent.putExtra("VEHICLE_ID", selectedVehicleId);
+            intent.putExtra("VEHICLE_PLATE_NUMBER", selectedVehiclePlate);
             intent.putExtra("PACKAGE_ID", selectedPackageId);
             intent.putExtra("PACKAGE_NAME", selectedPackage.getName());
             intent.putExtra("PACKAGE_PRICE", selectedPackage.getPrice());
@@ -353,7 +358,9 @@ public class SubscriptionSelectionActivity extends AppCompatActivity {
             // Ô tô - vẫn phải chọn location
             Intent intent = new Intent(this, SubscriptionLocationSelectionActivity.class);
             intent.putExtra("PARKING_LOT_ID", parkingLot.getId());
+            intent.putExtra("PARKING_LOT_NAME", parkingLot.getName());
             intent.putExtra("VEHICLE_ID", selectedVehicleId);
+            intent.putExtra("VEHICLE_PLATE_NUMBER", selectedVehiclePlate);
             intent.putExtra("PACKAGE_ID", selectedPackageId);
             intent.putExtra("PACKAGE", selectedPackage); // Pass package object
             intent.putExtra("START_DATE", selectedStartDate);

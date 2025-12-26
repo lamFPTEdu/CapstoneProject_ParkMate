@@ -31,9 +31,13 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class SubscriptionSummaryActivity extends AppCompatActivity {
 
     private ImageButton btnBack;
+    private com.google.android.material.card.MaterialCardView cardSpotInfo;
     private TextView tvSpotName;
+    private TextView tvParkingLotName;
     private TextView tvStartDate;
     private TextView tvPackageInfo;
+    private TextView tvVehicleInfo;
+    private LinearLayout layoutVehicleInfo;
     private TextView tvPrice;
     private MaterialButton btnConfirm;
     private ProgressBar progressBar;
@@ -55,6 +59,8 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
 
     private boolean isSpotHeld = false;
     private boolean requiresSpot = false; // Flag to check if this subscription requires spot selection
+    private String parkingLotName;
+    private String vehiclePlateNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +83,10 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
         long spotIdExtra = getIntent().getLongExtra("SPOT_ID", -1);
         spotId = (spotIdExtra != -1) ? spotIdExtra : null;
         spotName = getIntent().getStringExtra("SPOT_NAME");
+
+        // Get additional info for redesigned layout
+        parkingLotName = getIntent().getStringExtra("PARKING_LOT_NAME");
+        vehiclePlateNumber = getIntent().getStringExtra("VEHICLE_PLATE_NUMBER");
 
         // Check if this subscription requires spot (car) or not (motorbike/bike)
         requiresSpot = (spotId != null);
@@ -134,9 +144,13 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
 
     private void initializeViews() {
         btnBack = findViewById(R.id.btnBack);
+        cardSpotInfo = findViewById(R.id.cardSpotInfo);
         tvSpotName = findViewById(R.id.tvSpotName);
+        tvParkingLotName = findViewById(R.id.tvParkingLotName);
         tvStartDate = findViewById(R.id.tvStartDate);
         tvPackageInfo = findViewById(R.id.tvPackageInfo);
+        tvVehicleInfo = findViewById(R.id.tvVehicleInfo);
+        layoutVehicleInfo = findViewById(R.id.layoutVehicleInfo);
         tvPrice = findViewById(R.id.tvPrice);
         btnConfirm = findViewById(R.id.btnConfirm);
         progressBar = findViewById(R.id.progressBar);
@@ -147,36 +161,54 @@ public class SubscriptionSummaryActivity extends AppCompatActivity {
     }
 
     private void displaySummary() {
-        // Display spot name - chỉ hiển thị nếu có spot
-        if (requiresSpot && spotId != null) {
-            tvSpotName.setVisibility(View.VISIBLE);
+        // Display spot card - chỉ hiển thị nếu có spot (car)
+        if (requiresSpot && spotId != null && cardSpotInfo != null) {
+            cardSpotInfo.setVisibility(View.VISIBLE);
             if (spotName != null && !spotName.isEmpty()) {
-                tvSpotName.setText(String.format("Chỗ: %s", spotName));
+                tvSpotName.setText(spotName);
             } else {
-                tvSpotName.setText(String.format("Chỗ: Spot #%d", spotId));
+                tvSpotName.setText(String.format("Spot #%d", spotId));
             }
-        } else {
-            // Ẩn thông tin spot cho xe máy/xe đạp
-            tvSpotName.setVisibility(View.GONE);
+        } else if (cardSpotInfo != null) {
+            // Ẩn card spot cho xe máy/xe đạp
+            cardSpotInfo.setVisibility(View.GONE);
         }
 
-        // Display start date
-        if (startDate != null && !startDate.isEmpty()) {
-            tvStartDate.setText(String.format("Ngày bắt đầu: %s", startDate));
-        } else {
-            tvStartDate.setText("Ngày bắt đầu: N/A");
+        // Display parking lot name
+        if (tvParkingLotName != null) {
+            if (parkingLotName != null && !parkingLotName.isEmpty()) {
+                tvParkingLotName.setText(parkingLotName);
+            } else {
+                tvParkingLotName.setText("Bãi đỗ xe");
+            }
         }
 
         // Display package info
         if (packageName != null && !packageName.isEmpty()) {
-            tvPackageInfo.setText(String.format("Gói: %s", packageName));
+            tvPackageInfo.setText(packageName);
         } else {
             tvPackageInfo.setText("Gói đăng ký");
         }
 
+        // Display start date
+        if (startDate != null && !startDate.isEmpty()) {
+            tvStartDate.setText(startDate);
+        } else {
+            tvStartDate.setText("N/A");
+        }
+
+        // Display vehicle info
+        if (tvVehicleInfo != null) {
+            if (vehiclePlateNumber != null && !vehiclePlateNumber.isEmpty()) {
+                tvVehicleInfo.setText(vehiclePlateNumber);
+            } else {
+                tvVehicleInfo.setText("Xe đã chọn");
+            }
+        }
+
         // Display price
         java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
-        tvPrice.setText(String.format("%sđ", formatter.format(packagePrice)));
+        tvPrice.setText(String.format("%s VNĐ", formatter.format(packagePrice)));
 
         btnConfirm.setOnClickListener(v -> createSubscription());
     }

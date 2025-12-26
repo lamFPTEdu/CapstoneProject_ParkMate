@@ -52,6 +52,10 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
     private TextView step1Label, step2Label, step3Label;
     private View connector1, connector2;
 
+    // Additional data to forward to Summary
+    private String parkingLotName;
+    private String vehiclePlateNumber;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,6 +91,10 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
         long packageId = getIntent().getLongExtra("PACKAGE_ID", -1);
         String startDate = getIntent().getStringExtra("START_DATE");
         SubscriptionPackage subscriptionPackage = (SubscriptionPackage) getIntent().getSerializableExtra("PACKAGE");
+
+        // Get additional data to forward
+        parkingLotName = getIntent().getStringExtra("PARKING_LOT_NAME");
+        vehiclePlateNumber = getIntent().getStringExtra("VEHICLE_PLATE_NUMBER");
 
         if (parkingLotId == -1 || vehicleId == -1 || packageId == -1 || startDate == null) {
             Toast.makeText(this, "Thông tin không hợp lệ", Toast.LENGTH_SHORT).show();
@@ -286,7 +294,9 @@ public class SubscriptionLocationSelectionActivity extends AppCompatActivity {
     private void navigateToSummary() {
         Intent intent = new Intent(this, SubscriptionSummaryActivity.class);
         intent.putExtra("PARKING_LOT_ID", viewModel.getParkingLotIdValue());
+        intent.putExtra("PARKING_LOT_NAME", parkingLotName);
         intent.putExtra("VEHICLE_ID", viewModel.getVehicleIdValue());
+        intent.putExtra("VEHICLE_PLATE_NUMBER", vehiclePlateNumber);
         intent.putExtra("PACKAGE_ID", viewModel.getPackageIdValue());
         intent.putExtra("START_DATE", viewModel.getStartDateValue());
         intent.putExtra("SPOT_ID", viewModel.getSelectedSpotIdValue());
